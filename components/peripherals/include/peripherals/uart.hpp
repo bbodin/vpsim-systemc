@@ -39,7 +39,7 @@ namespace vpsim {
 
         SC_HAS_PROCESS(uart);
 
-        ~uart();
+        ~uart() override;
 
         //Main functions
         tlm::tlm_response_status read(payload_t &payload, sc_time &delay);

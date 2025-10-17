@@ -28,7 +28,7 @@ namespace vpsim {
             SC_THREAD(riPoll);
         }
 
-        virtual ~RemoteInitiator() {
+        ~RemoteInitiator() override {
         }
 
 
@@ -39,7 +39,7 @@ namespace vpsim {
             }
         }
 
-        virtual uint32_t localRead(uint64_t addr, uint64_t size, uint8_t *data) override {
+        uint32_t localRead(uint64_t addr, uint64_t size, uint8_t *data) override {
             sc_time t;
             auto status = InitiatorIf::target_mem_access(0, addr, size, data, READ, t);
             if (status != tlm::TLM_OK_RESPONSE) {
@@ -51,7 +51,7 @@ namespace vpsim {
             }
         }
 
-        virtual uint32_t localWrite(uint64_t addr, uint64_t size, uint8_t *data) override {
+        uint32_t localWrite(uint64_t addr, uint64_t size, uint8_t *data) override {
             sc_time t;
             auto status = InitiatorIf::target_mem_access(0, addr, size, data, WRITE, t);
             if (status != tlm::TLM_OK_RESPONSE) {
@@ -63,7 +63,7 @@ namespace vpsim {
             }
         }
 
-        virtual void update_irq(uint64_t value, uint32_t line) override {
+        void update_irq(uint64_t value, uint32_t line) override {
             interrupt(line, value);
         }
 

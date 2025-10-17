@@ -85,7 +85,7 @@ namespace vpsim {
             }
         }
 
-        virtual ~IOAccessCosimulator() {
+        ~IOAccessCosimulator() override {
             for (uint32_t i = 0; i < _Q_Accomplished.size(); i++) {
                 delete _Q_Accomplished[i];
             }
@@ -114,7 +114,7 @@ namespace vpsim {
 
         using portType = tlm_utils::simple_initiator_socket<IOAccessCosimulator>;
 
-        virtual void insert(uint32_t device, uint8_t write, void *phys, unsigned int size, uint64_t time_stamp,
+        void insert(uint32_t device, uint8_t write, void *phys, unsigned int size, uint64_t time_stamp,
                             uint64_t tag) override {
             uint64_t addr = 0;
             convertAddr(phys, &addr);

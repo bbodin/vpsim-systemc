@@ -43,7 +43,7 @@ namespace vpsim {
 
         bool mRxEnable, mTxEnable;
 
-        virtual bool inputReady() override {
+        bool inputReady() override {
             while (CommonUartInterface::inputReady()) {
                 char b = CommonUartInterface::readByte();
                 mInFifo.push(b);
@@ -52,7 +52,7 @@ namespace vpsim {
             return (mInFifo.size() /*&& mRxEnable*/);
         }
 
-        virtual char readByte() override {
+        char readByte() override {
             if (!inputReady())
                 throw runtime_error("CDNS: Trying to read empty FIFO !");
             char b = mInFifo.front();

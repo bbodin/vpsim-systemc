@@ -36,12 +36,12 @@ namespace vpsim {
         ParallelQuantumKeeper(unsigned int quantum);
 
         //!Destructor
-        virtual ~ParallelQuantumKeeper();
+        ~ParallelQuantumKeeper() override;
 
 
         //! Synchronization with systemc time using regular quantum steps (multiples of quantum)
         //! to be used by default
-        virtual void sync();
+        void sync() override;
 
         sc_time getNextSyncPoint() { return m_next_sync_point; }
 

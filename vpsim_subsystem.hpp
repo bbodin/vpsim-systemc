@@ -28,7 +28,7 @@ namespace vpsim {
     public:
         Subsystem(sc_core::sc_module_name name, const char *platform_xml_path);
 
-        virtual ~Subsystem();
+        ~Subsystem() override;
 
         /* Call this function to obtain :
          * - A reference to the output socket, which you can bind to the rest of the system.

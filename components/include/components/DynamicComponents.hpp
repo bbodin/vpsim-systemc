@@ -74,15 +74,15 @@ namespace vpsim {
 		N_OUT_PORTS_OVERRIDE(0);
 		MEMORY_MAPPED_OVERRIDE;
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			return &mModulePtr->mTargetSocket;
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(VpsimIp::getName() + " : Memory has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 			mModulePtr = new ExternalSimulator(getName().c_str(), getSize(), getAttr("lib_path"));
 			mModulePtr->setBaseAddress(getBaseAddress());
@@ -105,19 +105,19 @@ namespace vpsim {
 			}
 		}
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return getAttrAsUInt64("size");
 		}
 
-		virtual unsigned char *getActualAddress() override {
+		unsigned char *getActualAddress() override {
 			return (unsigned char *) -1;
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *intp = VpsimIp::Find(getAttr("interrupt_parent"));
 			if (intp == nullptr)
 				throw runtime_error(getAttr("interrupt_parent") + " is not a valid interrupt parent for " + getName());
@@ -138,34 +138,34 @@ namespace vpsim {
 		N_OUT_PORTS_OVERRIDE(1);
 		MEMORY_MAPPED_OVERRIDE;
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			return &mModulePtr->mTargetSocket;
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			return &mModulePtr->_out;
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 			mModulePtr = new SystemCTarget(getName().c_str(), getSize());
 			mModulePtr->setBaseAddress(getBaseAddress());
 		}
 
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return getAttrAsUInt64("size");
 		}
 
-		virtual unsigned char *getActualAddress() override {
+		unsigned char *getActualAddress() override {
 			return (unsigned char *) -1;
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *intp = VpsimIp::Find(getAttr("interrupt_parent"));
 			if (intp == nullptr && getAttr("interrupt_parent") != "none")
 				throw runtime_error(getAttr("interrupt_parent") + " is not a valid interrupt parent for " + getName());
@@ -248,7 +248,7 @@ namespace vpsim {
 		}
 
 
-		virtual void finalize() override {
+		void finalize() override {
 			if (AllInstances.find(getAttr("filter")) != AllInstances.end()) {
 				VpsimIp<InPortType, OutPortType>::MapTypeIf(getAttr("filter"),
 				                                            [](VpsimIp<InPortType, OutPortType> *ip) {
@@ -264,7 +264,7 @@ namespace vpsim {
 
 		InterruptIf *getIrqIf() override { return this; }
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 		}
 	};
 
@@ -284,18 +284,18 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(1);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error("No input ports for CPU.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			if (!mModulePtr) {
 				throw runtime_error("Please call make() before handling ports.");
 			}
 			return mModulePtr->mInitiatorSocket[mOutPortCounter];
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error("make() already called for DynamicRemoteInitiator");
 			}
@@ -320,17 +320,17 @@ namespace vpsim {
 			mModulePtr->setPollPeriod(getAttrAsUInt64("poll_period"));
 		}
 
-		virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+		void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
 		                           bool cached, bool has_dmi) override {
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 		}
 
 		void pushStats() override {
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				delete mModulePtr;
 			}
@@ -359,15 +359,15 @@ namespace vpsim {
 		N_OUT_PORTS_OVERRIDE(0);
 		MEMORY_MAPPED_OVERRIDE;
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			return &mModulePtr->mTargetSocket;
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(VpsimIp::getName() + " : Memory has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 			mModulePtr = new RemoteTarget(getName().c_str(), getSize());
 			mModulePtr->setBaseAddress(getBaseAddress());
@@ -378,19 +378,19 @@ namespace vpsim {
 		}
 
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return getAttrAsUInt64("size");
 		}
 
-		virtual unsigned char *getActualAddress() override {
+		unsigned char *getActualAddress() override {
 			return (unsigned char *) -1;
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *intp = VpsimIp::Find(getAttr("interrupt_parent"));
 			if (intp == nullptr)
 				throw runtime_error(getAttr("interrupt_parent") + " is not a valid interrupt parent for " + getName());
@@ -415,11 +415,11 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(getAttrAsUInt64("n_out_ports")*2);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error("No input ports for CPU.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			if (!mModulePtr) {
 				throw runtime_error("Please call make() before handling ports.");
 			}
@@ -428,7 +428,7 @@ namespace vpsim {
 			return (pt == 0 ? mModulePtr->mOutPorts[cpu].first : mModulePtr->mOutPorts[cpu].second);
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error("make() already called for DynamicSystemCCosimulator");
 			}
@@ -448,17 +448,17 @@ namespace vpsim {
 			}
 		}
 
-		virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+		void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
 		                           bool cached, bool has_dmi) override {
 			if (has_dmi) {
 				mModulePtr->mMaps.push_back(make_tuple((void *) pointer, baseAddr, size));
 			}
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				delete mModulePtr;
 			}
@@ -484,18 +484,18 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(getAttrAsUInt64("n_out_ports"));
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error("No input ports for DynamicIOAccessCosimulator.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			if (!mModulePtr) {
 				throw runtime_error("Please call make() before handling ports.");
 			}
 			return mModulePtr->mOutPorts[mOutPortCounter];
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error("make() already called for DynamicIOAccessCosimulator");
 			}
@@ -511,7 +511,7 @@ namespace vpsim {
 			}
 		}
 
-		virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+		void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
 		                           bool cached, bool has_dmi) override {
 			if (has_dmi) {
 				mModulePtr->mMaps.push_back(make_tuple((void *) pointer, baseAddr, size));
@@ -521,13 +521,13 @@ namespace vpsim {
 			}
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find("SystemCCosim0");
 			DynamicSystemCCosimulator *cosim = dynamic_cast<DynamicSystemCCosimulator *>(ip);
 			cosim->mModulePtr->setIOAccessPtr(mModulePtr);
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				delete mModulePtr;
 			}
@@ -568,18 +568,18 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(2);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error("No input ports for CPU.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			if (!mModulePtr) {
 				throw runtime_error("Please call make() before handling ports.");
 			}
 			return mModulePtr->mInitiatorSocket[mOutPortCounter];
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error("make() already called for DynamicArm");
 			}
@@ -634,7 +634,7 @@ namespace vpsim {
 			ParamManager::get().registerUpdateHook(getName(), move(updateIssDoTLM));
 		}
 
-		virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+		void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
 		                           bool cached, bool has_dmi) override {
 			if (mModulePtr == nullptr) {
 				throw runtime_error(getName() + " : calling addDmiAddress() before make() !!!");
@@ -645,7 +645,7 @@ namespace vpsim {
 			}
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			auto nCores = VpsimIp<InPortType, OutPortType>::AllInstances.find("Arm")->second.size();
 			std::cout << "Number of cores: " << nCores << endl;
 			if (getAttr("kernel") != "")
@@ -671,7 +671,7 @@ namespace vpsim {
 			});
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				mStats["instructions"] = tostr(mModulePtr->getInstructionCount());
 				mStats["data_access"] = tostr(mModulePtr->getDataAccessCount());
@@ -725,11 +725,11 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(2);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error("No input ports for CPU.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			if (!mModulePtr) {
 				throw runtime_error("Please call make() before handling ports.");
 			}
@@ -754,7 +754,7 @@ namespace vpsim {
 			});
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error("make() already called for DynamicArm");
 			}
@@ -816,7 +816,7 @@ namespace vpsim {
 			ParamManager::get().registerUpdateHook(getName(), move(updateIssDoTLM));
 		}
 
-		virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+		void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
 		                           bool cached, bool has_dmi) override {
 			if (mModulePtr == nullptr) {
 				throw runtime_error(getName() + " : calling addDmiAddress() before make() !!!");
@@ -827,19 +827,19 @@ namespace vpsim {
 			}
 		}
 
-		virtual void addMonitor(uint64_t base, uint64_t size) override {
+		void addMonitor(uint64_t base, uint64_t size) override {
 			mModulePtr->monitorRange(base, size);
 		}
 
-		virtual void removeMonitor(uint64_t base, uint64_t size) override {
+		void removeMonitor(uint64_t base, uint64_t size) override {
 			mModulePtr->removeMonitor(base, size);
 		}
 
-		virtual void showMonitor() override {
+		void showMonitor() override {
 			mModulePtr->showMonitor();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			auto nCores = VpsimIp<InPortType, OutPortType>::AllInstances.find("Arm64")->second.size();
 			std::cout << "Number of cores: " << nCores << endl;
 			if (getAttr("kernel") != "")
@@ -865,7 +865,7 @@ namespace vpsim {
 			return mModulePtr;
 		}*/
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				mStats["instructions"] = tostr(mModulePtr->getInstructionCount());
 				mStats["data_access"] = tostr(mModulePtr->getDataAccessCount());
@@ -898,33 +898,33 @@ namespace vpsim {
 		N_OUT_PORTS_OVERRIDE(0);
 		MEMORY_MAPPED_OVERRIDE;
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			return &mTargetSocket;
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(VpsimIp::getName() + " : Memory has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 			setBaseAddress(getBaseAddress());
 		}
 
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return 0x1000;
 		}
 
-		virtual unsigned char *getActualAddress() override {
+		unsigned char *getActualAddress() override {
 			return (unsigned char *) -1;
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			cout << "VIRTIO: Initializing callbacks..." << endl;
 			pair<string, VpsimIp *> issProvider = VpsimIp::FindWithType(getAttr("provide_instance"));
 			IssWrapper *wrapper = nullptr;
@@ -1002,7 +1002,7 @@ namespace vpsim {
 			destry = nullptr;
 		}
 
-		~DynamicExternalCPU() {
+		~DynamicExternalCPU() override {
 			if (destry)
 				destry();
 		}
@@ -1017,18 +1017,18 @@ namespace vpsim {
 		using extIrqFctType = void (*)(uint64_t, uint32_t);
 		destroyFctType destry;
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error("No input ports for CPU.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			if (!lib) {
 				throw runtime_error("Please call make() before handling ports.");
 			}
 			return nullptr;
 		}
 
-		virtual void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
+		void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
 		                     std::string inPortAlias) override {
 			//std::cout<<"Connecting "<<getName()<<" to "<<otherIp->getName()<<std::endl;
 
@@ -1058,7 +1058,7 @@ namespace vpsim {
 			                    thatSock.first);
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (lib != nullptr) {
 				throw runtime_error("make() already called for DynamicExternalCPU");
 			}
@@ -1077,7 +1077,7 @@ namespace vpsim {
 			}
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			if (!getAttrAsUInt64("finalize"))
 				return;
 			VpsimIp *par = VpsimIp::Find(this->getAttr("gic"));
@@ -1106,7 +1106,7 @@ namespace vpsim {
 			((DynamicGIC *) instance)->update_irq(value, line | ((1 << id) << 16));
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (lib) {
 				dlclose(lib);
 			}
@@ -1179,17 +1179,17 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(getnIn());
 		N_OUT_PORTS_OVERRIDE(getnOut());
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			if (!mModulePtr) throw runtime_error(getName() + "Please call make() before handling ports.");
 			return &mModulePtr->socket_in[mInPortCounter];
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			if (!mModulePtr) throw runtime_error(getName() + " Please call make() before handling ports.");
 			return &mModulePtr->socket_out[mOutPortCounter];
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) throw runtime_error("make() already called for DynamicCache");
 			checkAttributes();
 			CacheReplacementPolicy repl;
@@ -1263,19 +1263,19 @@ namespace vpsim {
 			if (getAttrAsUInt64("level") > 1 && !getAttrAsUInt64("is_home")) addOutPort("out_invalidate");
 		}
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("home_base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return getAttrAsUInt64("home_size");
 		}
 
-		virtual bool isMemoryMapped() override {
+		bool isMemoryMapped() override {
 			return getAttrAsUInt64("is_home");
 		}
 
-		virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+		void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
 		                           bool cached, bool has_dmi) override {
 			if (mModulePtr == nullptr) throw runtime_error(getName() + " calling addDmiAddress() before make() !!!");
 			if (!cached) mModulePtr->add_uncached_region(baseAddr, size);
@@ -1346,7 +1346,7 @@ namespace vpsim {
 			});
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				mStats["misses"] = tostr(mModulePtr->getMisses());
 				mStats["hits"] = tostr(mModulePtr->getHits());
@@ -1374,7 +1374,7 @@ namespace vpsim {
 			}
 		}
 
-		virtual void configure() override {
+		void configure() override {
 			mModulePtr->configure();
 		}
 
@@ -1585,7 +1585,7 @@ namespace vpsim {
 			mSegmentedStats.push_back(move(newMap));
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			uint64_t ns_per_sec = 1000000000;
 			if (mModulePtr) {
 				if (getAttrAsUInt64("is_mesh")) {
@@ -1648,25 +1648,25 @@ namespace vpsim {
 			}
 		}
 
-		virtual unsigned getMaxInPortCount() override {
+		unsigned getMaxInPortCount() override {
 			return getAttrAsUInt64("n_cache_in") + getAttrAsUInt64("n_home_in") + getAttrAsUInt64("n_device");
 		}
 
-		virtual unsigned getMaxOutPortCount() override {
+		unsigned getMaxOutPortCount() override {
 			return getAttrAsUInt64("n_cache_out") + getAttrAsUInt64("n_home_out") + getAttrAsUInt64("n_mmapped");
 		}
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(VpsimIp::getName() + " : Does not support dynamic port allocation.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(VpsimIp::getName() + " : Does not support dynamic port allocation.");
 		}
 
-		virtual sc_module *getScModule() override { return mModulePtr; }
+		sc_module *getScModule() override { return mModulePtr; }
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) throw runtime_error(getName() + " make() already called !");
 			checkAttributes();
 			mModulePtr = new CoherenceInterconnect(sc_module_name(getName().c_str()),
@@ -1733,7 +1733,7 @@ namespace vpsim {
 			}
 		}
 
-		virtual void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
+		void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
 		                     std::string inPortAlias) override {
 			if (otherIp->isMemoryMapped() && otherIp->isIdMapped())
 				mModulePtr->
@@ -1779,19 +1779,19 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : IOAccess Device has no in sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : IOAccess Device has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find(getAttr("noc"));
 			DynamicCoherenceInterconnect *noc = dynamic_cast<DynamicCoherenceInterconnect *>(ip);
 			noc->mModulePtr->register_device_ctrl(getAttrAsUInt64("id_dev"),
@@ -1815,19 +1815,19 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : MemoryView has no in sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : Memory has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find(getAttr("noc"));
 			//DynamicInterconnect* noc=dynamic_cast<DynamicInterconnect*>(ip);
 			DynamicCoherenceInterconnect *noc = dynamic_cast<DynamicCoherenceInterconnect *>(ip);
@@ -1861,19 +1861,19 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : Cache Controller has no in sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : Cache Controller has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find(getAttr("noc"));
 			DynamicCoherenceInterconnect *noc = dynamic_cast<DynamicCoherenceInterconnect *>(ip);
 			noc->mModulePtr->register_home_ctrl(getAttrAsUInt64("base_address"),
@@ -1897,19 +1897,19 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : Cache Controller has no in sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : Cache Controller has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find(getAttr("noc"));
 			DynamicCoherenceInterconnect *noc = dynamic_cast<DynamicCoherenceInterconnect *>(ip);
 			VpsimIp *ip1 = VpsimIp::Find(getAttr("cache"));
@@ -1934,19 +1934,19 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : Cpu Controller has no in sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : Cpu Controller has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find(getAttr("noc"));
 			DynamicCoherenceInterconnect *noc = dynamic_cast<DynamicCoherenceInterconnect *>(ip);
 			noc->mModulePtr->register_cpu_ctrl(getAttrAsUInt64("id"),
@@ -2003,7 +2003,7 @@ namespace vpsim {
 			mSegmentedStats.push_back(move(newMap));
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				for (unsigned i = 0; i < getMaxOutPortCount(); i++) {
 					mStats[string("written_bytes[") + tostr(i) + "]"] = tostr(mModulePtr->getWriteCount(i));
@@ -2016,14 +2016,14 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(getAttrAsUInt64("n_in_ports"));
 		N_OUT_PORTS_OVERRIDE(getAttrAsUInt64("n_out_ports"));
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			if (!mModulePtr) {
 				throw runtime_error(getName() + "Please call make() before handling ports.");
 			}
 			return &mModulePtr->socket_in[mInPortCounter];
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			if (!mModulePtr) {
 				throw runtime_error(getName() + " Please call make() before handling ports.");
 			}
@@ -2031,7 +2031,7 @@ namespace vpsim {
 			return &mModulePtr->socket_out[mOutPortCounter];
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error(getName() + " make() already called !");
 			}
@@ -2053,7 +2053,7 @@ namespace vpsim {
 			}
 		}
 
-		virtual void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
+		void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
 		                     std::string inPortAlias) override {
 			// set address before connecting (used for forwarding)
 			if (otherIp->isMemoryMapped()) {
@@ -2088,19 +2088,19 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : MemoryView has no in sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : Memory has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find(getAttr("noc"));
 			DynamicInterconnect *noc = dynamic_cast<DynamicInterconnect *>(ip);
 			noc->mModulePtr->register_hn_input(
@@ -2123,19 +2123,19 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : MemoryView has no in sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : Memory has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find(getAttr("noc"));
 			DynamicInterconnect *noc = dynamic_cast<DynamicInterconnect *>(ip);
 			noc->mModulePtr->register_source(
@@ -2189,7 +2189,7 @@ namespace vpsim {
 			});
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				mStats["reads"] = tostr(mModulePtr->getReadCount());
 				mStats["writes"] = tostr(mModulePtr->getWriteCount());
@@ -2199,20 +2199,20 @@ namespace vpsim {
 
 		MEMORY_MAPPED_OVERRIDE;
 		CACHED_OVERRIDE;
-		virtual bool hasDmi() override { return getAttrAsUInt64("dmi_enable"); }
+		bool hasDmi() override { return getAttrAsUInt64("dmi_enable"); }
 
 		N_IN_PORTS_OVERRIDE(1);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			return &mModulePtr->mTargetSocket;
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : Memory has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error(getName() + " make() already called !!");
 			}
@@ -2244,19 +2244,19 @@ namespace vpsim {
 		}
 
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return getAttrAsUInt64("size");
 		}
 
-		virtual unsigned char *getActualAddress() override {
+		unsigned char *getActualAddress() override {
 			return mModulePtr->getLocalMem();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			if (getAttrAsUInt64("load_elf")) {
 				cout << "Loading ELF: " << getAttr("elf_file") << endl;
 				mModulePtr->loadElfFile(getAttr("elf_file").c_str());
@@ -2282,19 +2282,19 @@ namespace vpsim {
 			registerRequiredAttribute("offset");
 		}
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : BlobLoader has no sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : BlobLoader has no sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *mem = VpsimIp::Find(getAttr("target_memory"));
 			if (!mem) {
 				throw runtime_error(getName() + ": Could not find target memory " + getAttr("target_memory"));
@@ -2306,7 +2306,7 @@ namespace vpsim {
 					endl;
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 		}
 	};
 
@@ -2320,19 +2320,19 @@ namespace vpsim {
 			registerRequiredAttribute("path");
 		}
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : BlobLoader has no sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : BlobLoader has no sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+		void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
 		                           bool cached, bool has_dmi) override {
 			if (has_dmi) {
 				elfloader loader;
@@ -2341,10 +2341,10 @@ namespace vpsim {
 			}
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 		}
 	};
 
@@ -2358,19 +2358,19 @@ namespace vpsim {
 			registerRequiredAttribute("cpu");
 		}
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			throw runtime_error(getName() + " : Monitor has no sockets.");
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : Monitor has no sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp *cpu = VpsimIp::Find(getAttr("cpu"));
 			if (!cpu) {
 				throw runtime_error(getName() + ": Could not find target cpu to monitor " + getAttr("cpu"));
@@ -2379,7 +2379,7 @@ namespace vpsim {
 			issProvider->monitorRange(getAttrAsUInt64("start_address"), getAttrAsUInt64("size"));
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 		}
 	};
 
@@ -2416,7 +2416,7 @@ namespace vpsim {
 			});
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				mStats["reads"] = tostr(mModulePtr->getReadCount());
 				mStats["writes"] = tostr(mModulePtr->getWriteCount());
@@ -2429,15 +2429,15 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(1);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			return &(mModulePtr->mTargetSocket);
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : uart has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error(getName() + " make() already called.");
 			}
@@ -2455,15 +2455,15 @@ namespace vpsim {
 			}
 		}
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return getAttrAsUInt64("size");
 		}
 
-		virtual unsigned char *getActualAddress() override {
+		unsigned char *getActualAddress() override {
 			return (unsigned char *) -1;
 		}
 
@@ -2504,7 +2504,7 @@ namespace vpsim {
 			});
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				mStats["reads"] = tostr(mModulePtr->getReadCount());
 				mStats["writes"] = tostr(mModulePtr->getWriteCount());
@@ -2518,15 +2518,15 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(1);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			return &(mModulePtr->mTargetSocket);
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error(getName() + " : itctrl has no out sockets.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			if (mModulePtr != nullptr) {
 				throw runtime_error(getName() + " : make() already called.");
 			}
@@ -2537,20 +2537,20 @@ namespace vpsim {
 			mModulePtr->setBaseAddress(getAttrAsUInt64("base_address"));
 		}
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return getAttrAsUInt64("size");
 		}
 
-		virtual unsigned char *getActualAddress() override {
+		unsigned char *getActualAddress() override {
 			return (unsigned char *) -1;
 			// reinterpret_cast<unsigned char*>(mModulePtr->getLocalMem()); // We don't have to provide address as we don't support DMI
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			if (AllInstances.find("Arm") != AllInstances.end()) {
 				std::cout << "FIXME: Auto-mapping arm interrupt lines" << endl;
 				VpsimIp<InPortType, OutPortType>::MapTypeIf("Arm",
@@ -2643,7 +2643,7 @@ namespace vpsim {
 			return (unsigned char *) getLocalMem();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			//if (AllInstances.find("Arm") != AllInstances.end()) {
 
 			VpsimIp<InPortType, OutPortType>::MapIf(
@@ -2659,7 +2659,7 @@ namespace vpsim {
 		}
 
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 		}
 	};
 
@@ -2727,7 +2727,7 @@ namespace vpsim {
 			return (unsigned char *) getLocalMem();
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			//if (AllInstances.find("Arm") != AllInstances.end()) {
 
 			VpsimIp<InPortType, OutPortType>::MapIf(
@@ -2743,7 +2743,7 @@ namespace vpsim {
 		}
 
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 		}
 	};
 
@@ -2799,16 +2799,16 @@ namespace vpsim {
 		        return nullptr;
 		    }*/
 
-		virtual void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
+		void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
 		                     std::string inPortAlias) override {
 			VpsimIp<InPortType, OutPortType>::connect(outPortAlias, otherIp, inPortAlias);
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 		}
 
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 		}
 	};
 
@@ -2961,11 +2961,11 @@ namespace vpsim {
 			mCurrentDomain = this->getAttrAsUInt64("domain");
 		}
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return getAttrAsUInt64("base_address");
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return getAttrAsUInt64("size");
 		}
 
@@ -3010,7 +3010,7 @@ namespace vpsim {
 			return argv;
 		}
 
-		virtual void finalize() {
+		void finalize() override {
 			VpsimIp *ip = VpsimIp::Find("SystemCCosim0");
 			if (ip) {
 				DynamicSystemCCosimulator *cosim = dynamic_cast<DynamicSystemCCosimulator *>(ip);
@@ -3654,23 +3654,23 @@ namespace vpsim {
 
 		MEMORY_MAPPED_OVERRIDE;
 
-		virtual unsigned getMaxInPortCount() override {
+		unsigned getMaxInPortCount() override {
 			return 1;
 		}
 
-		virtual unsigned getMaxOutPortCount() override {
+		unsigned getMaxOutPortCount() override {
 			return 0;
 		}
 
-		virtual InPortType *getNextInPort() override {
+		InPortType *getNextInPort() override {
 			return &mModulePtr->mTargetSocket;;
 		}
 
-		virtual OutPortType *getNextOutPort() override {
+		OutPortType *getNextOutPort() override {
 			throw runtime_error("Python Device currently only has one input socket.");
 		}
 
-		virtual void make() override {
+		void make() override {
 			checkAttributes();
 			string params = getAttr("param_string");
 			char *x = strdup(params.c_str());
@@ -3696,25 +3696,25 @@ namespace vpsim {
 			mModulePtr->setBaseAddress(getAttrAsUInt64("base_address"));
 		}
 
-		virtual uint64_t getBaseAddress() override {
+		uint64_t getBaseAddress() override {
 			return mModulePtr->getBaseAddress();
 		}
 
-		virtual uint64_t getSize() override {
+		uint64_t getSize() override {
 			return mModulePtr->getSize();
 		}
 
-		virtual unsigned char *getActualAddress() override {
+		unsigned char *getActualAddress() override {
 			return (unsigned char *) mModulePtr->getLocalMem();
 		}
 
-		virtual void setStatsAndDie() override {
+		void setStatsAndDie() override {
 			if (mModulePtr) {
 				delete mModulePtr;
 			}
 		}
 
-		virtual void finalize() override {
+		void finalize() override {
 			VpsimIp<InPortType, OutPortType>::MapIf(
 				[this](VpsimIp<InPortType, OutPortType> *ip) {
 					return ip->getName() == this->getAttr("interrupt_parent");
@@ -3726,7 +3726,7 @@ namespace vpsim {
 			);
 		}
 
-		virtual sc_module *getScModule() override { return mModulePtr; }
+		sc_module *getScModule() override { return mModulePtr; }
 
 	private:
 		PyDevice *mModulePtr;

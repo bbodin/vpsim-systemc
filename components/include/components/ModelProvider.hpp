@@ -54,7 +54,7 @@ namespace vpsim {
             mCpuId = cpu_id;
         }
 
-        virtual tlm::tlm_response_status ForwardRead(uint64_t Addr, size_t size, sc_time &delay) override {
+        tlm::tlm_response_status ForwardRead(uint64_t Addr, size_t size, sc_time &delay) override {
             // register the fetch miss
             MainMemCosim::NotifyFetchMiss(mCpuId, (void *) Addr, size);
             return TLM_OK_RESPONSE;
@@ -488,7 +488,7 @@ namespace vpsim {
             throw (0);
         }
 
-        void update_irq(uint64_t val, uint32_t irq_idx) {
+        void update_irq(uint64_t val, uint32_t irq_idx) override {
             //cerr<<"warning: ModelProviderCpu: interrupt not yet implemented."<<endl;
         }
 
@@ -640,11 +640,11 @@ namespace vpsim {
         1
         );
 
-        virtual InPortType *getNextInPort() override {
+        InPortType *getNextInPort() override {
             throw runtime_error("No input ports for CPU.");
         }
 
-        virtual OutPortType *getNextOutPort() override {
+        OutPortType *getNextOutPort() override {
             if (!mModulePtr) {
                 throw runtime_error("Please call make() before handling ports.");
             }
@@ -698,7 +698,7 @@ namespace vpsim {
             }
         }
 
-        virtual void make() override {
+        void make() override {
             if (mModulePtr != nullptr) {
                 throw runtime_error("make() already called for DynamicArm");
             }
@@ -720,24 +720,24 @@ namespace vpsim {
             );
         }
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+        void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
                                    bool cached, bool has_dmi) override {
             mModulePtr->mMaps.push_back(make_tuple(pointer, baseAddr, size));
         }
 
-        virtual void addMonitor(uint64_t base, uint64_t size) override {
+        void addMonitor(uint64_t base, uint64_t size) override {
             //mModulePtr->monitorRange(base,size);
         }
 
-        virtual void removeMonitor(uint64_t base, uint64_t size) override {
+        void removeMonitor(uint64_t base, uint64_t size) override {
             //mModulePtr->removeMonitor(base,size);
         }
 
-        virtual void showMonitor() override {
+        void showMonitor() override {
             //mModulePtr->showMonitor();
         }
 
-        virtual void finalize() override {
+        void finalize() override {
             /*VpsimIp *par=VpsimIp::Find(this->getAttr("provider"));
             if (par==nullptr)
                     throw runtime_error(getName() + ": Unfound provider :" + getAttr("provider"));
@@ -753,7 +753,7 @@ namespace vpsim {
                 return mModulePtr;
         }*/
 
-        virtual void setStatsAndDie() override {
+        void setStatsAndDie() override {
             if (mModulePtr) {
                 struct ent {
                     char name[512];
@@ -806,16 +806,16 @@ namespace vpsim {
         0
         );
 
-        virtual InPortType *getNextInPort() override {
+        InPortType *getNextInPort() override {
             throw runtime_error("model provider device has no output ports.");
             // return &mModulePtr->mTargetSocket;
         }
 
-        virtual OutPortType *getNextOutPort() override {
+        OutPortType *getNextOutPort() override {
             throw runtime_error("model provider device has no output ports.");
         }
 
-        virtual void make() override {
+        void make() override {
             if (mModulePtr != nullptr) {
                 throw runtime_error("make() already called for DynamicArm");
             }
@@ -834,23 +834,23 @@ namespace vpsim {
                         return getAttrAsUInt64("size");
                 }*/
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+        void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
                                    bool cached, bool has_dmi) override {
         }
 
-        virtual void addMonitor(uint64_t base, uint64_t size) override {
+        void addMonitor(uint64_t base, uint64_t size) override {
         }
 
-        virtual void removeMonitor(uint64_t base, uint64_t size) override {
+        void removeMonitor(uint64_t base, uint64_t size) override {
         }
 
-        virtual void showMonitor() override {
+        void showMonitor() override {
         }
 
-        virtual void finalize() override {
+        void finalize() override {
         }
 
-        virtual void setStatsAndDie() override {
+        void setStatsAndDie() override {
             if (mModulePtr) {
                 delete mModulePtr;
             }
@@ -873,32 +873,32 @@ namespace vpsim {
         0
         );
 
-        virtual InPortType *getNextInPort() override {
+        InPortType *getNextInPort() override {
             throw runtime_error("No input ports for model provider param.");
         }
 
-        virtual OutPortType *getNextOutPort() override {
+        OutPortType *getNextOutPort() override {
             throw runtime_error("no output ports for model provider param.");
         }
 
-        virtual void make() override {
+        void make() override {
             checkAttributes();
         }
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+        void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
                                    bool cached, bool has_dmi) override {
         }
 
-        virtual void addMonitor(uint64_t base, uint64_t size) override {
+        void addMonitor(uint64_t base, uint64_t size) override {
         }
 
-        virtual void removeMonitor(uint64_t base, uint64_t size) override {
+        void removeMonitor(uint64_t base, uint64_t size) override {
         }
 
-        virtual void showMonitor() override {
+        void showMonitor() override {
         }
 
-        virtual void finalize() override {
+        void finalize() override {
             /*VpsimIp *par=VpsimIp::Find(this->getAttr("provider"));
             if (par==nullptr)
                     throw runtime_error(getName() + ": Unfound provider :" + getAttr("provider"));
@@ -906,7 +906,7 @@ namespace vpsim {
             mp->mModulePtr->addParam1(getAttr("option"));*/
         }
 
-        virtual void setStatsAndDie() override {
+        void setStatsAndDie() override {
         }
     };
 
@@ -924,32 +924,32 @@ namespace vpsim {
         0
         );
 
-        virtual InPortType *getNextInPort() override {
+        InPortType *getNextInPort() override {
             throw runtime_error("No input ports for model provider param.");
         }
 
-        virtual OutPortType *getNextOutPort() override {
+        OutPortType *getNextOutPort() override {
             throw runtime_error("no output ports for model provider param.");
         }
 
-        virtual void make() override {
+        void make() override {
             checkAttributes();
         }
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+        void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
                                    bool cached, bool has_dmi) override {
         }
 
-        virtual void addMonitor(uint64_t base, uint64_t size) override {
+        void addMonitor(uint64_t base, uint64_t size) override {
         }
 
-        virtual void removeMonitor(uint64_t base, uint64_t size) override {
+        void removeMonitor(uint64_t base, uint64_t size) override {
         }
 
-        virtual void showMonitor() override {
+        void showMonitor() override {
         }
 
-        virtual void finalize() override {
+        void finalize() override {
             /*VpsimIp *par=VpsimIp::Find(this->getAttr("provider"));
             if (par==nullptr)
                     throw runtime_error(getName() + ": Unfound provider :" + getAttr("provider"));
@@ -957,7 +957,7 @@ namespace vpsim {
             mp->mModulePtr->addParam2(getAttr("option"),getAttr("value"));*/
         }
 
-        virtual void setStatsAndDie() override {
+        void setStatsAndDie() override {
         }
     };
 
@@ -986,15 +986,15 @@ namespace vpsim {
         0
         );
 
-        virtual InPortType *getNextInPort() override {
+        InPortType *getNextInPort() override {
             throw runtime_error("No input ports for model provider.");
         }
 
-        virtual OutPortType *getNextOutPort() override {
+        OutPortType *getNextOutPort() override {
             throw runtime_error("no output ports for model provider.");
         }
 
-        virtual void make() override {
+        void make() override {
             if (mModulePtr != nullptr) {
                 throw runtime_error("make() already called for DynamicArm");
             }
@@ -1032,7 +1032,7 @@ namespace vpsim {
             }
         }
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+        void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
                                    bool cached, bool has_dmi) override {
             if (mModulePtr == nullptr) {
                 throw runtime_error(getName() + " : calling addDmiAddress() before make() !!!");
@@ -1062,19 +1062,19 @@ namespace vpsim {
             }
         }
 
-        virtual void addMonitor(uint64_t base, uint64_t size) override {
+        void addMonitor(uint64_t base, uint64_t size) override {
             //mModulePtr->monitorRange(base,size);
         }
 
-        virtual void removeMonitor(uint64_t base, uint64_t size) override {
+        void removeMonitor(uint64_t base, uint64_t size) override {
             //mModulePtr->removeMonitor(base,size);
         }
 
-        virtual void showMonitor() override {
+        void showMonitor() override {
             //mModulePtr->showMonitor();
         }
 
-        virtual void finalize() override {
+        void finalize() override {
             // gather all params !
             if (!mModulePtr->configured) {
                 VpsimIp::MapTypeIf("ModelProviderParam1",
@@ -1116,7 +1116,7 @@ namespace vpsim {
             mModulePtr->finalize_config();
         }
 
-        virtual void setStatsAndDie() override {
+        void setStatsAndDie() override {
             if (mModulePtr) {
                 delete mModulePtr;
             }

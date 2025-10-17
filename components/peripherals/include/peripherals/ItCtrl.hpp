@@ -39,7 +39,7 @@ namespace vpsim {
     public:
         ItCtrl(sc_module_name Name, uint32_t LineCount, uint32_t LineSize);
 
-        virtual ~ItCtrl();
+        ~ItCtrl() override;
 
         //! link an output interrupt line @param LineIdx to a module implementing InterruptIf @param Module and its nth @param LineNumber
         void Map(uint32_t LineIdx, InterruptIf *Module, uint32_t LineNumber);

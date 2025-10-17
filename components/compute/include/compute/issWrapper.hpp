@@ -202,7 +202,7 @@ namespace vpsim {
 
         void iss_update_irq(uint64_t val, uint32_t irq_idx);
 
-        inline void update_irq(uint64_t val, uint32_t irq_idx) { iss_update_irq(val, irq_idx); }
+        inline void update_irq(uint64_t val, uint32_t irq_idx) override { iss_update_irq(val, irq_idx); }
 
         void iss_tb_cache_flush();
 
@@ -263,7 +263,7 @@ namespace vpsim {
         SC_HAS_PROCESS(IssWrapper);
 
         //Destructor
-        ~IssWrapper();
+        ~IssWrapper() override;
 
         //Main functions
         void core_function();

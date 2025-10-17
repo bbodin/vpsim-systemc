@@ -29,7 +29,7 @@ namespace vpsim {
     public:
         SesamController(sc_module_name name);
 
-        virtual ~SesamController();
+        ~SesamController() override;
 
         tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 

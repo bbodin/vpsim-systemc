@@ -367,7 +367,7 @@ namespace vpsim {
             }
         }
 
-        virtual ~SystemCCosimulator() {
+        ~SystemCCosimulator() override {
             MainMemCosim::Stop();
         }
 
@@ -387,7 +387,7 @@ namespace vpsim {
 
         using portType = tlm_utils::simple_initiator_socket<SystemCCosimulator>;
 
-        virtual void insert(uint32_t cpu, uint8_t write, uint8_t fetch, void *phys, unsigned int size, uint64_t epoch,
+        void insert(uint32_t cpu, uint8_t write, uint8_t fetch, void *phys, unsigned int size, uint64_t epoch,
                             uint64_t time_stamp) override {
             uint64_t addr = 0;
             if (!fetch && !convertAddr(phys, &addr)) {
@@ -411,7 +411,7 @@ namespace vpsim {
             pld.clear_extension(&src);
         }
 
-        virtual void fillBiases(uint64_t *ts, uint32_t n, double conversion_factor, uint64_t epoch) override {
+        void fillBiases(uint64_t *ts, uint32_t n, double conversion_factor, uint64_t epoch) override {
             for (uint32_t i = 0; i < n; i++) {
                 ts[i] += conversion_factor * (mTimes[i][epoch % EPOCHS].to_seconds() * 1000000000.0);
                 mTimes[i][epoch % EPOCHS] = SC_ZERO_TIME;

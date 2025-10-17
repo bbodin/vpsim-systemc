@@ -55,7 +55,7 @@ namespace vpsim {
             registerRequiredAttribute("domain");
         }
 
-        virtual ~VpsimIp() {
+        ~VpsimIp() override {
         }
 
         virtual std::string getName() { return mName; }

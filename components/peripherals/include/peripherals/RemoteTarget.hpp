@@ -29,13 +29,13 @@ namespace vpsim {
     public:
         RemoteTarget(sc_module_name name, size_t size);
 
-        virtual ~RemoteTarget();
+        ~RemoteTarget() override;
 
         tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 
         tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
 
-        virtual void interrupt(uint32_t line, uint32_t value) override {
+        void interrupt(uint32_t line, uint32_t value) override {
             // cout.clear(); cout<<"remote target interrupting local cpu."<<endl;
             if (line != InterruptSource::mInterruptLine) {
                 throw runtime_error("RemoteTarget: received interrupt with mismatching line number !");

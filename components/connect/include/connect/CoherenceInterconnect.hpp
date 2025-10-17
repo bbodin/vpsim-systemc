@@ -227,7 +227,7 @@ namespace vpsim {
                               uint32_t wordLengthInByte, bool isCoherent, uint32_t memoryInterleaveLength,
                               uint32_t slcInterleaveLength);
 
-        ~CoherenceInterconnect();
+        ~CoherenceInterconnect() override;
 
         SC_HAS_PROCESS(CoherenceInterconnect);
 
@@ -363,19 +363,19 @@ namespace vpsim {
 
         void sendTransactionToMMapped(tlm::tlm_generic_payload &trans, sc_time &delay);
 
-        void b_transport(tlm::tlm_generic_payload &trans, sc_time &delay);
+        void b_transport(tlm::tlm_generic_payload &trans, sc_time &delay) override;
 
         void b_transport_device(tlm::tlm_generic_payload &trans, sc_time &delay);
 
-        tlm::tlm_sync_enum nb_transport_fw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t);
+        tlm::tlm_sync_enum nb_transport_fw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t) override;
 
-        bool get_direct_mem_ptr(tlm::tlm_generic_payload &trans, tlm::tlm_dmi &dmi_data);
+        bool get_direct_mem_ptr(tlm::tlm_generic_payload &trans, tlm::tlm_dmi &dmi_data) override;
 
-        unsigned int transport_dbg(tlm::tlm_generic_payload &trans);
+        unsigned int transport_dbg(tlm::tlm_generic_payload &trans) override;
 
-        tlm::tlm_sync_enum nb_transport_bw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t);
+        tlm::tlm_sync_enum nb_transport_bw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t) override;
 
-        void invalidate_direct_mem_ptr(sc_dt::uint64 start_range, sc_dt::uint64 end_range);
+        void invalidate_direct_mem_ptr(sc_dt::uint64 start_range, sc_dt::uint64 end_range) override;
     };
 }
 

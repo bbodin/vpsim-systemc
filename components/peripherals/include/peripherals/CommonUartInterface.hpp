@@ -30,7 +30,7 @@ namespace vpsim {
     public:
         CommonUartInterface(sc_module_name name);
 
-        virtual ~CommonUartInterface();
+        ~CommonUartInterface() override;
 
         virtual bool inputReady();
 

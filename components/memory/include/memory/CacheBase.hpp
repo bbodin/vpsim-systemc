@@ -272,7 +272,7 @@ namespace vpsim {
         //!
     //! Default destructor that displays stats for CacheBase upon destruction
     //!
-        ~CacheBase() { displayStats(); }
+        ~CacheBase() override { displayStats(); }
 
         void SetEvictionNotifier(void (*ev)(void *)) {
             NotifyEvictions = true;

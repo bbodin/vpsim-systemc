@@ -101,7 +101,7 @@ namespace vpsim {
 
         //! @brief See ParameterSetModifier::clone()
         //! Up to the caller to perform a cast if needed
-        virtual std::unique_ptr<ParameterSetModifier> clone() const override;
+        std::unique_ptr<ParameterSetModifier> clone() const override;
     };
 }
 

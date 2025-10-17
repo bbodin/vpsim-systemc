@@ -35,13 +35,13 @@ namespace vpsim {
         /* bool defaultTargetEnabled = false;
        const int defaultTarget = -1; */
 
-        tlm::tlm_extension_base *clone() const {
+        tlm::tlm_extension_base *clone() const override {
             //CoherencePayloadExtension* copy = new CoherencePayloadExtension;
             //*copy=*this;
             throw runtime_error("method clone not supported\n");
         }
 
-        void copy_from(tlm::tlm_extension_base const &ext) {
+        void copy_from(tlm::tlm_extension_base const &ext) override {
             //*this=dynamic_cast<CoherencePayloadExtension const &>(ext);
             throw runtime_error("method copy_from not supported\n");
         }

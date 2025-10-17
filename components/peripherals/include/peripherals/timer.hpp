@@ -41,7 +41,7 @@ namespace vpsim {
 
         SC_HAS_PROCESS(timer);
 
-        ~timer();
+        ~timer() override;
 
         //Communication interface
         sc_out<bool> mIntr;

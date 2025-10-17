@@ -61,7 +61,7 @@ namespace vpsim {
     public:
         ExternalSimulator(sc_module_name name, size_t size, string path);
 
-        virtual ~ExternalSimulator();
+        ~ExternalSimulator() override;
 
         tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 

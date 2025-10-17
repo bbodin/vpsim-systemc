@@ -162,7 +162,7 @@ namespace vpsim {
             else lowerInterrupt();
         }
 
-        ~PyDevice() {
+        ~PyDevice() override {
             Py_DECREF(hdl);
         }
 
