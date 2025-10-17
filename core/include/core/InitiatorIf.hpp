@@ -42,7 +42,7 @@ namespace vpsim {
         InitiatorIf(const string& Name, unsigned int Quantum, bool Active, uint32_t NbPort);
 
         //Destructor
-        ~InitiatorIf();
+        ~InitiatorIf() override;
 
         //---------------------------------------------------
         //Other functions
@@ -87,9 +87,9 @@ namespace vpsim {
         //Communication interface
         tlm_utils::simple_initiator_socket<InitiatorIf> **mInitiatorSocket;
 
-        tlm::tlm_sync_enum nb_transport_bw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t);
+        tlm::tlm_sync_enum nb_transport_bw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t) override;
 
-        void invalidate_direct_mem_ptr(sc_dt::uint64 start, sc_dt::uint64 end);
+        void invalidate_direct_mem_ptr(sc_dt::uint64 start, sc_dt::uint64 end) override;
     };
 
     /* Explanation: Multiprocessor GIC implementations require that CPUs be connected to different CPU interfaces.
@@ -100,13 +100,13 @@ namespace vpsim {
     struct GicCpuExtension : public tlm::tlm_extension<GicCpuExtension> {
         uint32_t cpu_id;
 
-        virtual tlm::tlm_extension_base *clone() const {
+        tlm::tlm_extension_base *clone() const override {
             GicCpuExtension *copy = new GicCpuExtension;
             *copy = *this;
             return copy;
         }
 
-        virtual void copy_from(tlm::tlm_extension_base const &ext) {
+        void copy_from(tlm::tlm_extension_base const &ext) override {
             *this = dynamic_cast<GicCpuExtension const &>(ext);
         }
     };

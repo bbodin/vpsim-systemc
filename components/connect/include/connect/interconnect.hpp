@@ -120,7 +120,7 @@ namespace vpsim {
         //Constructor
         interconnect(const sc_module_name& name, uint32_t nin, uint32_t nout);
 
-        ~interconnect() {
+        ~interconnect() override {
         };
 
         SC_HAS_PROCESS(interconnect);
@@ -164,22 +164,22 @@ namespace vpsim {
         //---------------------------------------------------
         //TLM 2.0 communication interface
         void
-        b_transport(tlm::tlm_generic_payload &trans, sc_time &delay);
+        b_transport(tlm::tlm_generic_payload &trans, sc_time &delay) override;
 
         tlm::tlm_sync_enum
-        nb_transport_fw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t);
+        nb_transport_fw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t) override;
 
         bool
-        get_direct_mem_ptr(tlm::tlm_generic_payload &trans, tlm::tlm_dmi &dmi_data);
+        get_direct_mem_ptr(tlm::tlm_generic_payload &trans, tlm::tlm_dmi &dmi_data) override;
 
         unsigned int
-        transport_dbg(tlm::tlm_generic_payload &trans);
+        transport_dbg(tlm::tlm_generic_payload &trans) override;
 
         tlm::tlm_sync_enum
-        nb_transport_bw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t);
+        nb_transport_bw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase, sc_core::sc_time &t) override;
 
         void
-        invalidate_direct_mem_ptr(sc_dt::uint64 start_range, sc_dt::uint64 end_range);
+        invalidate_direct_mem_ptr(sc_dt::uint64 start_range, sc_dt::uint64 end_range) override;
     };
 }
 
