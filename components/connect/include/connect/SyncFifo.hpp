@@ -147,211 +147,198 @@
 //};
 
 
-template <class T>
+template<class T>
 class C_SyncFifo
-: public sc_fifo_in_if<T>,
-  public sc_fifo_out_if<T>,
-  public sc_prim_channel
-{
+        : public sc_fifo_in_if<T>,
+          public sc_fifo_out_if<T>,
+          public sc_prim_channel {
 public:
-
     // constructors
 
-    explicit C_SyncFifo( int size_ = 16 )
-	: sc_prim_channel( sc_gen_unique_name( "fifo" ) ),
-	  m_data_read_event(
-	      (std::string(SC_KERNEL_EVENT_PREFIX)+"_read_event").c_str()),
-	  m_data_written_event(
-	      (std::string(SC_KERNEL_EVENT_PREFIX)+"_write_event").c_str())
-	{ init( size_ ); }
+    explicit C_SyncFifo(int size_ = 16)
+        : sc_prim_channel(sc_gen_unique_name("fifo")),
+          m_data_read_event(
+              (std::string(SC_KERNEL_EVENT_PREFIX) + "_read_event").c_str()),
+          m_data_written_event(
+              (std::string(SC_KERNEL_EVENT_PREFIX) + "_write_event").c_str()) { init(size_); }
 
-    explicit C_SyncFifo( const char* name_, int size_ = 16 )
-	: sc_prim_channel( name_ ),
-	  m_data_read_event(
-	      (std::string(SC_KERNEL_EVENT_PREFIX)+"_read_event").c_str()),
-	  m_data_written_event(
-	      (std::string(SC_KERNEL_EVENT_PREFIX)+"_write_event").c_str())
-	{ init( size_ ); }
+    explicit C_SyncFifo(const char *name_, int size_ = 16)
+        : sc_prim_channel(name_),
+          m_data_read_event(
+              (std::string(SC_KERNEL_EVENT_PREFIX) + "_read_event").c_str()),
+          m_data_written_event(
+              (std::string(SC_KERNEL_EVENT_PREFIX) + "_write_event").c_str()) { init(size_); }
 
 
     // destructor
 
-    virtual ~C_SyncFifo()
-	{ delete [] m_buf; }
+    virtual ~C_SyncFifo() { delete [] m_buf; }
 
 
     // interface methods
 
-    virtual void register_port( sc_port_base&, const char* );
+    virtual void register_port(sc_port_base &, const char *);
 
 
     // blocking read
-    virtual void read( T& );
+    virtual void read(T &);
+
     virtual T read();
 
     // non-blocking read
-    virtual bool nb_read( T& );
+    virtual bool nb_read(T &);
 
 
     // get the number of available samples
 
-    virtual int num_available() const
-	{ return ( m_num_readable - m_num_read ); }
+    virtual int num_available() const { return (m_num_readable - m_num_read); }
 
 
     // get the data written event
 
-    virtual const sc_event& data_written_event() const
-	{ return m_data_written_event; }
+    virtual const sc_event &data_written_event() const { return m_data_written_event; }
 
 
     // blocking write
-    virtual void write( const T& );
+    virtual void write(const T &);
 
     // non-blocking write
-    virtual bool nb_write( const T& );
+    virtual bool nb_write(const T &);
 
 
     // get the number of free spaces
 
-    virtual int num_free() const
-	{ return ( m_size - m_num_readable - m_num_written ); }
+    virtual int num_free() const { return (m_size - m_num_readable - m_num_written); }
 
 
     // get the data read event
 
-    virtual const sc_event& data_read_event() const
-	{ return m_data_read_event; }
+    virtual const sc_event &data_read_event() const { return m_data_read_event; }
 
 
     // other methods
 
-    operator T ()
-	{ return read(); }
+    operator T() { return read(); }
 
 
-    C_SyncFifo<T>& operator = ( const T& a )
-        { write( a ); return *this; }
+    C_SyncFifo<T> &operator =(const T &a) {
+        write(a);
+        return *this;
+    }
 
 
-    void trace( sc_trace_file* tf ) const;
+    void trace(sc_trace_file *tf) const;
 
 
-    virtual void print( ::std::ostream& = ::std::cout ) const;
-    virtual void dump( ::std::ostream& = ::std::cout ) const;
+    virtual void print(::std::ostream & = ::std::cout) const;
 
-    virtual const char* kind() const
-        { return "C_SyncFifo"; }
+    virtual void dump(::std::ostream & = ::std::cout) const;
+
+    virtual const char *kind() const { return "C_SyncFifo"; }
 
 protected:
-
     virtual void update();
 
     // support methods
 
-    void init( int );
+    void init(int);
 
-    void buf_init( int );
-    bool buf_write( const T& );
-    bool buf_read( T& );
+    void buf_init(int);
+
+    bool buf_write(const T &);
+
+    bool buf_read(T &);
 
 protected:
+    int m_size; // size of the buffer
+    T *m_buf; // the buffer
+    int m_free; // number of free spaces
+    int m_ri; // index of next read
+    int m_wi; // index of next write
 
-    int m_size;			// size of the buffer
-    T*  m_buf;			// the buffer
-    int m_free;			// number of free spaces
-    int m_ri;			// index of next read
-    int m_wi;			// index of next write
+    sc_port_base *m_reader; // used for static design rule checking
+    sc_port_base *m_writer; // used for static design rule checking
 
-    sc_port_base* m_reader;	// used for static design rule checking
-    sc_port_base* m_writer;	// used for static design rule checking
-
-    int m_num_readable;		// #samples readable
-    int m_num_read;		// #samples read during this delta cycle
-    int m_num_written;		// #samples written during this delta cycle
+    int m_num_readable; // #samples readable
+    int m_num_read; // #samples read during this delta cycle
+    int m_num_written; // #samples written during this delta cycle
 
     sc_event m_data_read_event;
     sc_event m_data_written_event;
 
 private:
-
     // disabled
-    C_SyncFifo( const C_SyncFifo<T>& );
-    C_SyncFifo& operator = ( const C_SyncFifo<T>& );
+    C_SyncFifo(const C_SyncFifo<T> &);
+
+    C_SyncFifo &operator =(const C_SyncFifo<T> &);
 };
 
 
 // IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::register_port( sc_port_base& port_,
-			    const char* if_typename_ )
-{
-    std::string nm( if_typename_ );
-    if( nm == typeid( sc_fifo_in_if<T> ).name() ||
-        nm == typeid( sc_fifo_blocking_in_if<T> ).name()
+C_SyncFifo<T>::register_port(sc_port_base &port_,
+                             const char *if_typename_) {
+    std::string nm(if_typename_);
+    if (nm == typeid(sc_fifo_in_if<T>).name() ||
+        nm == typeid(sc_fifo_blocking_in_if<T>).name()
     ) {
-	// only one reader can be connected
-	if( m_reader != 0 ) {
-	    SC_REPORT_ERROR( SC_ID_MORE_THAN_ONE_FIFO_READER_, 0 );
-	}
-	m_reader = &port_;
-    } else if( nm == typeid( sc_fifo_out_if<T> ).name() ||
-               nm == typeid( sc_fifo_blocking_out_if<T> ).name()
+        // only one reader can be connected
+        if (m_reader != 0) {
+            SC_REPORT_ERROR(SC_ID_MORE_THAN_ONE_FIFO_READER_, 0);
+        }
+        m_reader = &port_;
+    } else if (nm == typeid(sc_fifo_out_if<T>).name() ||
+               nm == typeid(sc_fifo_blocking_out_if<T>).name()
     ) {
-	// only one writer can be connected
-	if( m_writer != 0 ) {
-	    SC_REPORT_ERROR( SC_ID_MORE_THAN_ONE_FIFO_WRITER_, 0 );
-	}
-	m_writer = &port_;
-    }
-    else
-    {
-        SC_REPORT_ERROR( SC_ID_BIND_IF_TO_PORT_,
-	                 "C_SyncFifo<T> port not recognized" );
+        // only one writer can be connected
+        if (m_writer != 0) {
+            SC_REPORT_ERROR(SC_ID_MORE_THAN_ONE_FIFO_WRITER_, 0);
+        }
+        m_writer = &port_;
+    } else {
+        SC_REPORT_ERROR(SC_ID_BIND_IF_TO_PORT_,
+                        "C_SyncFifo<T> port not recognized");
     }
 }
 
 
 // blocking read
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::read( T& val_ )
-{
-    while( num_available() == 0 ) {
-	sc_core::wait( m_data_written_event );
+C_SyncFifo<T>::read(T &val_) {
+    while (num_available() == 0) {
+        sc_core::wait(m_data_written_event);
     }
-    m_num_read ++;
-    buf_read( val_ );
+    m_num_read++;
+    buf_read(val_);
     request_update();
 }
 
-template <class T>
+template<class T>
 inline
 T
-C_SyncFifo<T>::read()
-{
+C_SyncFifo<T>::read() {
     T tmp;
-    read( tmp );
+    read(tmp);
     return tmp;
 }
 
 // non-blocking read
 
-template <class T>
+template<class T>
 inline
 bool
-C_SyncFifo<T>::nb_read( T& val_ )
-{
-    if( num_available() == 0 ) {
-	return false;
+C_SyncFifo<T>::nb_read(T &val_) {
+    if (num_available() == 0) {
+        return false;
     }
-    m_num_read ++;
-    buf_read( val_ );
+    m_num_read++;
+    buf_read(val_);
     request_update();
     return true;
 }
@@ -359,101 +346,95 @@ C_SyncFifo<T>::nb_read( T& val_ )
 
 // blocking write
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::write( const T& val_ )
-{
-    while( num_free() == 0 ) {
-	sc_core::wait( m_data_read_event );
+C_SyncFifo<T>::write(const T &val_) {
+    while (num_free() == 0) {
+        sc_core::wait(m_data_read_event);
     }
-    m_num_written ++;
-    buf_write( val_ );
+    m_num_written++;
+    buf_write(val_);
     request_update();
 }
 
 // non-blocking write
 
-template <class T>
+template<class T>
 inline
 bool
-C_SyncFifo<T>::nb_write( const T& val_ )
-{
-    if( num_free() == 0 ) {
-	return false;
+C_SyncFifo<T>::nb_write(const T &val_) {
+    if (num_free() == 0) {
+        return false;
     }
-    m_num_written ++;
-    buf_write( val_ );
+    m_num_written++;
+    buf_write(val_);
     request_update();
     return true;
 }
 
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::trace( sc_trace_file* tf ) const
-{
+C_SyncFifo<T>::trace(sc_trace_file *tf) const {
 #if defined(DEBUG_SYSTEMC)
     char buf[32];
     std::string nm = name();
-    for( int i = 0; i < m_size; ++ i ) {
-	std::sprintf( buf, "_%d", i );
-	sc_trace( tf, m_buf[i], nm + buf );
+    for (int i = 0; i < m_size; ++i) {
+        std::sprintf(buf, "_%d", i);
+        sc_trace(tf, m_buf[i], nm + buf);
     }
 #endif
 }
 
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::print( ::std::ostream& os ) const
-{
-    if( m_free != m_size ) {
+C_SyncFifo<T>::print(::std::ostream &os) const {
+    if (m_free != m_size) {
         int i = m_ri;
         do {
             os << m_buf[i] << ::std::endl;
-            i = ( i + 1 ) % m_size;
-        } while( i != m_wi );
+            i = (i + 1) % m_size;
+        } while (i != m_wi);
     }
 }
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::dump( ::std::ostream& os ) const
-{
+C_SyncFifo<T>::dump(::std::ostream &os) const {
     os << "name = " << name() << ::std::endl;
-    if( m_free != m_size ) {
+    if (m_free != m_size) {
         int i = m_ri;
         int j = 0;
         do {
-	    os << "value[" << i << "] = " << m_buf[i] << ::std::endl;
-	    i = ( i + 1 ) % m_size;
-	    j ++;
-        } while( i != m_wi );
+            os << "value[" << i << "] = " << m_buf[i] << ::std::endl;
+            i = (i + 1) % m_size;
+            j++;
+        } while (i != m_wi);
     }
 }
 
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::update()
-{
-    if( m_num_read > 0 ) {
-	m_data_read_event.notify(SC_ZERO_TIME);
+C_SyncFifo<T>::update() {
+    if (m_num_read > 0) {
+        m_data_read_event.notify(SC_ZERO_TIME);
     }
 
-    if( m_num_written > 0 ) {
-	m_data_written_event.notify(SC_ZERO_TIME);
+    if (m_num_written > 0) {
+        m_data_written_event.notify(SC_ZERO_TIME);
     }
 
-//    cout<<"begin fifo update num_readable"<<m_num_readable<<endl;
+    //    cout<<"begin fifo update num_readable"<<m_num_readable<<endl;
 
     m_num_readable = m_size - m_free;
-//    cout<<"end fifo update num_readable"<<m_num_readable<<endl;
+    //    cout<<"end fifo update num_readable"<<m_num_readable<<endl;
     m_num_read = 0;
     m_num_written = 0;
 }
@@ -461,12 +442,11 @@ C_SyncFifo<T>::update()
 
 // support methods
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::init( int size_ )
-{
-    buf_init( size_ );
+C_SyncFifo<T>::init(int size_) {
+    buf_init(size_);
 
     m_reader = 0;
     m_writer = 0;
@@ -477,13 +457,12 @@ C_SyncFifo<T>::init( int size_ )
 }
 
 
-template <class T>
+template<class T>
 inline
 void
-C_SyncFifo<T>::buf_init( int size_ )
-{
-    if( size_ <= 0 ) {
-	SC_REPORT_ERROR( SC_ID_INVALID_FIFO_SIZE_, 0 );
+C_SyncFifo<T>::buf_init(int size_) {
+    if (size_ <= 0) {
+        SC_REPORT_ERROR(SC_ID_INVALID_FIFO_SIZE_, 0);
     }
     m_size = size_;
     m_buf = new T[m_size];
@@ -492,47 +471,43 @@ C_SyncFifo<T>::buf_init( int size_ )
     m_wi = 0;
 }
 
-template <class T>
+template<class T>
 inline
 bool
-C_SyncFifo<T>::buf_write( const T& val_ )
-{
-    if( m_free == 0 ) {
-	return false;
+C_SyncFifo<T>::buf_write(const T &val_) {
+    if (m_free == 0) {
+        return false;
     }
     m_buf[m_wi] = val_;
-    m_wi = ( m_wi + 1 ) % m_size;
-    m_free --;
+    m_wi = (m_wi + 1) % m_size;
+    m_free--;
     return true;
 }
 
-template <class T>
+template<class T>
 inline
 bool
-C_SyncFifo<T>::buf_read( T& val_ )
-{
-    if( m_free == m_size ) {
-	return false;
+C_SyncFifo<T>::buf_read(T &val_) {
+    if (m_free == m_size) {
+        return false;
     }
     val_ = m_buf[m_ri];
     m_buf[m_ri] = T(); // clear entry for boost::shared_ptr, et al.
-    m_ri = ( m_ri + 1 ) % m_size;
-    m_free ++;
+    m_ri = (m_ri + 1) % m_size;
+    m_free++;
     return true;
 }
 
 
 // ----------------------------------------------------------------------------
 
-template <class T>
+template<class T>
 inline
-::std::ostream&
-operator << ( ::std::ostream& os, const C_SyncFifo<T>& a )
-{
-    a.print( os );
+::std::ostream &
+operator <<(::std::ostream &os, const C_SyncFifo<T> &a) {
+    a.print(os);
     return os;
 }
-
 
 
 #endif //SYNCFIFO_HPP

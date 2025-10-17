@@ -18,13 +18,12 @@
 #define _CHECKPOINTMANAGER_HPP_
 
 namespace vpsim {
+    class VolatileCheckpointManager {
+    public:
+        VolatileCheckpointManager();
 
-class VolatileCheckpointManager {
-public:
-	VolatileCheckpointManager();
-	virtual ~VolatileCheckpointManager();
-};
-
+        virtual ~VolatileCheckpointManager();
+    };
 } /* namespace vpsim */
 
 #endif /* _CHECKPOINTMANAGER_HPP_ */

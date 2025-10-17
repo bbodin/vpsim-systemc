@@ -17,47 +17,45 @@
 #include "LatencyIf.hpp"
 
 namespace vpsim {
+    LatencyIf::LatencyIf() : mEnableLatency(false),
+                             mCyclesPerRead(0),
+                             mCyclesPerWrite(0),
+                             mInitialCyclesPerAccess(0),
+                             mCycleDuration(sc_time(1, SC_NS)) {
+    }
 
-LatencyIf::LatencyIf() :
-	mEnableLatency(false),
-	mCyclesPerRead(0),
-	mCyclesPerWrite(0),
-	mInitialCyclesPerAccess(0),
-	mCycleDuration(sc_time(1, SC_NS))
-{
-}
-
-LatencyIf::~LatencyIf () { }
+    LatencyIf::~LatencyIf() {
+    }
 
 
-void LatencyIf::setCyclesPerRead(int CyclesPerRead) { mCyclesPerRead = CyclesPerRead; }
+    void LatencyIf::setCyclesPerRead(int CyclesPerRead) { mCyclesPerRead = CyclesPerRead; }
 
-void LatencyIf::setCyclesPerWrite(int CyclesPerWrite) { mCyclesPerWrite = CyclesPerWrite; }
+    void LatencyIf::setCyclesPerWrite(int CyclesPerWrite) { mCyclesPerWrite = CyclesPerWrite; }
 
-void LatencyIf::setInitialCyclesPerAccess(int InititalCyclesPerAccess) { mInitialCyclesPerAccess = InititalCyclesPerAccess; }
+    void LatencyIf::setInitialCyclesPerAccess(int InititalCyclesPerAccess) {
+        mInitialCyclesPerAccess = InititalCyclesPerAccess;
+    }
 
-void LatencyIf::setCycleDuration(sc_time CycleDuration) { mCycleDuration = CycleDuration; }
+    void LatencyIf::setCycleDuration(sc_time CycleDuration) { mCycleDuration = CycleDuration; }
 
-void LatencyIf::setEnableLatency(bool EnableLatency) { mEnableLatency = EnableLatency; }
+    void LatencyIf::setEnableLatency(bool EnableLatency) { mEnableLatency = EnableLatency; }
 
 
+    int LatencyIf::getCyclesPerRead() { return (mCyclesPerRead); }
 
-int LatencyIf::getCyclesPerRead() { return (mCyclesPerRead); }
+    int LatencyIf::getCyclesPerWrite() { return (mCyclesPerWrite); }
 
-int	LatencyIf::getCyclesPerWrite() { return (mCyclesPerWrite); }
+    int LatencyIf::getInitialCyclesPerAccess() { return (mInitialCyclesPerAccess); }
 
-int LatencyIf::getInitialCyclesPerAccess() { return (mInitialCyclesPerAccess); }
+    sc_time LatencyIf::getReadWordLatency() {
+        return (((mInitialCyclesPerAccess + mCyclesPerRead) * (1 /*DefaultLen/WordBytes*/)) * mCycleDuration);
+    }
 
-sc_time LatencyIf::getReadWordLatency() {
-    return (((mInitialCyclesPerAccess + mCyclesPerRead) * (1 /*DefaultLen/WordBytes*/)) * mCycleDuration);
-}
+    sc_time LatencyIf::getWriteWordLatency() {
+        return (((mInitialCyclesPerAccess + mCyclesPerWrite) * (1 /*DefaultLen/WordBytes*/)) * mCycleDuration);
+    }
 
-sc_time LatencyIf::getWriteWordLatency() {
-    return (((mInitialCyclesPerAccess + mCyclesPerWrite) * (1 /*DefaultLen/WordBytes*/)) * mCycleDuration);
-}
+    sc_time LatencyIf::getCycleDuration() { return (mCycleDuration); }
 
-sc_time LatencyIf::getCycleDuration() { return (mCycleDuration); }
-
-bool LatencyIf::getEnableLatency() { return (mEnableLatency); }
-
+    bool LatencyIf::getEnableLatency() { return (mEnableLatency); }
 }

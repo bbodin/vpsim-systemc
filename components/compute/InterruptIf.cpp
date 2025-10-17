@@ -17,14 +17,11 @@
 #include "InterruptIf.hpp"
 
 namespace vpsim {
+    InterruptIf::InterruptIf() {
+        // TODO Auto-generated constructor stub
+    }
 
-InterruptIf::InterruptIf() {
-	// TODO Auto-generated constructor stub
-
-}
-
-InterruptIf::~InterruptIf() {
-	// TODO Auto-generated destructor stub
-}
-
+    InterruptIf::~InterruptIf() {
+        // TODO Auto-generated destructor stub
+    }
 } /* namespace vpsim */

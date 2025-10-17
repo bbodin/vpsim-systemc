@@ -21,137 +21,123 @@
 #include "logger.hpp"
 #include "logResources.hpp"
 
-namespace vpsim{
+namespace vpsim {
+    LoggerCore &LoggerCore::get() {
+        //Instance of the LoggerCore
+        static std::unique_ptr<LoggerCore> instance(new LoggerCore());
 
-LoggerCore& LoggerCore::get()
-{
-  //Instance of the LoggerCore
-  static std::unique_ptr<LoggerCore> instance(new LoggerCore());
-
-  return *instance;
-}
-
-LoggerCore::LoggerCore():
-  mLoggerScheduler("loggerScheduler"),
-  mLoggingEnabled(false),
-  mLoggingImpossible(false),
-  mGlobalDebugLvl(dbg0)
-{}
-
-void LoggerCore::registerLogger(Logger& logger)
-{
-  std::string name(logger.name());
-  //fails if this logger has the same name than another one already registered
-  bool fail = !mLoggers.insert({name, logger}).second;
-
-  if(fail){
-    std::cerr << "[ERROR] Two loggers have the same name: " << name << std::endl
-              << "[ERROR] disabling logging." << std::endl;
-
-    //The following policy might be a bit harsh and is not reversible (on purpose)
-    //This causes additional undesirable side effects which could break the tests
-
-    //mLoggingImpossible = true;
-
-    enableLogging(false);
-
-  } else {
-    //Don't forget to set the "enabled" flag of this new logger
-    //(which is false by default)
-    logger.mEnabled = loggingEnabled();
-    //And the level of debug to the global setting
-    logger.mDebugLvl = mGlobalDebugLvl;
-  }
-}
-
-void LoggerCore::unregisterLogger(const Logger& logger)
-{
-  if(isRegistered(logger)){
-    mLoggers.erase(logger.name());
-  }
-}
-
-bool LoggerCore::isRegistered(const Logger& logger) const
-{
-  //Understand "for each pair in the map, take the Logger ref and compare
-  //the address of the pointed element with the address of the argument"
-  for(auto& pair: mLoggers){
-    if(&pair.second == &logger){
-      return true;
+        return *instance;
     }
-  }
-  return false;
-}
 
-void LoggerCore::enableLogging(const bool enable)
-{
-  if(enable && mLoggingImpossible){
-    std::cerr << "[WARNING] It turns out that logging is impossible for this run." << std::endl
-              << "Logging is disabled" << std::endl
-              << "Look for the reason in the previous error outputs." << std::endl;
-    mLoggingEnabled = false;
-  } else {
-    mLoggingEnabled = enable;
-  }
+    LoggerCore::LoggerCore() : mLoggerScheduler("loggerScheduler"),
+                               mLoggingEnabled(false),
+                               mLoggingImpossible(false),
+                               mGlobalDebugLvl(dbg0) {
+    }
 
-  for(auto& p : mLoggers){
-    p.second.mEnabled = loggingEnabled();
-  }
-}
+    void LoggerCore::registerLogger(Logger &logger) {
+        std::string name(logger.name());
+        //fails if this logger has the same name than another one already registered
+        bool fail = !mLoggers.insert({name, logger}).second;
 
-bool LoggerCore::loggingEnabled() const
-{
-  return mLoggingEnabled && !mLoggingImpossible;
-}
+        if (fail) {
+            std::cerr << "[ERROR] Two loggers have the same name: " << name << std::endl
+                    << "[ERROR] disabling logging." << std::endl;
 
-void LoggerCore::addAppointment(std::string logger,
-                                sc_core::sc_time date,
-                                DebugLvl debugLvl)
-{
-  bool exists = mLoggers.count(logger) == 1;
-  if(!exists){
-    std::cerr << "[WARNING] The logger " << logger << " does not exist." << std::endl;
-  } else {
-    mLoggerScheduler.addAppointment(Appointment(mLoggers.at(logger), date, debugLvl));
-  }
-}
+            //The following policy might be a bit harsh and is not reversible (on purpose)
+            //This causes additional undesirable side effects which could break the tests
 
-void LoggerCore::addAppointment(const Logger& logger,
-                                sc_core::sc_time date,
-                                DebugLvl debugLvl)
-{
-  if(isRegistered(logger)){
-    addAppointment(logger.name(), date, debugLvl);
-  }
-}
+            //mLoggingImpossible = true;
 
-void LoggerCore::setDebugLvl(std::string logger, DebugLvl debugLvl)
-{
-  bool exists = mLoggers.count(logger) == 1;
-  if(!exists){
-    std::cerr << "[WARNING] The logger " << logger << " does not exist." << std::endl;
-  } else {
-    mLoggers.at(logger).mDebugLvl = debugLvl;
-  }
-}
+            enableLogging(false);
+        } else {
+            //Don't forget to set the "enabled" flag of this new logger
+            //(which is false by default)
+            logger.mEnabled = loggingEnabled();
+            //And the level of debug to the global setting
+            logger.mDebugLvl = mGlobalDebugLvl;
+        }
+    }
 
-void LoggerCore::setDebugLvl(Logger& logger, DebugLvl debugLvl)
-{
-  if(isRegistered(logger)){
-    setDebugLvl(logger.name(), debugLvl);
-  }
-}
+    void LoggerCore::unregisterLogger(const Logger &logger) {
+        if (isRegistered(logger)) {
+            mLoggers.erase(logger.name());
+        }
+    }
 
-void vpsim::LoggerCore::setDebugLvl(DebugLvl debugLvl) {
-	mGlobalDebugLvl = debugLvl;
+    bool LoggerCore::isRegistered(const Logger &logger) const {
+        //Understand "for each pair in the map, take the Logger ref and compare
+        //the address of the pointed element with the address of the argument"
+        for (auto &pair: mLoggers) {
+            if (&pair.second == &logger) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	for(auto logger: mLoggers){
-		setDebugLvl(logger.second, debugLvl);
-	}
-}
+    void LoggerCore::enableLogging(const bool enable) {
+        if (enable && mLoggingImpossible) {
+            std::cerr << "[WARNING] It turns out that logging is impossible for this run." << std::endl
+                    << "Logging is disabled" << std::endl
+                    << "Look for the reason in the previous error outputs." << std::endl;
+            mLoggingEnabled = false;
+        } else {
+            mLoggingEnabled = enable;
+        }
 
-void LoggerCore::printSchedule() const
-{
-    std::cout << mLoggerScheduler;
-}
+        for (auto &p: mLoggers) {
+            p.second.mEnabled = loggingEnabled();
+        }
+    }
+
+    bool LoggerCore::loggingEnabled() const {
+        return mLoggingEnabled && !mLoggingImpossible;
+    }
+
+    void LoggerCore::addAppointment(std::string logger,
+                                    sc_core::sc_time date,
+                                    DebugLvl debugLvl) {
+        bool exists = mLoggers.count(logger) == 1;
+        if (!exists) {
+            std::cerr << "[WARNING] The logger " << logger << " does not exist." << std::endl;
+        } else {
+            mLoggerScheduler.addAppointment(Appointment(mLoggers.at(logger), date, debugLvl));
+        }
+    }
+
+    void LoggerCore::addAppointment(const Logger &logger,
+                                    sc_core::sc_time date,
+                                    DebugLvl debugLvl) {
+        if (isRegistered(logger)) {
+            addAppointment(logger.name(), date, debugLvl);
+        }
+    }
+
+    void LoggerCore::setDebugLvl(std::string logger, DebugLvl debugLvl) {
+        bool exists = mLoggers.count(logger) == 1;
+        if (!exists) {
+            std::cerr << "[WARNING] The logger " << logger << " does not exist." << std::endl;
+        } else {
+            mLoggers.at(logger).mDebugLvl = debugLvl;
+        }
+    }
+
+    void LoggerCore::setDebugLvl(Logger &logger, DebugLvl debugLvl) {
+        if (isRegistered(logger)) {
+            setDebugLvl(logger.name(), debugLvl);
+        }
+    }
+
+    void vpsim::LoggerCore::setDebugLvl(DebugLvl debugLvl) {
+        mGlobalDebugLvl = debugLvl;
+
+        for (auto logger: mLoggers) {
+            setDebugLvl(logger.second, debugLvl);
+        }
+    }
+
+    void LoggerCore::printSchedule() const {
+        std::cout << mLoggerScheduler;
+    }
 }

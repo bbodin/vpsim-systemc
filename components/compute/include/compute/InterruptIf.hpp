@@ -18,19 +18,19 @@
 #define _INTERRUPTIF_HPP_
 
 #include <stdint.h>
+
 namespace vpsim {
+    class InterruptIf {
+    public:
+        InterruptIf();
 
-class InterruptIf {
-public:
-	InterruptIf();
-	virtual ~InterruptIf();
+        virtual ~InterruptIf();
 
-	//! update_irq must be implemented by modules that support interruptions
+        //! update_irq must be implemented by modules that support interruptions
 	//! the interface is used to assert that objects pointers
 	//! passed to an interrupt controller support said function
-	virtual void update_irq( uint64_t val, uint32_t irq_idx )=0;
-};
-
+        virtual void update_irq(uint64_t val, uint32_t irq_idx) =0;
+    };
 } /* namespace vpsim */
 
 #endif /* _INTERRUPTIF_HPP_ */

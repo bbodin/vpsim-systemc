@@ -37,23 +37,22 @@ using namespace moodycamel;
 using namespace tlm;
 
 namespace vpsim {
+    enum OuterStat {
+        L1_MISS = 0,
+        L2_MISS,
+        L1_WB,
+        L2_WB,
+        L1_LD,
+        L1_ST,
+        L2_LD,
+        L2_ST
+    };
 
-enum OuterStat {
-	L1_MISS=0,
-	L2_MISS,
-	L1_WB,
-	L2_WB,
-	L1_LD,
-	L1_ST,
-	L2_LD,
-	L2_ST
-};
-
-enum NotifyType {
-	CPU=0,
-	DEVICE,
-	SESAMCOMMAND
-};
+    enum NotifyType {
+        CPU = 0,
+        DEVICE,
+        SESAMCOMMAND
+    };
 
 #define MAX_CPUS 256
 #define MAX_QUANTUM 0xFFFF
@@ -61,343 +60,370 @@ enum NotifyType {
 #define EPOCHS 2 // for the priority_queue to be used correctly, EPOCHS must be higher than 1
 
 
-class MainMemCosim {
-public:	static struct Req {
-		NotifyType type;
-		void* phys;
-		unsigned int size;// This is how it is defined in SystemC
-		uint32_t id;
-		uint64_t time_stamp;
-		uint8_t write;
-		uint64_t tag;
-		uint64_t epoch;
-		uint8_t fetch;
-	} _Buffer;
-	MainMemCosim(){
-		Add(this);
-	}
+    class MainMemCosim {
+    public:
+        static struct Req {
+            NotifyType type;
+            void *phys;
+            unsigned int size; // This is how it is defined in SystemC
+            uint32_t id;
+            uint64_t time_stamp;
+            uint8_t write;
+            uint64_t tag;
+            uint64_t epoch;
+            uint8_t fetch;
+        } _Buffer;
 
-	virtual ~MainMemCosim() {}
+        MainMemCosim() {
+            Add(this);
+        }
 
-	typedef void (*notifyFunctionType)(uint32_t cpu, uint64_t exec, uint8_t write, void* phys, unsigned int size);
-	static notifyFunctionType Notify;
-	static void haltNotify(uint32_t cpu, uint64_t exec, uint8_t write, void* phys, unsigned int size) {_current_time_stamp=exec+_epoch_sc_time;}
+        virtual ~MainMemCosim() {
+        }
 
-	typedef void (*notifyFetchMissFunctionType)(uint32_t cpu, void* phys, unsigned int size);
-	static notifyFetchMissFunctionType NotifyFetchMiss;
-	static void haltNotifyFetchMiss(uint32_t cpu, void* phys, unsigned int size) {}
+        typedef void (*notifyFunctionType)(uint32_t cpu, uint64_t exec, uint8_t write, void *phys, unsigned int size);
 
-	typedef void (*notifyIOFunctionType)(uint32_t device, uint64_t exec, uint8_t write, void* phys, uint64_t virt, unsigned int size, uint64_t tag);
-	static notifyIOFunctionType NotifyIO;
-	static void haltNotifyIO(uint32_t device, uint64_t exec, uint8_t write, void* phys, uint64_t virt, unsigned int size, uint64_t tag) {}
+        static notifyFunctionType Notify;
 
-	typedef void (*model_provider_main_mem_cb)(void* opaque, uint64_t exec, uint8_t write, void* phys, uint64_t virt, unsigned int size);
-	typedef void (*registerMainMemCb)(model_provider_main_mem_cb, uint64_t);
-	typedef void (*unRegisterMainMemCb)(void);
+        static void haltNotify(uint32_t cpu, uint64_t exec, uint8_t write, void *phys, unsigned int size) {
+            _current_time_stamp = exec + _epoch_sc_time;
+        }
 
-	static void NotifySesamCommand(uint64_t counter, bool start) {
-		_Buffer.type=SESAMCOMMAND;
-		_Buffer.tag=counter;
-		_Buffer.write=start; // Reuse of write to indicate a start or finish command 
- 		_Buffer.epoch=_CpuEpoch;
-		if(start) {
-			if(_focusOnROI){
-				Notify=proceedNotify;
-				NotifyIO=proceedNotifyIO;
-				NotifyFetchMiss=proceedNotifyFetchMiss;
-				for (size_t i = 0; i < _MainMemCb.size(); i++)	get<0>(_MainMemCb[i])(get<1>(_MainMemCb[i]),get<2>(_MainMemCb[i]));
-			}
-			_Buffer.time_stamp=_epoch_sc_time - 1;
-		}	
-		else {
-			if(_focusOnROI){
-				for (size_t i = 0; i < _MainMemCb.size(); i++)	get<3>(_MainMemCb[i])();
-				Notify=haltNotify;
-				NotifyIO=haltNotifyIO;
-				NotifyFetchMiss=haltNotifyFetchMiss;
-			}
-			_Buffer.time_stamp=_epoch_sc_time + MAX_QUANTUM + 1;
-		}	
-		_PQ.push(_Buffer);
- 	}
+        typedef void (*notifyFetchMissFunctionType)(uint32_t cpu, void *phys, unsigned int size);
 
-	static void FillBiases(uint64_t* ts, uint32_t n, double conversion_factor = 1.0) {
-		for (uint32_t i = 0; i < n; i++)
-			ts[i]=0;
-		_CpuEpoch++;
-		if(Notify!=haltNotify){
-			while(_MemEpoch + EPOCHS <= _CpuEpoch) usleep(1); // stops the iss from running more than EPOCH epochs ahead
-			_Mut[_CpuEpoch%EPOCHS].lock();
-			for (MainMemCosim* cosim: _Simulators) {
-				cosim->fillBiases(ts, n, conversion_factor, _CpuEpoch);
-			}
-			_Mut[_CpuEpoch%EPOCHS].unlock();
-		}
-		_epoch_sc_time=(sc_time_stamp().to_seconds())*1000000000;
-	}
+        static notifyFetchMissFunctionType NotifyFetchMiss;
 
-	static uint64_t GetStat(uint32_t cpu, OuterStat st) {
-		if (_Stats[cpu].find(st) != _Stats[cpu].end()) {
-			return * _Stats[cpu][st];
-		}
-		return 0;
-	}
+        static void haltNotifyFetchMiss(uint32_t cpu, void *phys, unsigned int size) {
+        }
 
-	static void RegStat(uint32_t cpu, OuterStat st, uint64_t* ptr) {
-		_Stats[cpu][st]=ptr;
-	}
+        typedef void (*notifyIOFunctionType)(uint32_t device, uint64_t exec, uint8_t write, void *phys, uint64_t virt,
+                                             unsigned int size, uint64_t tag);
 
-	static void Stop() {
-		if (!_Stopped) {
-			_Stopped=true;
-			void* dt;
-			pthread_join(_T,&dt);
-		}
-	}
-	void setIOAccessPtr(IOAccessCosim* ptr){
-		_IOAccessPtr = ptr;
-	}
+        static notifyIOFunctionType NotifyIO;
 
-	void setMonitorPtr(SesamController* ptr){
-		_Monitor = ptr;
- 	}
+        static void haltNotifyIO(uint32_t device, uint64_t exec, uint8_t write, void *phys, uint64_t virt,
+                                 unsigned int size, uint64_t tag) {
+        }
 
-	void setFocusOnROI(bool focusOnROI){
-		_focusOnROI = focusOnROI;
-		if(_focusOnROI){
-				Notify=haltNotify;
-				NotifyIO=haltNotifyIO;
-				NotifyFetchMiss=haltNotifyFetchMiss;
-		}
-		else {
-				Notify=proceedNotify;
-				NotifyIO=proceedNotifyIO;
-				NotifyFetchMiss=proceedNotifyFetchMiss;
-		}
- 	}
+        typedef void (*model_provider_main_mem_cb)(void *opaque, uint64_t exec, uint8_t write, void *phys,
+                                                   uint64_t virt, unsigned int size);
 
-	static void addRegisterMainMemCb(registerMainMemCb ptrRegisterMainMemCb, model_provider_main_mem_cb ptrModelProviderMainMemCb, uint64_t quantum, unRegisterMainMemCb ptrUnRegisterMainMemCb){
-		_MainMemCb.push_back(make_tuple(ptrRegisterMainMemCb,ptrModelProviderMainMemCb,quantum,ptrUnRegisterMainMemCb));
-	}
+        typedef void (*registerMainMemCb)(model_provider_main_mem_cb, uint64_t);
 
-	sc_time getCurrentTime(){
-		if(_focusOnROI)	return sc_time_stamp();
-		return sc_time((double)_current_time_stamp,SC_NS);
- 	}
+        typedef void (*unRegisterMainMemCb)(void);
 
-	virtual void insert(uint32_t cpu, uint8_t write, uint8_t fetch, void* phys, unsigned int size, uint64_t epoch, uint64_t time_stamp)=0;
-	virtual void fillBiases(uint64_t* ts, uint32_t n, double conversion_factor, uint64_t epoch)=0;
+        static void NotifySesamCommand(uint64_t counter, bool start) {
+            _Buffer.type = SESAMCOMMAND;
+            _Buffer.tag = counter;
+            _Buffer.write = start; // Reuse of write to indicate a start or finish command 
+            _Buffer.epoch = _CpuEpoch;
+            if (start) {
+                if (_focusOnROI) {
+                    Notify = proceedNotify;
+                    NotifyIO = proceedNotifyIO;
+                    NotifyFetchMiss = proceedNotifyFetchMiss;
+                    for (size_t i = 0; i < _MainMemCb.size(); i++) get < 0 > (_MainMemCb[i])(
+                                                                       get < 1 > (_MainMemCb[i]),
+                                                                       get < 2 > (_MainMemCb[i]));
+                }
+                _Buffer.time_stamp = _epoch_sc_time - 1;
+            } else {
+                if (_focusOnROI) {
+                    for (size_t i = 0; i < _MainMemCb.size(); i++) get < 3 > (_MainMemCb[i])();
+                    Notify = haltNotify;
+                    NotifyIO = haltNotifyIO;
+                    NotifyFetchMiss = haltNotifyFetchMiss;
+                }
+                _Buffer.time_stamp = _epoch_sc_time + MAX_QUANTUM + 1;
+            }
+            _PQ.push(_Buffer);
+        }
 
-private:
+        static void FillBiases(uint64_t *ts, uint32_t n, double conversion_factor = 1.0) {
+            for (uint32_t i = 0; i < n; i++)
+                ts[i] = 0;
+            _CpuEpoch++;
+            if (Notify != haltNotify) {
+                while (_MemEpoch + EPOCHS <= _CpuEpoch) usleep(1);
+                // stops the iss from running more than EPOCH epochs ahead
+                _Mut[_CpuEpoch % EPOCHS].lock();
+                for (MainMemCosim *cosim: _Simulators) {
+                    cosim->fillBiases(ts, n, conversion_factor, _CpuEpoch);
+                }
+                _Mut[_CpuEpoch % EPOCHS].unlock();
+            }
+            _epoch_sc_time = (sc_time_stamp().to_seconds()) * 1000000000;
+        }
 
-	static void proceedNotify(uint32_t cpu, uint64_t exec, uint8_t write, void* phys, unsigned int size) {
-        _current_time_stamp=exec+_epoch_sc_time;
-		_Buffer.type=CPU;
-		_Buffer.id=cpu;
-		_Buffer.write=write;
-		_Buffer.phys=phys;
-		_Buffer.size=size;
-		_Buffer.fetch=0;
-		_Buffer.epoch=_CpuEpoch;
-		_Buffer.time_stamp=_current_time_stamp;
-		_PQ.push(_Buffer);
-	}
+        static uint64_t GetStat(uint32_t cpu, OuterStat st) {
+            if (_Stats[cpu].find(st) != _Stats[cpu].end()) {
+                return *_Stats[cpu][st];
+            }
+            return 0;
+        }
 
-	static void proceedNotifyFetchMiss(uint32_t cpu, void* phys, unsigned int size) {
-		_Buffer.type=CPU;
-		_Buffer.id=cpu;
-		_Buffer.write=0;
-		_Buffer.fetch=1;
-		_Buffer.phys=phys;
-		_Buffer.size=size;
-		_Buffer.epoch=_CpuEpoch;
-		_Buffer.time_stamp=_current_time_stamp;
-		_PQ.push(_Buffer);
-	}
+        static void RegStat(uint32_t cpu, OuterStat st, uint64_t *ptr) {
+            _Stats[cpu][st] = ptr;
+        }
 
-	static void proceedNotifyIO(uint32_t device, uint64_t exec, uint8_t write, void* phys, uint64_t virt, unsigned int size, uint64_t tag) {
-		_Buffer.type=DEVICE;
-		_Buffer.id=device;
-		_Buffer.write=write;
-		_Buffer.phys=phys;
-		_Buffer.size=size;
-		_Buffer.epoch=_CpuEpoch;
-		_Buffer.time_stamp=exec + _epoch_sc_time;
-		_Buffer.tag = tag;
-		_PQ.push(_Buffer);
-	}
+        static void Stop() {
+            if (!_Stopped) {
+                _Stopped = true;
+                void *dt;
+                pthread_join(_T, &dt);
+            }
+        }
 
-	static void Add(MainMemCosim* simulator) {
-		if(!_Inited) {
-			Init();
-		}
-		_Simulators.push_back(simulator);
-		cout.clear(); cout<<"Simulator added !"<<endl;
-	}
+        void setIOAccessPtr(IOAccessCosim *ptr) {
+            _IOAccessPtr = ptr;
+        }
 
-	static void Init() {
-		if (_Inited)
-			throw runtime_error("MainMemCosim initialized twice !");
-		_Inited=true;
-		pthread_create(&_T,NULL,&MainMemCosim::Run,NULL);
-	}
+        void setMonitorPtr(SesamController *ptr) {
+            _Monitor = ptr;
+        }
 
-	static void* Run(void* unused) {
-		Req k;
-		vector<string> strParam;
-		bool exitLoop=false;
-		uint64_t tmpMemEpoch;
-		while(1){
-			if(_Stopped) break;
-			tmpMemEpoch = _MemEpoch;
-			while(tmpMemEpoch >= _CpuEpoch){ // Requests ordering needs the iss to run at least one epoch ahead
-				usleep(1);
-				if(_Stopped) break;
-			}
-			if (_PQ.try_pop(k)) {
-				if(tmpMemEpoch != k.epoch){
-					_PQ.push(k);// put the element back
-					_MemEpoch=k.epoch;
-					continue;   // need to check if _MemEpoch < _CpuEpoch
-				}
-				_Mut[tmpMemEpoch%EPOCHS].lock();
-				do {
-					if(tmpMemEpoch != k.epoch){
-						_PQ.push(k);
-						_MemEpoch=k.epoch;
-						exitLoop=true;
-						break;
-					}
-					if(k.type==DEVICE){
-						for (MainMemCosim* cosim: _Simulators) {
-							cosim->_IOAccessPtr->insert(k.id,k.write,k.phys,k.size,k.time_stamp,k.tag);
-						}
-					}else if(k.type==CPU){
-						for (MainMemCosim* cosim: _Simulators) {
-							cosim->insert(k.id,k.write,k.fetch,k.phys,k.size,_MemEpoch,k.time_stamp);
-						}
-					}
-					else if(k.type==SESAMCOMMAND){
-						for (MainMemCosim* cosim: _Simulators) {
-							strParam.clear();
-							if(k.write)	strParam.push_back("StartCapture"); 
-							else		strParam.push_back("EndCapture"); 
-							cosim->_Monitor->sesamCommand(strParam, k.tag);
-						}
-						exitLoop=true;
-						break;
-					}
-				} while(_PQ.try_pop(k));
-				_Mut[tmpMemEpoch%EPOCHS].unlock();
-				if(exitLoop) exitLoop=false;
-				else ++_MemEpoch;
-			}
-			else ++_MemEpoch; // an empty epoch!
-		}
-		return NULL;
-	}
+        void setFocusOnROI(bool focusOnROI) {
+            _focusOnROI = focusOnROI;
+            if (_focusOnROI) {
+                Notify = haltNotify;
+                NotifyIO = haltNotifyIO;
+                NotifyFetchMiss = haltNotifyFetchMiss;
+            } else {
+                Notify = proceedNotify;
+                NotifyIO = proceedNotifyIO;
+                NotifyFetchMiss = proceedNotifyFetchMiss;
+            }
+        }
 
-	static vector<MainMemCosim*> _Simulators;
-	static bool _Inited;
-	static pthread_t _T;
+        static void addRegisterMainMemCb(registerMainMemCb ptrRegisterMainMemCb,
+                                         model_provider_main_mem_cb ptrModelProviderMainMemCb, uint64_t quantum,
+                                         unRegisterMainMemCb ptrUnRegisterMainMemCb) {
+            _MainMemCb.push_back(make_tuple(ptrRegisterMainMemCb, ptrModelProviderMainMemCb, quantum,
+                                            ptrUnRegisterMainMemCb));
+        }
 
-	static bool _Stopped;
+        sc_time getCurrentTime() {
+            if (_focusOnROI) return sc_time_stamp();
+            return sc_time((double) _current_time_stamp, SC_NS);
+        }
 
-	class compare_Req {
-	public:
-    	bool operator()(const Req& u, const Req& v) const {
-			return (u.epoch > v.epoch || (u.epoch == v.epoch && u.time_stamp > v.time_stamp));
-		}
-	};
-	static tbb::concurrent_priority_queue<MainMemCosim::Req, MainMemCosim::compare_Req> _PQ;
+        virtual void insert(uint32_t cpu, uint8_t write, uint8_t fetch, void *phys, unsigned int size, uint64_t epoch,
+                            uint64_t time_stamp) =0;
 
-	static map<uint32_t, uint64_t*> _Stats[MAX_CPUS];
+        virtual void fillBiases(uint64_t *ts, uint32_t n, double conversion_factor, uint64_t epoch) =0;
 
-	static mutex _Mut[EPOCHS];
+    private:
+        static void proceedNotify(uint32_t cpu, uint64_t exec, uint8_t write, void *phys, unsigned int size) {
+            _current_time_stamp = exec + _epoch_sc_time;
+            _Buffer.type = CPU;
+            _Buffer.id = cpu;
+            _Buffer.write = write;
+            _Buffer.phys = phys;
+            _Buffer.size = size;
+            _Buffer.fetch = 0;
+            _Buffer.epoch = _CpuEpoch;
+            _Buffer.time_stamp = _current_time_stamp;
+            _PQ.push(_Buffer);
+        }
 
-	static uint64_t _CurQuantum;
+        static void proceedNotifyFetchMiss(uint32_t cpu, void *phys, unsigned int size) {
+            _Buffer.type = CPU;
+            _Buffer.id = cpu;
+            _Buffer.write = 0;
+            _Buffer.fetch = 1;
+            _Buffer.phys = phys;
+            _Buffer.size = size;
+            _Buffer.epoch = _CpuEpoch;
+            _Buffer.time_stamp = _current_time_stamp;
+            _PQ.push(_Buffer);
+        }
 
-	static uint64_t _CpuEpoch;
-	static uint64_t _MemEpoch;
-	static uint64_t _epoch_sc_time;
-	static uint64_t _current_time_stamp;
+        static void proceedNotifyIO(uint32_t device, uint64_t exec, uint8_t write, void *phys, uint64_t virt,
+                                    unsigned int size, uint64_t tag) {
+            _Buffer.type = DEVICE;
+            _Buffer.id = device;
+            _Buffer.write = write;
+            _Buffer.phys = phys;
+            _Buffer.size = size;
+            _Buffer.epoch = _CpuEpoch;
+            _Buffer.time_stamp = exec + _epoch_sc_time;
+            _Buffer.tag = tag;
+            _PQ.push(_Buffer);
+        }
 
-	static bool _focusOnROI;
-	
-	IOAccessCosim* _IOAccessPtr;
-	SesamController* _Monitor;
-	static vector<tuple<registerMainMemCb, model_provider_main_mem_cb, uint64_t, unRegisterMainMemCb>> _MainMemCb;
-};
+        static void Add(MainMemCosim *simulator) {
+            if (!_Inited) {
+                Init();
+            }
+            _Simulators.push_back(simulator);
+            cout.clear();
+            cout << "Simulator added !" << endl;
+        }
 
-class SystemCCosimulator: public sc_module, public MainMemCosim {
-public:
-	SystemCCosimulator(sc_module_name name, uint32_t outPorts): sc_module(name) {
-		mOutPorts.resize(outPorts);
-		for (uint32_t i=0; i < outPorts; i++) {
-			mOutPorts[i].first = new tlm_utils::simple_initiator_socket<SystemCCosimulator>((string("cosim_out_fetch_")+string(name)+to_string(i)).c_str());
-			mOutPorts[i].second = new tlm_utils::simple_initiator_socket<SystemCCosimulator>((string("cosim_out_data_")+string(name)+to_string(i)).c_str());
-			for (uint32_t e = 0;e<EPOCHS;e++)mTimes[i][e]=SC_ZERO_TIME;
-		}
-	}
+        static void Init() {
+            if (_Inited)
+                throw runtime_error("MainMemCosim initialized twice !");
+            _Inited = true;
+            pthread_create(&_T, NULL, &MainMemCosim::Run, NULL);
+        }
 
-	virtual ~SystemCCosimulator() {
-		MainMemCosim::Stop();
-	}
+        static void *Run(void *unused) {
+            Req k;
+            vector<string> strParam;
+            bool exitLoop = false;
+            uint64_t tmpMemEpoch;
+            while (1) {
+                if (_Stopped) break;
+                tmpMemEpoch = _MemEpoch;
+                while (tmpMemEpoch >= _CpuEpoch) {
+                    // Requests ordering needs the iss to run at least one epoch ahead
+                    usleep(1);
+                    if (_Stopped) break;
+                }
+                if (_PQ.try_pop(k)) {
+                    if (tmpMemEpoch != k.epoch) {
+                        _PQ.push(k); // put the element back
+                        _MemEpoch = k.epoch;
+                        continue; // need to check if _MemEpoch < _CpuEpoch
+                    }
+                    _Mut[tmpMemEpoch % EPOCHS].lock();
+                    do {
+                        if (tmpMemEpoch != k.epoch) {
+                            _PQ.push(k);
+                            _MemEpoch = k.epoch;
+                            exitLoop = true;
+                            break;
+                        }
+                        if (k.type == DEVICE) {
+                            for (MainMemCosim *cosim: _Simulators) {
+                                cosim->_IOAccessPtr->insert(k.id, k.write, k.phys, k.size, k.time_stamp, k.tag);
+                            }
+                        } else if (k.type == CPU) {
+                            for (MainMemCosim *cosim: _Simulators) {
+                                cosim->insert(k.id, k.write, k.fetch, k.phys, k.size, _MemEpoch, k.time_stamp);
+                            }
+                        } else if (k.type == SESAMCOMMAND) {
+                            for (MainMemCosim *cosim: _Simulators) {
+                                strParam.clear();
+                                if (k.write) strParam.push_back("StartCapture");
+                                else strParam.push_back("EndCapture");
+                                cosim->_Monitor->sesamCommand(strParam, k.tag);
+                            }
+                            exitLoop = true;
+                            break;
+                        }
+                    } while (_PQ.try_pop(k));
+                    _Mut[tmpMemEpoch % EPOCHS].unlock();
+                    if (exitLoop) exitLoop = false;
+                    else ++_MemEpoch;
+                } else ++_MemEpoch; // an empty epoch!
+            }
+            return NULL;
+        }
 
-	bool convertAddr(void* host, uint64_t* p) {
-		uint64_t H=(uint64_t)host;
-		for (auto& t: mMaps) {
-			uint64_t Hp=(uint64_t)get<0>(t);
-			//cout<<"Checking range: "<<hex<<Hp<<endl;
-			if (H>=Hp && H < Hp+get<2>(t)){
-				*p = get<1>(t) + (H-Hp);
-				return true;
-			}
-		}
-		return false;
-	}
+        static vector<MainMemCosim *> _Simulators;
+        static bool _Inited;
+        static pthread_t _T;
+
+        static bool _Stopped;
+
+        class compare_Req {
+        public:
+            bool operator()(const Req &u, const Req &v) const {
+                return (u.epoch > v.epoch || (u.epoch == v.epoch && u.time_stamp > v.time_stamp));
+            }
+        };
+
+        static tbb::concurrent_priority_queue<MainMemCosim::Req, MainMemCosim::compare_Req> _PQ;
+
+        static map<uint32_t, uint64_t *> _Stats[MAX_CPUS];
+
+        static mutex _Mut[EPOCHS];
+
+        static uint64_t _CurQuantum;
+
+        static uint64_t _CpuEpoch;
+        static uint64_t _MemEpoch;
+        static uint64_t _epoch_sc_time;
+        static uint64_t _current_time_stamp;
+
+        static bool _focusOnROI;
+
+        IOAccessCosim *_IOAccessPtr;
+        SesamController *_Monitor;
+        static vector<tuple<registerMainMemCb, model_provider_main_mem_cb, uint64_t, unRegisterMainMemCb> > _MainMemCb;
+    };
+
+    class SystemCCosimulator : public sc_module, public MainMemCosim {
+    public:
+        SystemCCosimulator(sc_module_name name, uint32_t outPorts) : sc_module(name) {
+            mOutPorts.resize(outPorts);
+            for (uint32_t i = 0; i < outPorts; i++) {
+                mOutPorts[i].first = new tlm_utils::simple_initiator_socket<SystemCCosimulator>(
+                    (string("cosim_out_fetch_") + string(name) + to_string(i)).c_str());
+                mOutPorts[i].second = new tlm_utils::simple_initiator_socket<SystemCCosimulator>(
+                    (string("cosim_out_data_") + string(name) + to_string(i)).c_str());
+                for (uint32_t e = 0; e < EPOCHS; e++)mTimes[i][e] = SC_ZERO_TIME;
+            }
+        }
+
+        virtual ~SystemCCosimulator() {
+            MainMemCosim::Stop();
+        }
+
+        bool convertAddr(void *host, uint64_t *p) {
+            uint64_t H = (uint64_t) host;
+            for (auto &t: mMaps) {
+                uint64_t Hp = (uint64_t) get < 0 > (t);
+                //cout<<"Checking range: "<<hex<<Hp<<endl;
+                if (H >= Hp && H < Hp + get < 2 > (t)) {
+                    *p = get < 1 > (t) + (H - Hp);
+                    return true;
+                }
+            }
+            return false;
+        }
 
 
-	using portType=tlm_utils::simple_initiator_socket<SystemCCosimulator>;
+        using portType = tlm_utils::simple_initiator_socket<SystemCCosimulator>;
 
-	virtual void insert(uint32_t cpu, uint8_t write, uint8_t fetch, void* phys, unsigned int size, uint64_t epoch, uint64_t time_stamp) override {
-		uint64_t addr=0;
-		if (! fetch && !convertAddr(phys,&addr)){
-			// std::cerr<<"Warning: Could not convert address "<<hex<<phys<<endl;
-			//throw 0;
-		} else if (fetch) {
-			addr=(uint64_t)phys;
-		}
-		pld.set_data_ptr(NULL);
-		pld.set_address(addr);
-		pld.set_data_length(size);
-		pld.set_command((write?tlm::TLM_WRITE_COMMAND:tlm::TLM_READ_COMMAND));
-		src.type=0;//the source is a cpu
-		src.cpu_id=cpu;
-		//printf("MainMemCosim::insert::time_stamp=%ld\n",time_stamp);
-		src.time_stamp=sc_time((double)time_stamp,SC_NS);
-		//src.time_stamp=sc_time(time_stamp,SC_PS);
-		pld.set_extension<SourceCpuExtension>(&src);
-		portType& p=(fetch? *mOutPorts[cpu].first: *mOutPorts[cpu].second);
-		p->b_transport(pld, mTimes[cpu][epoch%EPOCHS]);
-		pld.clear_extension(&src);
-	}
+        virtual void insert(uint32_t cpu, uint8_t write, uint8_t fetch, void *phys, unsigned int size, uint64_t epoch,
+                            uint64_t time_stamp) override {
+            uint64_t addr = 0;
+            if (!fetch && !convertAddr(phys, &addr)) {
+                // std::cerr<<"Warning: Could not convert address "<<hex<<phys<<endl;
+                //throw 0;
+            } else if (fetch) {
+                addr = (uint64_t) phys;
+            }
+            pld.set_data_ptr(NULL);
+            pld.set_address(addr);
+            pld.set_data_length(size);
+            pld.set_command((write ? tlm::TLM_WRITE_COMMAND : tlm::TLM_READ_COMMAND));
+            src.type = 0; //the source is a cpu
+            src.cpu_id = cpu;
+            //printf("MainMemCosim::insert::time_stamp=%ld\n",time_stamp);
+            src.time_stamp = sc_time((double) time_stamp, SC_NS);
+            //src.time_stamp=sc_time(time_stamp,SC_PS);
+            pld.set_extension<SourceCpuExtension>(&src);
+            portType &p = (fetch ? *mOutPorts[cpu].first : *mOutPorts[cpu].second);
+            p->b_transport(pld, mTimes[cpu][epoch % EPOCHS]);
+            pld.clear_extension(&src);
+        }
 
-	virtual void fillBiases(uint64_t* ts, uint32_t n, double conversion_factor, uint64_t epoch) override {
-		for (uint32_t i = 0; i < n; i++) {
-			ts[i]+=conversion_factor*(mTimes[i][epoch%EPOCHS].to_seconds()*1000000000.0);
-			mTimes[i][epoch%EPOCHS]=SC_ZERO_TIME;
-		}
-	}
+        virtual void fillBiases(uint64_t *ts, uint32_t n, double conversion_factor, uint64_t epoch) override {
+            for (uint32_t i = 0; i < n; i++) {
+                ts[i] += conversion_factor * (mTimes[i][epoch % EPOCHS].to_seconds() * 1000000000.0);
+                mTimes[i][epoch % EPOCHS] = SC_ZERO_TIME;
+            }
+        }
 
-	vector<std::pair<portType*,portType*> > mOutPorts;
-	tlm::tlm_generic_payload pld;
-	SourceCpuExtension src;
-	vector< tuple<void*,uint64_t,uint64_t> > mMaps;
-	sc_time mTimes[MAX_CPUS][EPOCHS];
-
-};
-
+        vector<std::pair<portType *, portType *> > mOutPorts;
+        tlm::tlm_generic_payload pld;
+        SourceCpuExtension src;
+        vector<tuple<void *, uint64_t, uint64_t> > mMaps;
+        sc_time mTimes[MAX_CPUS][EPOCHS];
+    };
 }
 
 #endif /* _MAINMEMCOSIM_HPP_ */

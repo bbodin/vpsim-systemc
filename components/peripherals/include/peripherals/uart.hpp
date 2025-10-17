@@ -20,31 +20,32 @@
 #include "global.hpp"
 #include "TargetIf.hpp"
 
-namespace vpsim
-{
-	class uart : public sc_module, public TargetIf  <uint8_t>
-	{
-		typedef uart this_type;
+namespace vpsim {
+    class uart : public sc_module, public TargetIf<uint8_t> {
+        typedef uart this_type;
 
-	private:
-		//Local variables
-		uint32_t mWordLengthInByte;
+    private:
+        //Local variables
+        uint32_t mWordLengthInByte;
 
-	public:
-		//---------------------------------------------------
-		//Constructor
-		uart ( sc_module_name Name );
-		uart ( sc_module_name Name, bool ByteEnable, bool DmiEnable );
-		void init ();
-		SC_HAS_PROCESS ( uart );
+    public:
+        //---------------------------------------------------
+        //Constructor
+        uart(sc_module_name Name);
 
-		~uart ();
+        uart(sc_module_name Name, bool ByteEnable, bool DmiEnable);
 
-		//Main functions
-		tlm::tlm_response_status read ( payload_t & payload, sc_time & delay );
-		tlm::tlm_response_status write ( payload_t & payload, sc_time & delay );
-	};
+        void init();
 
+        SC_HAS_PROCESS(uart);
+
+        ~uart();
+
+        //Main functions
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
+
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
+    };
 }
 
 #endif /* UART_HPP_ */

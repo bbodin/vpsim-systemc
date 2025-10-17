@@ -23,86 +23,79 @@
 #include <string>
 
 namespace vpsim {
+    //-----------------------------------------------------------------------------
+    //Constructor
+    uart::uart(sc_module_name Name) : sc_module(Name),
+                                      TargetIf<uint8_t>(string(Name), 0xfff),
+                                      mWordLengthInByte(1) {
+        init();
+    }
 
-//-----------------------------------------------------------------------------
-//Constructor
-uart::uart ( sc_module_name Name ) :
-	sc_module(Name),
-	TargetIf <uint8_t> ( string(Name), 0xfff ),
-	mWordLengthInByte ( 1 )
-{
-	init ();
-}
+    uart::uart(sc_module_name Name, bool ByteEnable, bool DmiEnable) : sc_module(Name),
+                                                                       TargetIf<uint8_t>(
+                                                                           string(Name), 0xfff, ByteEnable, DmiEnable),
+                                                                       mWordLengthInByte(1) {
+        init();
+    }
 
-uart::uart ( sc_module_name Name, bool ByteEnable, bool DmiEnable ) :
-	sc_module(Name),
-	TargetIf <uint8_t> ( string(Name), 0xfff, ByteEnable, DmiEnable ),
-	mWordLengthInByte ( 1 )
-{
-	init ();
-}
+    void uart::init() {
+        //Set timings
+        TargetIf<uint8_t>::setDmiEnable(false);
 
-void uart::init ( ) {
-	//Set timings
-	TargetIf <uint8_t>::setDmiEnable ( false );
+        //Compute number of bytes
+        mWordLengthInByte = sizeof (uint8_t);
 
-	//Compute number of bytes
-	mWordLengthInByte = sizeof ( uint8_t );
+        //Instantiate addressable memory
+        for (unsigned i = 0; i < getSize(); i++) getLocalMem()[i] = '\0';
 
-	//Instantiate addressable memory
-	for(unsigned i=0; i<getSize(); i++) getLocalMem()[i]='\0';
+        //Register READ/WRITE methods
+        //NEW_CALLBACK (WriteCallBack, this_type, write );
+        //NEW_CALLBACK (ReadCallBack, this_type, read );
 
-	//Register READ/WRITE methods
-	//NEW_CALLBACK (WriteCallBack, this_type, write );
-	//NEW_CALLBACK (ReadCallBack, this_type, read );
+        TargetIf<uint8_t>::RegisterReadAccess(REGISTER(this_type, read));
+        TargetIf<uint8_t>::RegisterWriteAccess(REGISTER(this_type, write));
+    }
 
-	TargetIf <uint8_t>::RegisterReadAccess(REGISTER(this_type,read));
-	TargetIf <uint8_t>::RegisterWriteAccess(REGISTER(this_type,write));
-}
+    uart::~uart() {
+        //printf("\nuart.cpp: destructor \n");
+    }
 
-uart::~uart () {
+    // Function name: Core function
+    tlm::tlm_response_status uart::read(payload_t &payload, sc_time &delay) {
+        *(int *) (getLocalMem() + 4) = getchar();
+        return (tlm::TLM_OK_RESPONSE);
+    }
 
-	//printf("\nuart.cpp: destructor \n");
+    tlm::tlm_response_status uart::write(payload_t &payload, sc_time &delay) {
+        LOG_DEBUG(dbg1) << getName() << ":---------------------------------------------------------" << endl;
+        LOG_DEBUG(dbg1) << getName() << ": WRITE access to UART: " << *payload.ptr << endl;
 
-}
+        //Timing
+        //if ( getEnableLatency() ) delay += getWriteLatency();
+        if (getEnableLatency())
+            delay += (getInitialCyclesPerAccess() + getCyclesPerWrite()) * getCycleDuration(); //TODO
 
-// Function name: Core function
-tlm::tlm_response_status uart::read ( payload_t & payload, sc_time& delay ) {
-	*(int*)(getLocalMem()+4) = getchar();
-	return ( tlm::TLM_OK_RESPONSE );
-}
+        //Print words written in DMI
+        char tmp = (char) getLocalMem()[0];
+        LOG_DEBUG(dbg1) << tmp << flush;
+        cout << tmp << flush;
 
-tlm::tlm_response_status uart::write ( payload_t & payload, sc_time& delay ) {
-	LOG_DEBUG(dbg1) <<getName()<<":---------------------------------------------------------"<<endl;
-	LOG_DEBUG(dbg1) <<getName()<<": WRITE access to UART: "<< *payload.ptr << endl;
+        //	constexpr char raisePattern[] = "!@^~rsp";
+        //	constexpr char lowerPattern[] = "'?@^lsp";
+        //
+        //	static string buffer("1234567");
+        //	for(size_t i{0} ; i < 6 ; i++){
+        //		buffer[i] = buffer[i+1];
+        //	}
+        //	buffer[6] = tmp;
+        //
+        //	if(buffer == raisePattern){
+        //		RAISE_SIMULATION_PRECISION
+        //	} else if(buffer == lowerPattern) {
+        //		LOWER_SIMULATION_PRECISION
+        //	}
 
-	//Timing
-	//if ( getEnableLatency() ) delay += getWriteLatency();
-	if ( getEnableLatency() )
-		delay += (getInitialCyclesPerAccess() + getCyclesPerWrite()) * getCycleDuration();	//TODO
-
-	//Print words written in DMI
-	char tmp = (char) getLocalMem()[0];
-	LOG_DEBUG(dbg1) << tmp << flush;
-	cout << tmp << flush;
-
-//	constexpr char raisePattern[] = "!@^~rsp";
-//	constexpr char lowerPattern[] = "'?@^lsp";
-//
-//	static string buffer("1234567");
-//	for(size_t i{0} ; i < 6 ; i++){
-//		buffer[i] = buffer[i+1];
-//	}
-//	buffer[6] = tmp;
-//
-//	if(buffer == raisePattern){
-//		RAISE_SIMULATION_PRECISION
-//	} else if(buffer == lowerPattern) {
-//		LOWER_SIMULATION_PRECISION
-//	}
-
-	//End
-	return ( tlm::TLM_OK_RESPONSE );
-}
-
+        //End
+        return (tlm::TLM_OK_RESPONSE);
+    }
 }

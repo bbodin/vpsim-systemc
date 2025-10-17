@@ -21,48 +21,47 @@
 #include "TargetIf.hpp"
 #include "elfloader.hpp"
 
-namespace vpsim
-{
-	class memory : public sc_module, public TargetIf < unsigned char >, public elfloader {
+namespace vpsim {
+    class memory : public sc_module, public TargetIf<unsigned char>, public elfloader {
+        typedef memory this_type;
 
-		typedef memory this_type;
+    private:
+        //Local variables
+        uint32_t mWordLengthInByte;
 
-	private:
+    public:
+        sc_time ReadLatency;
+        sc_time WriteLatency;
 
-		//Local variables
-		uint32_t mWordLengthInByte;
+        memory(sc_module_name Name, uint64_t Size);
 
-	public:
+        memory(sc_module_name Name, uint64_t Size, bool ByteEnable, bool DmiEnable);
 
-		sc_time ReadLatency;
-		sc_time WriteLatency;
-		memory(sc_module_name Name, uint64_t Size);
-		memory(sc_module_name Name, uint64_t Size, bool ByteEnable, bool DmiEnable);
-		void Init ( );
+        void Init();
 
-		SC_HAS_PROCESS(memory);
+        SC_HAS_PROCESS(memory);
 
-		~memory();
+        ~memory();
 
-		//Main functions
-		tlm::tlm_response_status read(payload_t & payload, sc_time & delay);
-		tlm::tlm_response_status write(payload_t & payload, sc_time & delay);
+        //Main functions
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 
-		//!Debug function
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
+
+        //!Debug function
 		//! @param[in] StartAddress address in the memory address space from which dump starts
 		//! @param[in] EndAddress address in the memory address space at which dump ends
-		void Dump(uint64_t StartAddress, uint64_t EndAddress);
+        void Dump(uint64_t StartAddress, uint64_t EndAddress);
 
-		void
-		loadElfFile ( const string name, bool debug=false){
-			load_elf_file(name,getBaseAddress(),getSize(),debug);
-		}
+        void
+        loadElfFile(const string name, bool debug = false) {
+            load_elf_file(name, getBaseAddress(), getSize(), debug);
+        }
 
-		void loadBlob(const string filename, const uint64_t off);
+        void loadBlob(const string filename, const uint64_t off);
 
-		void setChannelWidth(uint32_t bytes) { mWordLengthInByte=bytes; }
-	};
-
+        void setChannelWidth(uint32_t bytes) { mWordLengthInByte = bytes; }
+    };
 }
 
 #endif /* MEMORY_HPP_ */

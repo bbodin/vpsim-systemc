@@ -29,35 +29,36 @@
 
 namespace vpsim {
     class SmartUart {
-
-        std::ostream& mOutput;
+        std::ostream &mOutput;
 
         uint64_t mWriteAccesses;
-    private:
 
+    private:
         uint64_t mReadAccesses;
         using ModuleParameter_ptr = std::unique_ptr<ModuleParameter>;
 
         using ParamDescriptor_t = std::tuple<std::string, AddrSpace, ModuleParameter_ptr>;
         //! Vector containing elements like [pos, pattern, <module, param>]
         //! pos is the number of consecutive matching characters
-        std::vector<std::tuple<size_t, std::string, ParamDescriptor_t>> mTriggers;
+        std::vector<std::tuple<size_t, std::string, ParamDescriptor_t> > mTriggers;
 
     public:
+        explicit SmartUart(std::ostream &output = std::cout);
 
-        explicit SmartUart(std::ostream& output = std::cout);
         void read();
+
         void write(char c);
+
         uint64_t getNbWrites() const;
+
         uint64_t getNbReads() const;
 
         void regStringParamTrigger(
-                const string &trigger,
-                const string &module,
-                const AddrSpace &as,
-                const ModuleParameter &param);
+            const string &trigger,
+            const string &module,
+            const AddrSpace &as,
+            const ModuleParameter &param);
     };
-
 }
 
 

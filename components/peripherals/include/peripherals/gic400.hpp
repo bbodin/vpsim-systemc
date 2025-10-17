@@ -18,10 +18,8 @@
 #define _GIC400_HPP_
 
 namespace vpsim {
-
-class gic_400 {
-};
-
+    class gic_400 {
+    };
 } /* namespace vpsim */
 
 #endif /* _GIC400_HPP_ */

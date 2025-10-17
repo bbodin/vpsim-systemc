@@ -24,37 +24,38 @@
 #include "InterruptSource.hpp"
 
 namespace vpsim {
+    class RemoteTarget : public sc_module, public TargetIf<uint8_t>, public GenericRemoteTarget,
+                         public InterruptSource {
+    public:
+        RemoteTarget(sc_module_name name, size_t size);
 
-class RemoteTarget : public sc_module, public TargetIf<uint8_t>, public GenericRemoteTarget, public InterruptSource {
-public:
-	RemoteTarget(sc_module_name name, size_t size);
-	virtual ~RemoteTarget();
+        virtual ~RemoteTarget();
 
-	tlm::tlm_response_status read (payload_t & payload, sc_time & delay);
-	tlm::tlm_response_status write (payload_t & payload, sc_time & delay);
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 
-	virtual void interrupt(uint32_t line, uint32_t value) override {
-		// cout.clear(); cout<<"remote target interrupting local cpu."<<endl;
-		if (line != InterruptSource::mInterruptLine) {
-			throw runtime_error("RemoteTarget: received interrupt with mismatching line number !");
-		}
-		if (value)
-			raiseInterrupt();
-		else
-			lowerInterrupt();
-	}
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
+
+        virtual void interrupt(uint32_t line, uint32_t value) override {
+            // cout.clear(); cout<<"remote target interrupting local cpu."<<endl;
+            if (line != InterruptSource::mInterruptLine) {
+                throw runtime_error("RemoteTarget: received interrupt with mismatching line number !");
+            }
+            if (value)
+                raiseInterrupt();
+            else
+                lowerInterrupt();
+        }
 
 
-	void rtPoll() {
-		while (true) {
-			wait(mPollPeriod,SC_NS);
-			poll();
-		}
-	}
+        void rtPoll() {
+            while (true) {
+                wait(mPollPeriod, SC_NS);
+                poll();
+            }
+        }
 
-	SC_HAS_PROCESS(RemoteTarget);
-};
-
+        SC_HAS_PROCESS(RemoteTarget);
+    };
 } /* namespace vpsim */
 
 #endif /* _REMOTETARGET_HPP_ */

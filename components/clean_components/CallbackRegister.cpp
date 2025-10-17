@@ -16,7 +16,7 @@
 
 #include "components/DynamicComponents.hpp"
 
-namespace vpsim{
+namespace vpsim {
     template class DynamicTLMCallbackRegister<uint32_t>;
     template class DynamicTLMCallbackRegister<uint64_t>;
 }

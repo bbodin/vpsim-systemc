@@ -25,51 +25,52 @@
 const unsigned int MAX_BUF_LENGTH = 4096;
 
 namespace vpsim {
-
     SesamController::SesamController(sc_module_name name) : sc_module(name), TargetIf(string(name), 0x4) {
-        TargetIf <REG_T>::RegisterReadAccess(REGISTER(SesamController, read));
-        TargetIf <REG_T>::RegisterWriteAccess(REGISTER(SesamController, write));
+        TargetIf<REG_T>::RegisterReadAccess(REGISTER(SesamController, read));
+        TargetIf<REG_T>::RegisterWriteAccess(REGISTER(SesamController, write));
     }
 
     SesamController::~SesamController() {
     }
 
-    tlm::tlm_response_status SesamController::read(payload_t & payload, sc_time & delay) {
+    tlm::tlm_response_status SesamController::read(payload_t &payload, sc_time &delay) {
         uint8_t data = 0;
         if (!payload.ptr) {
             throw runtime_error("Monitor does not support null payloads !");
         }
         if (payload.addr == getBaseAddress() + 1) {
-        	if (mCommandOutputBuffer.length() != 0) {
-        		data = mCommandOutputBuffer.c_str()[0];
-        		string buf = string(&mCommandOutputBuffer.c_str()[1]);
-        		mCommandOutputBuffer = buf;
-        	}
+            if (mCommandOutputBuffer.length() != 0) {
+                data = mCommandOutputBuffer.c_str()[0];
+                string buf = string(&mCommandOutputBuffer.c_str()[1]);
+                mCommandOutputBuffer = buf;
+            }
         } else {
-        	data = 42;
+            data = 42;
         }
 
         memcpy(payload.ptr, &data, payload.len);
         return tlm::TLM_OK_RESPONSE;
     }
 
-    tlm::tlm_response_status SesamController::write(payload_t & payload, sc_time & delay) {
+    tlm::tlm_response_status SesamController::write(payload_t &payload, sc_time &delay) {
         uint8_t *data = new uint8_t;
         if (!payload.ptr) {
             throw runtime_error("Monitor does not support null payloads !");
         }
         memcpy(data, payload.ptr, payload.len);
-        if (payload.addr == getBaseAddress()) { // command
-            switch(*data) {
-            	case 0x20 : {
-            		strParam.clear();
-            		strParam.push_back("list");
-            		*sesamState = TAKE_CMD;
-            		sesamCommand(strParam);
-            		*sesamState = RUN;
-            	}
-            	break;
-                case 0x42 : { // quit w/o question
+        if (payload.addr == getBaseAddress()) {
+            // command
+            switch (*data) {
+                case 0x20: {
+                    strParam.clear();
+                    strParam.push_back("list");
+                    *sesamState = TAKE_CMD;
+                    sesamCommand(strParam);
+                    *sesamState = RUN;
+                }
+                break;
+                case 0x42: {
+                    // quit w/o question
                     strParam.clear();
                     strParam.push_back("quit");
                     *sesamState = TAKE_CMD;
@@ -77,7 +78,8 @@ namespace vpsim {
                     *sesamState = RUN;
                 }
                 break;
-                case 0x52 : { // start benchmark mode
+                case 0x52: {
+                    // start benchmark mode
                     string tmp = strParam.back();
                     strParam.clear();
                     strParam.push_back("benchmark");
@@ -87,24 +89,29 @@ namespace vpsim {
                     *sesamState = RUN;
                 }
                 break;
-                case 0x54 : { // end benchmark mode
+                case 0x54: {
+                    // end benchmark mode
                     sesamCommand(strParam);
                 }
                 break;
-                case 0x58 : { // start receiving parameter
+                case 0x58: {
+                    // start receiving parameter
                     strParam.clear();
                 }
                 break;
-                case 0x62 : { // start receiving string
+                case 0x62: {
+                    // start receiving string
                     strBuf = new string;
                 }
                 break;
-                case 0x72 : { // end receiving string and add parameter
+                case 0x72: {
+                    // end receiving string and add parameter
                     strParam.push_back(*strBuf);
                     delete strBuf;
                 }
                 break;
-                case 0x78 : { // end receiving parameter and execute command
+                case 0x78: {
+                    // end receiving parameter and execute command
                     *sesamState = TAKE_CMD;
                     sesamCommand(strParam);
                     *sesamState = RUN;
@@ -113,11 +120,11 @@ namespace vpsim {
                 default:
                     throw runtime_error("SesamController in unknown command.");
             }
-        } else if (payload.addr == (getBaseAddress() + 1)) { // data
+        } else if (payload.addr == (getBaseAddress() + 1)) {
+            // data
             *strBuf += *data;
         }
 
         return tlm::TLM_OK_RESPONSE;
     }
-
 }

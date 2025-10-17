@@ -27,100 +27,95 @@
 //! Default RTC frequency in Hz
 #define RTC_DEFAULT_FREQUENCY 100 * 1000 * 1000
 
-namespace vpsim{
+namespace vpsim {
+    struct IrqWatchdog {
+        uint32_t watchdogIdx;
+        sc_core::sc_time deadline;
+        InterruptIf *irqIf;
+        uint64_t value;
+        uint32_t irqIdx;
 
-struct IrqWatchdog
-{
-	uint32_t watchdogIdx;
-	sc_core::sc_time deadline;
-	InterruptIf* irqIf;
-	uint64_t value;
-	uint32_t irqIdx;
+        bool isPassed() const;
+    };
 
-	bool isPassed() const;
-};
+    //! @brief Generic class to implement basic RTC features
+    template<typename reg_T>
+    class Rtc : public sc_core::sc_module {
+    private:
+        //! @brief Stores the pending watchdogs [watchdogId -> watchdog]
+        std::map<uint32_t, IrqWatchdog> mWatchdogs;
 
-//! @brief Generic class to implement basic RTC features
-template <typename reg_T>
-class Rtc: public sc_core::sc_module
-{
-private:
+        //! @brief Frequency of the RTC in Hz
+        const uint64_t mFrequency;
 
-	//! @brief Stores the pending watchdogs [watchdogId -> watchdog]
-	std::map<uint32_t, IrqWatchdog> mWatchdogs;
+        //! @brief Event to notify when an Appointment is added to mSchedule
+        sc_core::sc_event mNewWatchdogEvent;
 
-	//! @brief Frequency of the RTC in Hz
-	const uint64_t mFrequency;
+    private:
+        IrqWatchdog getNextWatchdog();
 
-	//! @brief Event to notify when an Appointment is added to mSchedule
-	sc_core::sc_event mNewWatchdogEvent;
+    public:
+        Rtc() = delete;
 
-private:
-	IrqWatchdog getNextWatchdog();
-
-public:
-	Rtc() = delete;
-
-	//! @brief Constructor
+        //! @brief Constructor
 	//! @param[in] name name of the sc_module
 	//! @param[in] frequency frequency of the RTC
-	Rtc(sc_core::sc_module_name name, uint64_t frequency = RTC_DEFAULT_FREQUENCY);
-	//! @cond
-	// Ignore this systemc specificity for the documentation
-	SC_HAS_PROCESS(Rtc);
-	//! @endcond
+        Rtc(sc_core::sc_module_name name, uint64_t frequency = RTC_DEFAULT_FREQUENCY);
 
-	//! @brief Destructor
-	~Rtc() override;
+        //! @cond
+        // Ignore this systemc specificity for the documentation
+        SC_HAS_PROCESS(Rtc);
 
-	//! @brief sc_thread in charge of waiting for the next watchdog and raising the corresponding interruption
-	void watchThread();
+        //! @endcond
 
-	//! @brief Add a watchdog to the list of pending watchdogs. If any, replace the watchdog with the same ID.
+        //! @brief Destructor
+        ~Rtc() override;
+
+        //! @brief sc_thread in charge of waiting for the next watchdog and raising the corresponding interruption
+        void watchThread();
+
+        //! @brief Add a watchdog to the list of pending watchdogs. If any, replace the watchdog with the same ID.
 	//! @param[in] watchdog watchdog to be added to the pending watchdogs list
-	void setWatchdog(IrqWatchdog watchdog);
+        void setWatchdog(IrqWatchdog watchdog);
 
-	//! @brief Helper to add a watchdog to the pending watchdogs list for conveniency
+        //! @brief Helper to add a watchdog to the pending watchdogs list for conveniency
 	//! @param[in] watchdogIdx	Index of the watchog to be added
 	//! @param[in] deadline 	Date when the watchdog expires expressed in RTC counter value
 	//! @param[in] irq 			Pointer to an interrupt interface in charge of raising the interrupt
 	//! @param[in] value		Value to set when the watchdog expires
 	//! @param[in] irqIdx		Index of the interrupt line
-	void setWatchdog(uint32_t watchdogIdx,
-					 uint64_t deadline,
-					 InterruptIf* irq,
-					 uint64_t value,
-					 uint32_t irqIdx);
+        void setWatchdog(uint32_t watchdogIdx,
+                         uint64_t deadline,
+                         InterruptIf *irq,
+                         uint64_t value,
+                         uint32_t irqIdx);
 
-	//! @param[in] watchdogIdx	index of the watchdog to be canceled
+        //! @param[in] watchdogIdx	index of the watchdog to be canceled
 	//! @return True if a watchdog has been canceled, false otherwise
-	bool cancelWatchdog(uint32_t watchdogIdx);
+        bool cancelWatchdog(uint32_t watchdogIdx);
 
-	//! @brief Get the counter value calculated with the double precision approximation of the simulation time
+        //! @brief Get the counter value calculated with the double precision approximation of the simulation time
 	//! @return The current value of the counter
-	reg_T getCounter() const;
+        reg_T getCounter() const;
 
-	//! @brief converts a counter value into the corresponding sc_time value
+        //! @brief converts a counter value into the corresponding sc_time value
 	//! @param[in] val Counter value to convert
 	//! @return sc_time obtained after conversion
-	sc_core::sc_time counterToTime(reg_T val) const;
+        sc_core::sc_time counterToTime(reg_T val) const;
 
-	//! @brief accessor to the RTC frequency
+        //! @brief accessor to the RTC frequency
 	//! @return frequency of the timer in Hz
-	uint64_t getFrequency() const;
+        uint64_t getFrequency() const;
 
-public:
-	//! @brief classic printer helper for operator << implementation
-	std::ostream& toOstream(std::ostream& os) const;
-};
+    public:
+        //! @brief classic printer helper for operator << implementation
+        std::ostream &toOstream(std::ostream &os) const;
+    };
 
-//! @brief implementation of operator << for the RTC
-template <typename reg_T>
-std::ostream& operator<<(std::ostream& os, const Rtc<reg_T>& rtc);
-
+    //! @brief implementation of operator << for the RTC
+    template<typename reg_T>
+    std::ostream &operator<<(std::ostream &os, const Rtc<reg_T> &rtc);
 }
-
-
 
 
 #endif /* S_RTC_HPP_ */

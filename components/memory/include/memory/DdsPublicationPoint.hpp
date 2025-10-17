@@ -21,24 +21,21 @@
 #include "memory.hpp"
 
 namespace vpsim {
+    class DdsPublicationPoint : public sc_module, public vpsim::TargetIf<unsigned char>,
+                                public dds::PublicationPointAdv {
+    private:
+        stringstream HostName;
+        stringstream SubName;
 
-class DdsPublicationPoint : public sc_module, public vpsim::TargetIf<unsigned char >, public dds::PublicationPointAdv {
+    public:
+        DdsPublicationPoint(sc_module_name Name, uint64_t Size);
 
-private:
+        virtual ~DdsPublicationPoint();
 
-	stringstream HostName;
-	stringstream SubName;
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 
-public:
-
-	DdsPublicationPoint( sc_module_name Name, uint64_t Size);
-	virtual ~DdsPublicationPoint();
-
-	tlm::tlm_response_status read ( payload_t & payload, sc_time & delay );
-	tlm::tlm_response_status write ( payload_t & payload, sc_time & delay );
-
-};
-
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
+    };
 } /* namespace vpsim */
 
 #endif /* _DDSPUBLICATIONPOINT_HPP_ */

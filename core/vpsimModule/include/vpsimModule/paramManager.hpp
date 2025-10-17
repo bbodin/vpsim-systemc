@@ -23,82 +23,78 @@
 #include "paramScheduler.hpp"
 
 
-namespace vpsim{
+namespace vpsim {
+    class VpsimModule;
 
-class VpsimModule;
+    //! @brief Singleton class responsible for managing the parameter system
+    class ParamManager {
+    private:
+        //! @brief SystemC module responsible for dynamically changing the parameters values during the simulation
+        ParamScheduler mParamScheduler;
 
-//! @brief Singleton class responsible for managing the parameter system
-class ParamManager{
-private:
+        //! @brief Map of the registered module
+        std::map<std::string, VpsimModule * const> mVpsimModules;
 
-    //! @brief SystemC module responsible for dynamically changing the parameters values during the simulation
-    ParamScheduler mParamScheduler;
+        //! @brief Handlers called whenever a parameter is updated
+        std::map<std::string, std::function<void()> > mUpdateHandlers;
 
-    //! @brief Map of the registered module
-    std::map<std::string, VpsimModule* const> mVpsimModules;
+    public:
+        //! @brief Accessor to the unique instance of the class ParamManager
+        //! @return Reference to the unique instance of the class ParamManager
+        static ParamManager &get();
 
-    //! @brief Handlers called whenever a parameter is updated
-    std::map<std::string, std::function<void()>> mUpdateHandlers;
+        //! @brief Call the parameter update handlers
+        void callParamUpdateHandlers();
 
-public:
+        //! @param[in] module	Name of the module
+        //! @param[in] as		Address space where the new parameter is valid
+        //! @param[in] param 	New parameter value
+        void setParameter(std::string module, AddrSpace as, const ModuleParameter &param);
 
-    //! @brief Accessor to the unique instance of the class ParamManager
-    //! @return Reference to the unique instance of the class ParamManager
-    static ParamManager& get();
+        //! @brief Set a new parameter value to a module
+        //! @param[in] module	Name of the module
+        //! @param[in] param 	New parameter value
+        void setParameter(std::string module, const ModuleParameter &param);
 
-    //! @brief Call the parameter update handlers
-    void callParamUpdateHandlers();
+        //! @brief Schedule an Appointment to change the value of a parameter during the simulation
+        //! @param[in] module   Name of the module
+        //! @param[in] as		  Address space where the new parameter is valid
+        //! @param[in] date     Date of the Appointment
+        //! @param[in] param	  New parameter
+        void addAppointment(std::string module,
+                            AddrSpace as,
+                            sc_core::sc_time date,
+                            const ModuleParameter &param);
 
-    //! @param[in] module	Name of the module
-    //! @param[in] as		Address space where the new parameter is valid
-    //! @param[in] param 	New parameter value
-    void setParameter(std::string module, AddrSpace as, const ModuleParameter& param);
+        //! @brief Schedule an Appointment to change the value of a parameter during the simulation
+        //! @param[in] module   Name of the module
+        //! @param[in] date     Date of the Appointment
+        //! @param[in] param	  New parameter
+        void addAppointment(std::string module,
+                            sc_core::sc_time date,
+                            const ModuleParameter &param);
 
-    //! @brief Set a new parameter value to a module
-    //! @param[in] module	Name of the module
-    //! @param[in] param 	New parameter value
-    void setParameter(std::string module,  const ModuleParameter& param);
+        //! @brief Register a VpsimModule to access it with its name later
+        //! @param[in] module module ot be registered
+        void registerModule(VpsimModule &module);
 
-    //! @brief Schedule an Appointment to change the value of a parameter during the simulation
-    //! @param[in] module   Name of the module
-    //! @param[in] as		  Address space where the new parameter is valid
-    //! @param[in] date     Date of the Appointment
-    //! @param[in] param	  New parameter
-    void addAppointment(std::string module,
-                        AddrSpace as,
-                        sc_core::sc_time date,
-                        const ModuleParameter& param);
+        //! @param[in] name Name of the module to be unregistered
+        //! @brief Unregister a VpsimModule
+        void unregisterModule(std::string name);
 
-    //! @brief Schedule an Appointment to change the value of a parameter during the simulation
-    //! @param[in] module   Name of the module
-    //! @param[in] date     Date of the Appointment
-    //! @param[in] param	  New parameter
-    void addAppointment(std::string module,
-                        sc_core::sc_time date,
-                        const ModuleParameter& param);
+        //! Register a new handler to call when a parameter is updated
+        //! If a handler was registered for the module, it is replacer
+        //! \param name     name of the module which own the handler
+        //! \param handler  handler to be called upon parameter update
+        void registerUpdateHook(std::string name, function<void()> &&handler);
 
-    //! @brief Register a VpsimModule to access it with its name later
-    //! @param[in] module module ot be registered
-    void registerModule(VpsimModule& module);
+        //!@brief Copy constructor deleted to prevent from singleton copy
+        ParamManager(const ParamManager &) = delete;
 
-    //! @param[in] name Name of the module to be unregistered
-    //! @brief Unregister a VpsimModule
-    void unregisterModule(std::string name);
-
-    //! Register a new handler to call when a parameter is updated
-    //! If a handler was registered for the module, it is replacer
-    //! \param name     name of the module which own the handler
-    //! \param handler  handler to be called upon parameter update
-    void registerUpdateHook(std::string name, function<void()> &&handler);
-
-    //!@brief Copy constructor deleted to prevent from singleton copy
-    ParamManager(const ParamManager&) = delete;
-
-private:
-    //! @brief Default constructor made private to prevent from additional instanciations
-    ParamManager();
-};
-
+    private:
+        //! @brief Default constructor made private to prevent from additional instanciations
+        ParamManager();
+    };
 }
 
 #endif /* end of include guard: _PARAM_MANAGER_HPP_ */

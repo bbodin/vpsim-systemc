@@ -24,44 +24,41 @@
 #include <iostream>
 
 namespace vpsim {
-
-typedef tlm::tlm_target_socket<> InPortType;
-typedef tlm::tlm_initiator_socket<> OutPortType;
-
+    typedef tlm::tlm_target_socket<> InPortType;
+    typedef tlm::tlm_initiator_socket<> OutPortType;
 
 
-struct PlatformBuilder {
-	PlatformBuilder(std::string platformName="");
+    struct PlatformBuilder {
+        PlatformBuilder(std::string platformName = "");
 
-	~PlatformBuilder();
+        ~PlatformBuilder();
 
 
-	VpsimIp<InPortType, OutPortType>& beginBuild(std::string ipType,
-			std::string ipName);
+        VpsimIp<InPortType, OutPortType> &beginBuild(std::string ipType,
+                                                     std::string ipName);
 
-	VpsimIp<InPortType, OutPortType>& endBuild(
-			VpsimIp<InPortType, OutPortType>** newIp = nullptr);
+        VpsimIp<InPortType, OutPortType> &endBuild(
+            VpsimIp<InPortType, OutPortType> **newIp = nullptr);
 
-	void finalize();
+        void finalize();
 
-	void setAttribute(std::string attr, std::string value);
+        void setAttribute(std::string attr, std::string value);
 
-	void connect(std::string srcIpName, std::string srcOutPortName,
-			  std::string dstIpName, std::string dstInPortName);
+        void connect(std::string srcIpName, std::string srcOutPortName,
+                     std::string dstIpName, std::string dstInPortName);
 
-	void forwardInPort(std::string childName, std::string childInPortName, std::string portAlias);
+        void forwardInPort(std::string childName, std::string childInPortName, std::string portAlias);
 
-	void forwardOutPort(std::string childName, std::string childOutPortName, std::string portAlias);
+        void forwardOutPort(std::string childName, std::string childOutPortName, std::string portAlias);
 
-	static void dumpComponents(std::ostream& stream) ;
+        static void dumpComponents(std::ostream &stream);
 
-private:
-	VpsimIp<InPortType, OutPortType>* mCurrentIp;
-	std::vector<VpsimIp<InPortType, OutPortType>*> mBuildStack;
-	std::vector<std::string> mLocalIps;
-	static int Container;
-};
-
+    private:
+        VpsimIp<InPortType, OutPortType> *mCurrentIp;
+        std::vector<VpsimIp<InPortType, OutPortType> *> mBuildStack;
+        std::vector<std::string> mLocalIps;
+        static int Container;
+    };
 }
 
 #endif /* PLATFORMBUILDER_HPP_ */

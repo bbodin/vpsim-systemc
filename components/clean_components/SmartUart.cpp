@@ -28,33 +28,32 @@ using namespace tlm;
 
 using namespace vpsim;
 
-SmartUart::SmartUart(ostream &output):
-        mOutput(output)
-{}
+SmartUart::SmartUart(ostream &output) : mOutput(output) {
+}
 
 void SmartUart::read() {
     ++mReadAccesses;
 }
 
-ssize_t (*SystRead)(int fd, void *buf, size_t count)=read;
+ssize_t (*SystRead)(int fd, void *buf, size_t count) = read;
 
 void SmartUart::write(char c) {
     ++mWriteAccesses;
 
-    if(c != '\0') {
-    	//mOutput << c << flush;
+    if (c != '\0') {
+        //mOutput << c << flush;
         for (auto &t: mTriggers) {
-            auto &i = get<0>(t);
-            auto &pattern = get<1>(t);
-            auto &module = get<0>(get<2>(t));
-            auto &addr = get<1>(get<2>(t));
-            auto &param = get<2>(get<2>(t));
+            auto &i = get < 0 > (t);
+            auto &pattern = get < 1 > (t);
+            auto &module = get < 0 > (get < 2 > (t));
+            auto &addr = get < 1 > (get < 2 > (t));
+            auto &param = get < 2 > (get < 2 > (t));
 
             if (pattern[i++] == c) {
                 if (i == pattern.size()) {
                     ParamManager::get().setParameter(module, addr, *param);
                     //FIXME: Put that somewhere else
-                    VpsimIp<InPortType,OutPortType>::pushStatistics();
+                    VpsimIp<InPortType, OutPortType>::pushStatistics();
                     i = 0;
                 }
             } else {
@@ -65,16 +64,15 @@ void SmartUart::write(char c) {
 }
 
 void SmartUart::regStringParamTrigger(
-        const string &trigger,
-        const string &module,
-        const AddrSpace &as,
-        const ModuleParameter &param) {
-
-    if(trigger.empty()){
+    const string &trigger,
+    const string &module,
+    const AddrSpace &as,
+    const ModuleParameter &param) {
+    if (trigger.empty()) {
         throw runtime_error("The pattern cannot be empty.");
     }
 
-    mTriggers.emplace_back(make_tuple(0,trigger, make_tuple(module, as, param.clone())));
+    mTriggers.emplace_back(make_tuple(0, trigger, make_tuple(module, as, param.clone())));
 }
 
 uint64_t SmartUart::getNbWrites() const {

@@ -25,44 +25,42 @@
 
 
 namespace vpsim {
+    class CommonUartInterface : public sc_module,
+                                public InterruptSource {
+    public:
+        CommonUartInterface(sc_module_name name);
 
-class CommonUartInterface: public sc_module,
-							public InterruptSource{
-public:
-	CommonUartInterface(sc_module_name name);
-	virtual ~CommonUartInterface();
+        virtual ~CommonUartInterface();
 
-	virtual bool inputReady();
+        virtual bool inputReady();
 
-	virtual void interruptLoop();
-	virtual void setPollPeriod(sc_time time);
+        virtual void interruptLoop();
 
-	virtual void selectChannel(string channel);
+        virtual void setPollPeriod(sc_time time);
 
-	virtual void writeByte(char c);
-	virtual char readByte();
+        virtual void selectChannel(string channel);
 
-	virtual void setBaudRate(uint32_t rate) { mBaudRate=rate; }
+        virtual void writeByte(char c);
 
-	SC_HAS_PROCESS(CommonUartInterface);
+        virtual char readByte();
 
-protected:
-	bool mIntEnable;
-	bool mOutIntEnable;
-	bool mInterrupting;
-	bool mOutInt;
-	sc_time mPollPeriod;
-	std::pair<int,int> mChannel;
-	char mLastWritten;
-	uint32_t mBaudRate;
-	bool mHasTimeout;
-	uint32_t mTimeoutCounter;
-	bool mToIntEnable;
+        virtual void setBaudRate(uint32_t rate) { mBaudRate = rate; }
 
+        SC_HAS_PROCESS(CommonUartInterface);
 
-};
-
-
+    protected:
+        bool mIntEnable;
+        bool mOutIntEnable;
+        bool mInterrupting;
+        bool mOutInt;
+        sc_time mPollPeriod;
+        std::pair<int, int> mChannel;
+        char mLastWritten;
+        uint32_t mBaudRate;
+        bool mHasTimeout;
+        uint32_t mTimeoutCounter;
+        bool mToIntEnable;
+    };
 } /* namespace vpsim */
 
 #endif /* _COMMONUARTINTERFACE_HPP_ */

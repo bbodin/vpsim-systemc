@@ -17,5 +17,4 @@
 #include <gic400.hpp>
 
 namespace vpsim {
-
 } /* namespace vpsim */

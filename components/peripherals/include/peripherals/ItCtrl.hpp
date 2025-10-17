@@ -22,40 +22,36 @@
 #include "InterruptIf.hpp"
 
 namespace vpsim {
+    class ItCtrl : public sc_module, public TargetIf<unsigned char> {
+        typedef ItCtrl this_type;
 
-class ItCtrl : public sc_module, public TargetIf<unsigned char> {
+    private:
+        // number of interrupt lines
+        uint32_t mLineCount;
+        //Address range for an interrupt line
+        uint32_t mLineSize;
 
-	typedef ItCtrl this_type;
+        int *mLines; //contains indices of interrupt lines in their associated CPUs
+        InterruptIf **mModules; //contains modules associated with each interrupt line in Lines
 
-private:
-	// number of interrupt lines
-	uint32_t mLineCount;
-	//Address range for an interrupt line
-	uint32_t mLineSize;
+        uint32_t mWordLengthInByte;
 
-	int* mLines;				//contains indices of interrupt lines in their associated CPUs
-	InterruptIf** mModules;	//contains modules associated with each interrupt line in Lines
+    public:
+        ItCtrl(sc_module_name Name, uint32_t LineCount, uint32_t LineSize);
 
-	uint32_t mWordLengthInByte;
+        virtual ~ItCtrl();
 
+        //! link an output interrupt line @param LineIdx to a module implementing InterruptIf @param Module and its nth @param LineNumber
+        void Map(uint32_t LineIdx, InterruptIf *Module, uint32_t LineNumber);
 
-public:
-	ItCtrl(sc_module_name Name, uint32_t LineCount, uint32_t LineSize );
-	virtual ~ItCtrl();
+        //TLM access functions
+        //! Read access have no side effect whatsoever
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 
-	//! link an output interrupt line @param LineIdx to a module implementing InterruptIf @param Module and its nth @param LineNumber
-	void Map(uint32_t LineIdx, InterruptIf* Module, uint32_t LineNumber);
-
-	//TLM access functions
-	//! Read access have no side effect whatsoever
-	tlm::tlm_response_status read ( payload_t & payload, sc_time & delay );
-
-	//! TLM write access trigger a call to the update_irq function of the InterruptIf linked with this
+        //! TLM write access trigger a call to the update_irq function of the InterruptIf linked with this
 	//! address range.
-	tlm::tlm_response_status write ( payload_t & payload, sc_time & delay );
-
-};
-
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
+    };
 } /* namespace vpsim */
 
 #endif /* _ITCTRL_HPP_ */

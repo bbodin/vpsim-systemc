@@ -21,50 +21,42 @@
 #include "logger.hpp"
 #include "logResources.hpp"
 
-namespace vpsim{
-
-Appointment::Appointment(Logger& logger,
-                         sc_core::sc_time date,
-                         DebugLvl debugLvl):
-  mLogger(logger), mDate(date), mDebugLvl(debugLvl)
-{}
+namespace vpsim {
+    Appointment::Appointment(Logger &logger,
+                             sc_core::sc_time date,
+                             DebugLvl debugLvl) : mLogger(logger), mDate(date), mDebugLvl(debugLvl) {
+    }
 
 
-bool Appointment::isPassed() const
-{
-  return mDate < sc_core::sc_time_stamp();
-}
+    bool Appointment::isPassed() const {
+        return mDate < sc_core::sc_time_stamp();
+    }
 
-bool Appointment::isNow() const
-{
-  return mDate == sc_core::sc_time_stamp();
-}
+    bool Appointment::isNow() const {
+        return mDate == sc_core::sc_time_stamp();
+    }
 
 
-sc_core::sc_time Appointment::timeTo() const
-{
-  return mDate - sc_core::sc_time_stamp();
-}
+    sc_core::sc_time Appointment::timeTo() const {
+        return mDate - sc_core::sc_time_stamp();
+    }
 
 
-void Appointment::apply()
-{
-  if(LoggerCore::get().isRegistered(mLogger)){
-    LoggerCore::get().setDebugLvl(mLogger.name(), mDebugLvl);
-  }
-}
+    void Appointment::apply() {
+        if (LoggerCore::get().isRegistered(mLogger)) {
+            LoggerCore::get().setDebugLvl(mLogger.name(), mDebugLvl);
+        }
+    }
 
-//! @brief classic insertion operator overloading for class Appointment
-std::ostream& operator<<(std::ostream& ostr, const Appointment& appointment)
-{
-  //Allign the data in an array whose dimension are given by the macros in the header
-  if(LoggerCore::get().isRegistered(appointment.mLogger)){
-    ostr << std::setw(LOGGER_NAME_WIDTH)  << appointment.mLogger.name() << " |"
-         << std::setw(DATE_WIDTH)         << appointment.mDate          << " |"
-         << std::setw(DEBUG_LVL_WIDTH)    << appointment.mDebugLvl
-         << std::endl;
-  }
-  return ostr;
-}
-
+    //! @brief classic insertion operator overloading for class Appointment
+    std::ostream &operator<<(std::ostream &ostr, const Appointment &appointment) {
+        //Allign the data in an array whose dimension are given by the macros in the header
+        if (LoggerCore::get().isRegistered(appointment.mLogger)) {
+            ostr << std::setw(LOGGER_NAME_WIDTH) << appointment.mLogger.name() << " |"
+                    << std::setw(DATE_WIDTH) << appointment.mDate << " |"
+                    << std::setw(DEBUG_LVL_WIDTH) << appointment.mDebugLvl
+                    << std::endl;
+        }
+        return ostr;
+    }
 }

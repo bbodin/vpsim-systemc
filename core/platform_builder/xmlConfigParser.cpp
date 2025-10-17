@@ -19,24 +19,21 @@
 #include "platform_builder/xmlConfigParser.hpp"
 
 
-namespace vpsim{
-
-    XmlConfigParser::XmlConfigParser(const std::string& xmlFile) :
-            mSource(xmlFile.c_str()),
-            mXml()
-            {
-                mXml.parse<0>(mSource.data());
-            }
+namespace vpsim {
+    XmlConfigParser::XmlConfigParser(const std::string &xmlFile) : mSource(xmlFile.c_str()),
+                                                                   mXml() {
+        mXml.parse<0>(mSource.data());
+    }
 
     bool XmlConfigParser::read() {
         try {
-            rapidxml::xml_node<>* node = mXml.first_node("vpsim");
+            rapidxml::xml_node<> *node = mXml.first_node("vpsim");
             if (node && (std::string(node->name()) == "vpsim")) {
                 readVpsim(node);
             } else {
                 XmlConfigParser::unsupportedXmlFile();
             }
-        } catch (const std::exception& e) {
+        } catch (const std::exception &e) {
             LOG_GLOBAL_ERROR << e.what() << std::endl;
             std::cerr << e.what() << std::endl;
             throw e;
@@ -44,8 +41,8 @@ namespace vpsim{
         return true;
     }
 
-    void XmlConfigParser::readVpsim(rapidxml::xml_node<>* node) {
-        const char* source = node->first_attribute("source")->value();
+    void XmlConfigParser::readVpsim(rapidxml::xml_node<> *node) {
+        const char *source = node->first_attribute("source")->value();
         if (source && std::string(source) == "python") {
             readFromPythonXml();
         } else {
@@ -56,7 +53,7 @@ namespace vpsim{
     void XmlConfigParser::readFromPythonXml() {
         assert(mXml.first_node("vpsim"));
 
-        rapidxml::xml_node<>* node = mXml.first_node("vpsim")->first_node("platform");
+        rapidxml::xml_node<> *node = mXml.first_node("vpsim")->first_node("platform");
         if (node && std::string(node->name()) == "platform") {
             readPlatform(node);
         } else {
@@ -70,7 +67,7 @@ namespace vpsim{
         }
     }
 
-    void XmlConfigParser::readPlatform(rapidxml::xml_node<>* platformNode) {
+    void XmlConfigParser::readPlatform(rapidxml::xml_node<> *platformNode) {
         assert(platformNode->first_node("ips"));
 
         rapidxml::xml_node<> *ipsNode = platformNode->first_node("ips");
@@ -91,12 +88,12 @@ namespace vpsim{
     }
 
 
-    void XmlConfigParser::readIps(rapidxml::xml_node<>* ipsNode) {
+    void XmlConfigParser::readIps(rapidxml::xml_node<> *ipsNode) {
         assert(ipsNode && std::strcmp(ipsNode->name(), "ips") == 0);
 
         for (rapidxml::xml_node<> *ipNode = ipsNode->first_node(); ipNode; ipNode = ipNode->next_sibling()) {
-            std::string ipName (ipNode->name());
-            std::string name   (ipNode->first_attribute("name")->value());
+            std::string ipName(ipNode->name());
+            std::string name(ipNode->first_attribute("name")->value());
 
             mBuilder.beginBuild(ipName, name);
             readIpAttributes(ipNode);
@@ -112,7 +109,7 @@ namespace vpsim{
         }
     }
 
-    void XmlConfigParser::readLinks(rapidxml::xml_node<>* linksNode) {
+    void XmlConfigParser::readLinks(rapidxml::xml_node<> *linksNode) {
         assert(linksNode && std::strcmp(linksNode->name(), "links") == 0);
         for (rapidxml::xml_node<> *linkNode = linksNode->first_node(); linkNode; linkNode = linkNode->next_sibling()) {
             if (std::string(linkNode->name()) == "link") {
@@ -123,20 +120,19 @@ namespace vpsim{
         }
     }
 
-    void XmlConfigParser::readIpAttributes(rapidxml::xml_node<>* ipNode) {
-
+    void XmlConfigParser::readIpAttributes(rapidxml::xml_node<> *ipNode) {
         for (rapidxml::xml_node<> *attrNode = ipNode->first_node(); attrNode; attrNode = attrNode->next_sibling()) {
-            std::string attr (attrNode->name());
-            std::string value (attrNode->value());
+            std::string attr(attrNode->name());
+            std::string value(attrNode->value());
             mBuilder.setAttribute(attr, value);
         }
     }
 
-    void XmlConfigParser::readLink(rapidxml::xml_node<>* linkNode) {
+    void XmlConfigParser::readLink(rapidxml::xml_node<> *linkNode) {
         assert(linkNode && std::strcmp(linkNode->name(), "link") == 0);
 
         std::string fromName, fromPort, toName, toPort;
-        rapidxml::xml_node<>* fromNode = linkNode->first_node("from");
+        rapidxml::xml_node<> *fromNode = linkNode->first_node("from");
         if (fromNode) {
             fromPort = std::string(fromNode->first_attribute("port")->value());
             fromName = std::string(fromNode->value());
@@ -144,8 +140,8 @@ namespace vpsim{
             XmlConfigParser::unsupportedXmlFile();
         }
 
-        rapidxml::xml_node<>* toNode = linkNode->first_node("to");
-        if(toNode){
+        rapidxml::xml_node<> *toNode = linkNode->first_node("to");
+        if (toNode) {
             toPort = std::string(toNode->first_attribute("port")->value());
             toName = std::string(toNode->value());
         } else {
@@ -155,26 +151,27 @@ namespace vpsim{
         mBuilder.connect(fromName, fromPort, toName, toPort);
     }
 
-    void XmlConfigParser::readSimulation(rapidxml::xml_node<>* node) {
+    void XmlConfigParser::readSimulation(rapidxml::xml_node<> *node) {
         assert(node && std::strcmp(node->name(), "simulation") == 0);
-        for (rapidxml::xml_node<>* simNode = node->first_node(); simNode; simNode = simNode->next_sibling()) {
-            std::string simNodeName (simNode->name());
-            if(simNodeName == "quantum"){
+        for (rapidxml::xml_node<> *simNode = node->first_node(); simNode; simNode = simNode->next_sibling()) {
+            std::string simNodeName(simNode->name());
+            if (simNodeName == "quantum") {
                 //simNode->skip_children();
                 cerr << "Global quantum is not currently supported" << endl;
                 LOG_GLOBAL_INFO << "Global quantum is not currently supported" << endl;
-            } else if (simNodeName == "log"){
+            } else if (simNodeName == "log") {
                 bool enable = std::string(simNode->value()) == "enable";
                 LoggerCore::get().enableLogging(enable);
-            } else if (simNodeName == "defaultBlockingTLM"){
-                auto defaultBTLM = std::string(simNode->value()) == "enable" ?
-                    BlockingTLMEnabledParameter::BT_ENABLED : BlockingTLMEnabledParameter::BT_DISABLED;
+            } else if (simNodeName == "defaultBlockingTLM") {
+                auto defaultBTLM = std::string(simNode->value()) == "enable"
+                                       ? BlockingTLMEnabledParameter::BT_ENABLED
+                                       : BlockingTLMEnabledParameter::BT_DISABLED;
                 BlockingTLMEnabledParameter::setDefault(defaultBTLM);
-            } else if (simNodeName == "logSchedule"){
+            } else if (simNodeName == "logSchedule") {
                 readLogSchedule(simNode);
-            } else if (simNodeName == "blockingTLMSchedule"){
+            } else if (simNodeName == "blockingTLMSchedule") {
                 readBlockingTLMSchedule(simNode);
-            } else if (simNodeName == "callback"){
+            } else if (simNodeName == "callback") {
                 readCallback(simNode);
             } else {
                 XmlConfigParser::unsupportedXmlFile();
@@ -182,7 +179,7 @@ namespace vpsim{
         }
     }
 
-    void XmlConfigParser::readLogSchedule(rapidxml::xml_node<>* simNode) {
+    void XmlConfigParser::readLogSchedule(rapidxml::xml_node<> *simNode) {
         assert(simNode && std::strcmp(simNode->name(), "logSchedule") == 0);
 
         bool stringTriggered = false;
@@ -191,7 +188,7 @@ namespace vpsim{
         sc_time triggerTime = SC_ZERO_TIME;
         std::string triggerString;
         for (rapidxml::xml_node<> *logNode = simNode->first_node(); logNode; logNode = logNode->next_sibling()) {
-            std::string logNodeName (logNode->name());
+            std::string logNodeName(logNode->name());
             if (logNodeName == "timeTrigger") {
                 stringTriggered = false;
                 triggerTime = sc_time(std::stoul(logNode->value()), SC_PS);
@@ -202,25 +199,25 @@ namespace vpsim{
             } else if (logNodeName == "ipName") {
                 ipName = std::string(logNode->value());
             } else if (logNodeName == "debugLevel") {
-                const auto& dbgLvlVec = std::vector<DebugLvl>({dbg0, dbg1, dbg2, dbg3, dbg4, dbg5, dbg6});
+                const auto &dbgLvlVec = std::vector<DebugLvl>({dbg0, dbg1, dbg2, dbg3, dbg4, dbg5, dbg6});
                 dbgLvl = dbgLvlVec.at(std::stoul(logNode->value()));
             } else {
                 XmlConfigParser::unsupportedXmlFile();
             }
         }
 
-        if(stringTriggered){
+        if (stringTriggered) {
             //TODO: Handle string trigger with smart UART
         } else {
             LoggerCore::get().addAppointment(ipName, triggerTime, dbgLvl);
         }
     }
 
-    void XmlConfigParser::readBlockingTLMSchedule(rapidxml::xml_node<>* simNode) {
+    void XmlConfigParser::readBlockingTLMSchedule(rapidxml::xml_node<> *simNode) {
         assert(simNode && std::strcmp(simNode->name(), "blockingTLMSchedule") == 0);
         bool stringTriggered = false,
-             timeTriggered = false,
-             withAddrRange = false;
+                timeTriggered = false,
+                withAddrRange = false;
         string ipName;
         unique_ptr<ModuleParameter> param;
         sc_time triggerTime = SC_ZERO_TIME;
@@ -239,8 +236,9 @@ namespace vpsim{
             } else if (logNodeName == "ipName") {
                 ipName = std::string(logNode->value());
             } else if (logNodeName == "blockingTLM") {
-                param = (std::string(logNode->value()) == "enable") ?
-                    BlockingTLMEnabledParameter::bt_enabled.clone() : BlockingTLMEnabledParameter::bt_disabled.clone();
+                param = (std::string(logNode->value()) == "enable")
+                            ? BlockingTLMEnabledParameter::bt_enabled.clone()
+                            : BlockingTLMEnabledParameter::bt_disabled.clone();
             } else if (logNodeName == "addrRange") {
                 withAddrRange = true;
                 as = readAddrRange(logNode);
@@ -249,26 +247,26 @@ namespace vpsim{
             }
         }
 
-        if(stringTriggered && timeTriggered){
+        if (stringTriggered && timeTriggered) {
             XmlConfigParser::unsupportedXmlFile();
         }
 
-        if(stringTriggered){
-            auto& smartUart = *VpsimIp<InPortType, OutPortType>::AllInstances.at("SmartUart").at(mSmartUartName);
+        if (stringTriggered) {
+            auto &smartUart = *VpsimIp<InPortType, OutPortType>::AllInstances.at("SmartUart").at(mSmartUartName);
 
-            if(withAddrRange){
+            if (withAddrRange) {
                 smartUart.registerStringParamTrigger(triggerString, ipName, as, *param);
             } else {
                 smartUart.registerStringParamTrigger(triggerString, ipName, *param);
             }
-        } else if(timeTriggered){
-            if(withAddrRange){
+        } else if (timeTriggered) {
+            if (withAddrRange) {
                 ParamManager::get().addAppointment(ipName, as, triggerTime, *param);
             } else {
                 ParamManager::get().addAppointment(ipName, triggerTime, *param);
             }
         } else {
-            if(withAddrRange){
+            if (withAddrRange) {
                 ParamManager::get().setParameter(ipName, as, *param);
             } else {
                 ParamManager::get().setParameter(ipName, *param);
@@ -276,12 +274,12 @@ namespace vpsim{
         }
     }
 
-    AddrSpace XmlConfigParser::readAddrRange(rapidxml::xml_node<>* addrNode) {
+    AddrSpace XmlConfigParser::readAddrRange(rapidxml::xml_node<> *addrNode) {
         assert(addrNode && std::strcmp(addrNode->name(), "addrRange") == 0);
 
         uint64_t b{0}, e{0};
-        for (rapidxml::xml_node<>* node = addrNode->first_node(); node; node = node->next_sibling()) {
-            std::string nodeName (node->name());
+        for (rapidxml::xml_node<> *node = addrNode->first_node(); node; node = node->next_sibling()) {
+            std::string nodeName(node->name());
             if (nodeName == "start") {
                 b = std::stoul(node->value());
             } else if (nodeName == "end") {
@@ -293,15 +291,16 @@ namespace vpsim{
         return AddrSpace(b, e);
     }
 
-    void XmlConfigParser::readCallback(rapidxml::xml_node<>* callbackNode) {
+    void XmlConfigParser::readCallback(rapidxml::xml_node<> *callbackNode) {
         assert(callbackNode && std::strcmp(callbackNode->name(), "callback") == 0);
 
-        auto& callbackRegister = *VpsimIp<InPortType, OutPortType>::AllInstances.at(mCallbackRegisterType).at(mCallbackRegisterName);
+        auto &callbackRegister = *VpsimIp<InPortType, OutPortType>::AllInstances.at(mCallbackRegisterType).at(
+            mCallbackRegisterName);
         uint64_t val{0};
         std::string callback;
 
-        for (rapidxml::xml_node<>* node = callbackNode->first_node(); node; node = node->next_sibling()) {
-            std::string nodeName (node->name());
+        for (rapidxml::xml_node<> *node = callbackNode->first_node(); node; node = node->next_sibling()) {
+            std::string nodeName(node->name());
             if (nodeName == "value") {
                 val = std::stoul(node->value());
             } else if (nodeName == "call") {

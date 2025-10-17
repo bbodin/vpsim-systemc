@@ -21,39 +21,36 @@
 #include <list>
 #include "appointment.hpp"
 
-namespace vpsim{
+namespace vpsim {
+    //! @brief SystemC module responsible for changing the logging parameter of the Logger instances during the simulation
+    SC_MODULE(LoggerScheduler) {
+    private:
+        //! @brief Ordered list of the Appointments to come
+        std::list<Appointment> mSchedule;
 
-//! @brief SystemC module responsible for changing the logging parameter of the Logger instances during the simulation
-SC_MODULE(LoggerScheduler){
+        //! @brief Event to notify when an Appointment is added to mSchedule
+        sc_core::sc_event mNewAppointmentEvent;
 
-private:
-  //! @brief Ordered list of the Appointments to come
-  std::list<Appointment> mSchedule;
+    public:
+        //! @brief SystemC standard constructor
+        //! @param[in] name Name of the instance as a systemC module
+        LoggerScheduler(sc_core::sc_module_name name);
 
-  //! @brief Event to notify when an Appointment is added to mSchedule
-  sc_core::sc_event mNewAppointmentEvent;
+        //! @cond
+        // Ignore this systemc specificity for the documentation
+        SC_HAS_PROCESS(LoggerScheduler);
+        //! @endcond
 
-public:
-  //! @brief SystemC standard constructor
-  //! @param[in] name Name of the instance as a systemC module
-  LoggerScheduler(sc_core::sc_module_name name);
-  //! @cond
-  // Ignore this systemc specificity for the documentation
-  SC_HAS_PROCESS(LoggerScheduler);
-  //! @endcond
+        //! @brief SC_THREAD which wakes up when an Appointment expire or is added to the schedule
+        void schedule();
 
-  //! @brief SC_THREAD which wakes up when an Appointment expire or is added to the schedule
-  void schedule();
+        //! @brief Adds an Appointment to the schedule
+        //! @param[in] appointment Appointment to be added to the Schedule
+        void addAppointment(const Appointment appointment);
 
-  //! @brief Adds an Appointment to the schedule
-  //! @param[in] appointment Appointment to be added to the Schedule
-  void addAppointment(const Appointment appointment);
-
-  friend std::ostream& operator<<(std::ostream& ostr,
-                                  const LoggerScheduler& loggerScheduler);
-
-};
-
+        friend std::ostream &operator<<(std::ostream &ostr,
+                                        const LoggerScheduler &loggerScheduler);
+    };
 }
 
 #endif /* end of include guard: _LOGGER_SCHEDULER_HPP_ */

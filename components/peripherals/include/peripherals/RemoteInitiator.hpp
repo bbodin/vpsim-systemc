@@ -22,55 +22,53 @@
 #include "InterruptIf.hpp"
 
 namespace vpsim {
+    class RemoteInitiator : public sc_module, public InitiatorIf, public GenericRemoteInitiator, public InterruptIf {
+    public:
+        RemoteInitiator(sc_module_name name) : sc_module(name), InitiatorIf(string(name), 0, true, 1) {
+            SC_THREAD(riPoll);
+        }
 
-class RemoteInitiator : public sc_module,public InitiatorIf,public GenericRemoteInitiator, public InterruptIf {
-public:
-	RemoteInitiator(sc_module_name name): sc_module(name),InitiatorIf(string(name),0,true,1) {
-		SC_THREAD(riPoll);
-	}
-	virtual ~RemoteInitiator() {}
+        virtual ~RemoteInitiator() {
+        }
 
 
-	void riPoll() {
-		while (true) {
-			wait(mPollPeriod,SC_NS);
-			poll();
-		}
-	}
+        void riPoll() {
+            while (true) {
+                wait(mPollPeriod, SC_NS);
+                poll();
+            }
+        }
 
-	virtual uint32_t localRead(uint64_t addr, uint64_t size, uint8_t* data) override {
-		sc_time t;
-		auto status = InitiatorIf::target_mem_access(0, addr, size, data, READ, t);
-		if (status != tlm::TLM_OK_RESPONSE) {
-			completeRead(REMOTE_READ_ERR, data);
-			return REMOTE_READ_ERR;
-		}
-		else {
-			completeRead(REMOTE_READ_OK, data);
-			return REMOTE_READ_OK;
-		}
-	}
+        virtual uint32_t localRead(uint64_t addr, uint64_t size, uint8_t *data) override {
+            sc_time t;
+            auto status = InitiatorIf::target_mem_access(0, addr, size, data, READ, t);
+            if (status != tlm::TLM_OK_RESPONSE) {
+                completeRead(REMOTE_READ_ERR, data);
+                return REMOTE_READ_ERR;
+            } else {
+                completeRead(REMOTE_READ_OK, data);
+                return REMOTE_READ_OK;
+            }
+        }
 
-	virtual uint32_t localWrite(uint64_t addr, uint64_t size, uint8_t* data) override {
-		sc_time t;
-		auto status = InitiatorIf::target_mem_access(0, addr, size, data, WRITE, t);
-		if (status != tlm::TLM_OK_RESPONSE) {
-			completeWrite(REMOTE_WRITE_ERR);
-			return REMOTE_WRITE_ERR;
-		}
-		else {
-			completeWrite(REMOTE_WRITE_OK);
-			return REMOTE_WRITE_OK;
-		}
-	}
+        virtual uint32_t localWrite(uint64_t addr, uint64_t size, uint8_t *data) override {
+            sc_time t;
+            auto status = InitiatorIf::target_mem_access(0, addr, size, data, WRITE, t);
+            if (status != tlm::TLM_OK_RESPONSE) {
+                completeWrite(REMOTE_WRITE_ERR);
+                return REMOTE_WRITE_ERR;
+            } else {
+                completeWrite(REMOTE_WRITE_OK);
+                return REMOTE_WRITE_OK;
+            }
+        }
 
-	virtual void update_irq(uint64_t value, uint32_t line) override {
-		interrupt(line, value);
-	}
+        virtual void update_irq(uint64_t value, uint32_t line) override {
+            interrupt(line, value);
+        }
 
-	SC_HAS_PROCESS(RemoteInitiator);
-};
-
+        SC_HAS_PROCESS(RemoteInitiator);
+    };
 } /* namespace vpsim */
 
 #endif /* _REMOTEINITIATOR_HPP_ */

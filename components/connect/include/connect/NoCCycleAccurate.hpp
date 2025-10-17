@@ -23,28 +23,25 @@
 #include "WrapperNoC.hpp"
 #include "SyncFifo.hpp"
 
-namespace vpsim
-{
+namespace vpsim {
+    class C_NoCCycleAccurate : public sc_module {
+        C_NoCBase *Topo; //!< the topology of the network
 
-class C_NoCCycleAccurate: public sc_module
-{
-	C_NoCBase* Topo; //!< the topology of the network
+        map<T_RouterID, C_Router *> Routers;
+        map<std::pair<T_RouterID, T_RouterID>, sc_fifo<NoCFlit> *> Fifos;
+        unsigned int FifoSize;
+        bool NoCCycleAccurateBeforeElaborationCalled;
+        list<C_WrapperMasterNoCToFifo *> WrapperMasterNoCToFifos; //to store master wrappers
+        list<C_WrapperSlaveFifoToNoC *> WrapperSlaveFifoToNoCs; //to store master wrappers
+        list<sc_fifo<NoCFlit> *> LocalLinksFifo;
 
-	map<T_RouterID,C_Router*> Routers;
-	map< std::pair<T_RouterID,T_RouterID>,sc_fifo<NoCFlit>* > Fifos;
-	unsigned int FifoSize;
-	bool NoCCycleAccurateBeforeElaborationCalled;
-	list< C_WrapperMasterNoCToFifo * > WrapperMasterNoCToFifos; //to store master wrappers
-	list< C_WrapperSlaveFifoToNoC * > WrapperSlaveFifoToNoCs; //to store master wrappers
-	list< sc_fifo<NoCFlit>* > LocalLinksFifo;
+    public:
+        C_NoCCycleAccurate(sc_module_name name, C_NoCBase *Topo_);
 
-	public:
-	C_NoCCycleAccurate(sc_module_name name, C_NoCBase* Topo_);
-	~C_NoCCycleAccurate();
+        ~C_NoCCycleAccurate();
 
-	void before_end_of_elaboration();
-
-};
-};// namespace vpsim
+        void before_end_of_elaboration();
+    };
+}; // namespace vpsim
 
 #endif  //NOCCYCLEACCURATE

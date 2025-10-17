@@ -17,14 +17,12 @@
 #ifndef _COMMON_HPP_
 #define _COMMON_HPP_
 
-namespace vpsim{
-
-//!
-//! @enum DebugLvl
-//! @brief Gives aliases for the debug levels
-//!
-enum DebugLvl {dbg0, dbg1, dbg2, dbg3, dbg4, dbg5, dbg6};
-
+namespace vpsim {
+    //!
+    //! @enum DebugLvl
+    //! @brief Gives aliases for the debug levels
+    //!
+    enum DebugLvl { dbg0, dbg1, dbg2, dbg3, dbg4, dbg5, dbg6 };
 }
 
 #endif /* end of include guard: _COMMON_HPP_ */

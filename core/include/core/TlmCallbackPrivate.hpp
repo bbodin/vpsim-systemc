@@ -21,45 +21,46 @@
 #include "TlmCallbackIf.hpp"
 
 namespace vpsim {
+    template<class MODULE>
+    class TlmCallbackPrivate : public TlmCallbackIf {
+        MODULE *mModulePtr;
 
+        typedef tlm::tlm_response_status (MODULE::*FuncPtrType)(payload_t &, sc_core::sc_time &);
 
-template<class MODULE>
-class TlmCallbackPrivate : public TlmCallbackIf
-{
-	MODULE* mModulePtr;
-	typedef tlm::tlm_response_status (MODULE::*FuncPtrType)( payload_t &, sc_core::sc_time & );
-	FuncPtrType mFuncPtr;
-//	void * mPtfunc; //pointer to member function
+        FuncPtrType mFuncPtr;
+        //	void * mPtfunc; //pointer to member function
 
-public:
-  TlmCallbackPrivate(MODULE* classPtr,FuncPtrType cbProc);
-  virtual ~TlmCallbackPrivate();
+    public:
+        TlmCallbackPrivate(MODULE *classPtr, FuncPtrType cbProc);
 
-  //implementation of Callback_t features
-  virtual tlm::tlm_response_status operator() ( payload_t & payload, sc_core::sc_time & delay );
-//  void * PtFunc();
+        virtual ~TlmCallbackPrivate();
 
-};
+        //implementation of Callback_t features
+        virtual tlm::tlm_response_status operator()(payload_t &payload, sc_core::sc_time &delay);
 
-//---------------------------------------------------------------------------//
-// Callback features                                                         //
-//---------------------------------------------------------------------------//
+        //  void * PtFunc();
+    };
 
-template <typename MODULE>
-TlmCallbackPrivate<MODULE>::TlmCallbackPrivate(MODULE* classPtr,FuncPtrType cbProc):mModulePtr(classPtr),mFuncPtr(cbProc){
-		  //mPtfunc = (void*) (mModulePtr->*mFuncPtr);
-}
+    //---------------------------------------------------------------------------//
+    // Callback features                                                         //
+    //---------------------------------------------------------------------------//
 
-template <typename MODULE>
-TlmCallbackPrivate< MODULE >::~TlmCallbackPrivate(){}
+    template<typename MODULE>
+    TlmCallbackPrivate<MODULE>::TlmCallbackPrivate(MODULE *classPtr, FuncPtrType cbProc) : mModulePtr(classPtr),
+        mFuncPtr(cbProc) {
+        //mPtfunc = (void*) (mModulePtr->*mFuncPtr);
+    }
 
-template <typename MODULE>
-tlm::tlm_response_status TlmCallbackPrivate< MODULE >::operator() ( payload_t & payload, sc_core::sc_time & delay ){
-		return (mModulePtr->*mFuncPtr)( payload, delay );
-}
+    template<typename MODULE>
+    TlmCallbackPrivate<MODULE>::~TlmCallbackPrivate() {
+    }
+
+    template<typename MODULE>
+    tlm::tlm_response_status TlmCallbackPrivate<MODULE>::operator()(payload_t &payload, sc_core::sc_time &delay) {
+        return (mModulePtr->*mFuncPtr)(payload, delay);
+    }
 
 #define  REGISTER(type,fun) ( new vpsim::TlmCallbackPrivate<type>( this, &type::fun ) )
-
 } /* namespace vpsim */
 
 #endif /* _TLMCALLBACKPRIVATE_HPP_ */

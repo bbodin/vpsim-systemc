@@ -19,48 +19,48 @@
 
 #include "global.hpp"
 
-namespace vpsim
-{
-	//! ParallelQuantumKeeper leverages tlm_utils::tlm_quantumkeeper to provide synchronous time events between
-	//! LT initiators. It makes sure that synchronization occur on specific time stamps and do not induce initiators
+namespace vpsim {
+    //! ParallelQuantumKeeper leverages tlm_utils::tlm_quantumkeeper to provide synchronous time events between
+    //! LT initiators. It makes sure that synchronization occur on specific time stamps and do not induce initiators
     //! to run at different time events (though committing waits every quantum in average)
-	class ParallelQuantumKeeper : public tlm_utils::tlm_quantumkeeper
-	{
-	private:
-		//stats
-		uint32_t forceSyncCount;
-		uint32_t syncCount;
+    class ParallelQuantumKeeper : public tlm_utils::tlm_quantumkeeper {
+    private:
+        //stats
+        uint32_t forceSyncCount;
+        uint32_t syncCount;
 
-	public:
-		//!Constructor
-		ParallelQuantumKeeper();
-		ParallelQuantumKeeper(unsigned int quantum);
+    public:
+        //!Constructor
+        ParallelQuantumKeeper();
 
-		//!Destructor
-		virtual ~ParallelQuantumKeeper();
+        ParallelQuantumKeeper(unsigned int quantum);
+
+        //!Destructor
+        virtual ~ParallelQuantumKeeper();
 
 
-		//! Synchronization with systemc time using regular quantum steps (multiples of quantum)
-		//! to be used by default
-		virtual void sync();
+        //! Synchronization with systemc time using regular quantum steps (multiples of quantum)
+        //! to be used by default
+        virtual void sync();
 
-		sc_time getNextSyncPoint() { return m_next_sync_point; }
+        sc_time getNextSyncPoint() { return m_next_sync_point; }
 
-		//! forced synchronization at time stamps unaligned with quantum
-		//! to be used when absolutely necessary for synchronization purposes (adds some synchronization poitns)
-		void forceSync();
+        //! forced synchronization at time stamps unaligned with quantum
+        //! to be used when absolutely necessary for synchronization purposes (adds some synchronization poitns)
+        void forceSync();
 
-		//! convenience proxy to clarify the set function defined by tlm_quantumkeeper
-		//! and be more consistent with existing tlm_quantumkeeper::get_local_time
-		void set_local_time(const sc_core::sc_time& t);
+        //! convenience proxy to clarify the set function defined by tlm_quantumkeeper
+        //! and be more consistent with existing tlm_quantumkeeper::get_local_time
+        void set_local_time(const sc_core::sc_time &t);
 
-		ParallelQuantumKeeper& operator+=( sc_time const t);
+        ParallelQuantumKeeper &operator+=(sc_time const t);
 
-		uint32_t getSyncCount();
-		uint32_t getForceSyncCount();
-		uint32_t getTotalSyncCount();
-	};
+        uint32_t getSyncCount();
+
+        uint32_t getForceSyncCount();
+
+        uint32_t getTotalSyncCount();
+    };
 }
 
 #endif /* QUANTUM_HPP_ */
-

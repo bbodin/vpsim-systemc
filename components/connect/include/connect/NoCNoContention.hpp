@@ -21,31 +21,25 @@
 #include <tlm>
 #include "NoCTLMBase.hpp"
 
-namespace vpsim
-{
+namespace vpsim {
+    class C_NoCNoContention : public C_NoCTLMBase {
+        C_NoCBase *Topo;
+        CycleCount **HopCount; //HopCount[SrcRouterID][DestRouterID]
+        std::pair<T_RouterID, T_LinkID> **Next; // pair [RouterCount][SlaveCount] //temporary
 
-class C_NoCNoContention: public C_NoCTLMBase
-{
-	C_NoCBase* Topo;
-	CycleCount ** HopCount; //HopCount[SrcRouterID][DestRouterID]
-	std::pair<T_RouterID,T_LinkID> ** Next; // pair [RouterCount][SlaveCount] //temporary
+        bool NoCNoContentionBeforeElaborationCalled;
 
-	bool NoCNoContentionBeforeElaborationCalled;
+    public:
+        C_NoCNoContention(sc_module_name name_, C_NoCBase *Topo_);
 
-	public:
+        ~C_NoCNoContention();
 
-	C_NoCNoContention(sc_module_name name_,C_NoCBase* Topo_);
+        void before_end_of_elaboration();
 
-	~C_NoCNoContention();
-
-	void before_end_of_elaboration();
-
-	protected:
-	//ac_tlm_rsp transport(ac_tlm_req const &  req);
-	void b_transport( tlm::tlm_generic_payload& trans, sc_time& delay );
-
-};
-
-};// namespace vpsim
+    protected:
+        //ac_tlm_rsp transport(ac_tlm_req const &  req);
+        void b_transport(tlm::tlm_generic_payload &trans, sc_time &delay);
+    };
+}; // namespace vpsim
 
 #endif //NOCNOCONTENTION_HPP

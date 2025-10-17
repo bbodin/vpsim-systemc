@@ -24,33 +24,34 @@
 #include <tlm>
 
 namespace vpsim {
+    class Subsystem : public sc_core::sc_module {
+    public:
+        Subsystem(sc_core::sc_module_name name, const char *platform_xml_path);
 
-class Subsystem: public sc_core::sc_module {
-public:
-	Subsystem(sc_core::sc_module_name name, const char* platform_xml_path);
-	virtual ~Subsystem();
+        virtual ~Subsystem();
 
-	/* Call this function to obtain :
-	 * - A reference to the output socket, which you can bind to the rest of the system.
-	 * - A callback to call in order to generate an interrupt in the subsystem.
-	 */
-	std::pair<tlm::tlm_initiator_socket<>*, std::function<void(int,int)> > out(const char* port_name) {
-	    std::pair<tlm::tlm_initiator_socket<>*,void*> o = _out(port_name);
-	    return std::make_pair(o.first,
-	        [this, o](int l, int v) -> void {
-	            _apply(o.second,l,v);
-	        });
-	}
+        /* Call this function to obtain :
+         * - A reference to the output socket, which you can bind to the rest of the system.
+         * - A callback to call in order to generate an interrupt in the subsystem.
+         */
+        std::pair<tlm::tlm_initiator_socket<> *, std::function<void(int, int)> > out(const char *port_name) {
+            std::pair<tlm::tlm_initiator_socket<> *, void *> o = _out(port_name);
+            return std::make_pair(o.first,
+                                  [this, o](int l, int v) -> void {
+                                      _apply(o.second, l, v);
+                                  });
+        }
 
-	/* Call this to declare the internal pointers of RAM spaces */
-	void declare_dmi_ptr(const char* space_name, uint64_t mem_base, uint64_t size, void* pointer);
+        /* Call this to declare the internal pointers of RAM spaces */
+        void declare_dmi_ptr(const char *space_name, uint64_t mem_base, uint64_t size, void *pointer);
 
-private:
-	void* _handle;
-	std::pair<tlm::tlm_initiator_socket<>*,void*> _out(const char* port_name);
-	void _apply(void* f, int a, int b);
-};
+    private:
+        void *_handle;
 
+        std::pair<tlm::tlm_initiator_socket<> *, void *> _out(const char *port_name);
+
+        void _apply(void *f, int a, int b);
+    };
 } /* namespace vpsim */
 
 #endif /* _VPSIM_SUBSYSTEM_HPP_ */

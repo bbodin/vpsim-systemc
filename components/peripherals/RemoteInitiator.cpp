@@ -17,6 +17,4 @@
 #include <RemoteInitiator.hpp>
 
 namespace vpsim {
-
-
 } /* namespace vpsim */

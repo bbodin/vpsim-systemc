@@ -20,89 +20,84 @@
 #include "log.hpp"
 
 namespace vpsim {
+    ItCtrl::ItCtrl(sc_module_name Name, uint32_t LineCount, uint32_t LineSize) : sc_module(Name),
+        TargetIf(string(Name), LineCount * LineSize),
+        mLineCount(LineCount),
+        mLineSize(LineSize),
+        mWordLengthInByte(4) {
+        //Set timings
+        TargetIf<unsigned char>::setDmiEnable(false);
 
-ItCtrl::ItCtrl(sc_module_name Name, uint32_t LineCount, uint32_t LineSize):
-		sc_module(Name),
-		TargetIf(string(Name), LineCount * LineSize),
-		mLineCount(LineCount),
-		mLineSize(LineSize),
-		mWordLengthInByte(4)
-{
-	//Set timings
-	TargetIf <unsigned char >::setDmiEnable ( false );
+        mModules = new InterruptIf *[mLineCount];
+        mLines = new int [mLineCount];
+        for (size_t i = 0; i < mLineCount; i++) {
+            mModules[i] = NULL;
+            mLines[i] = 0;
+        }
 
-	mModules = new InterruptIf* [mLineCount];
-	mLines = new int [mLineCount];
-	for(size_t i = 0; i < mLineCount; i++) {
-		mModules[i]	= NULL;
-		mLines[i]	= 0;
-	}
-
-	TargetIf <unsigned char>::RegisterReadAccess(REGISTER(this_type,read));
-	TargetIf <unsigned char>::RegisterWriteAccess(REGISTER(this_type,write));
-}
+        TargetIf<unsigned char>::RegisterReadAccess(REGISTER(this_type, read));
+        TargetIf<unsigned char>::RegisterWriteAccess(REGISTER(this_type, write));
+    }
 
 
-ItCtrl::~ItCtrl() {
+    ItCtrl::~ItCtrl() {
+        //printf("\nItCtrl.cpp: destructor \n");
 
-	//printf("\nItCtrl.cpp: destructor \n");
+        delete[] mModules;
+        delete[] mLines;
+    }
 
-	delete[] mModules;
-	delete[] mLines;
-}
+    void ItCtrl::Map(uint32_t LineIdx, InterruptIf *Module, uint32_t LineNumber) {
+        if (LineIdx >= mLineCount) {
+            cerr << "not enough interrupt lines to connect line: " << LineNumber << " to line_idx: " << LineIdx << endl;
+        }
 
-void ItCtrl::Map(uint32_t LineIdx, InterruptIf* Module, uint32_t LineNumber) {
+        if (mModules[LineIdx] != NULL) {
+            cerr << "Overriding Interrupt line Module mapping may lead to undefined behaviour" << endl;
+        }
 
-	if (LineIdx >= mLineCount) {
-		cerr<<"not enough interrupt lines to connect line: " << LineNumber << " to line_idx: " << LineIdx <<endl;
-	}
+        if (mLines[LineIdx] != 0) {
+            cerr << "Overriding Interrupt line index mapping may lead to undefined behaviour" << endl;
+        }
 
-	if (mModules[LineIdx] != NULL){
-		cerr<<"Overriding Interrupt line Module mapping may lead to undefined behaviour" << endl;
-	}
-
-	if (mLines[LineIdx] != 0){
-		cerr<<"Overriding Interrupt line index mapping may lead to undefined behaviour" << endl;
-	}
-
-	mLines[LineIdx]		= LineNumber;
-	mModules[LineIdx]	= Module;
-
-}
+        mLines[LineIdx] = LineNumber;
+        mModules[LineIdx] = Module;
+    }
 
 
-tlm::tlm_response_status ItCtrl::read ( payload_t & payload, sc_time & delay ) {
-	LOG_DEBUG(dbg1)<<"access to ItCtrl in read mode @"<<std::hex<<payload.addr<<" len is "<<payload.len<<std::dec<<endl;
+    tlm::tlm_response_status ItCtrl::read(payload_t &payload, sc_time &delay) {
+        LOG_DEBUG(dbg1) << "access to ItCtrl in read mode @" << std::hex << payload.addr << " len is " << payload.len <<
+                std::dec << endl;
 
-	//Compute delay time (can be more accurate)
-	if ( getEnableLatency() ) {
-		delay += ((getInitialCyclesPerAccess() + getCyclesPerRead()) * (payload.len / mWordLengthInByte)) * getCycleDuration();
-	}
-	throw string("Not supposed to read ITCTRL\n\n");
-	return ( tlm::TLM_OK_RESPONSE );
-}
+        //Compute delay time (can be more accurate)
+        if (getEnableLatency()) {
+            delay += ((getInitialCyclesPerAccess() + getCyclesPerRead()) * (payload.len / mWordLengthInByte)) *
+                    getCycleDuration();
+        }
+        throw string("Not supposed to read ITCTRL\n\n");
+        return (tlm::TLM_OK_RESPONSE);
+    }
 
-tlm::tlm_response_status ItCtrl::write ( payload_t & payload, sc_time & delay ) {
+    tlm::tlm_response_status ItCtrl::write(payload_t &payload, sc_time &delay) {
+        //Compute delay time (can be more accurate)
+        if (getEnableLatency()) {
+            delay += ((getInitialCyclesPerAccess() + getCyclesPerWrite()) * (payload.len / mWordLengthInByte)) *
+                    getCycleDuration();
+        }
 
-	//Compute delay time (can be more accurate)
-	if ( getEnableLatency() ) {
-		delay += ((getInitialCyclesPerAccess() + getCyclesPerWrite()) * (payload.len / mWordLengthInByte)) * getCycleDuration();
-	}
+        LOG_DEBUG(dbg1) << "access to ItCtrl in write mode @" << std::hex << payload.addr << " len is " << payload.len
+                << std::dec << endl;
 
-	LOG_DEBUG(dbg1)<<"access to ItCtrl in write mode @"<<std::hex<<payload.addr<<" len is "<<payload.len<<std::dec<<endl;
+        uint32_t TargetLine = (payload.addr - getBaseAddress()) / mLineSize;
+        uint32_t Value = EndianHelper::GuestToHost < unsigned int
+        ,
+        true, true > (payload.ptr, payload.len);
 
-	uint32_t TargetLine = (payload.addr-getBaseAddress())/mLineSize;
-	uint32_t Value = EndianHelper::GuestToHost<unsigned int, true,true>(payload.ptr, payload.len);
+        LOG_DEBUG(dbg1) << "ItCtrl.cpp: TargetLine = " << TargetLine << " Value = " << Value << endl;
 
-	LOG_DEBUG(dbg1)<<"ItCtrl.cpp: TargetLine = "<<TargetLine<<" Value = "<<Value<<endl;
+        mModules[TargetLine]->update_irq(Value, mLines[TargetLine]);
 
-	mModules[TargetLine]->update_irq(Value, mLines[TargetLine]);
-
-	//End
-	return ( tlm::TLM_OK_RESPONSE );
-}
-
-
-
-
+        //End
+        return (tlm::TLM_OK_RESPONSE);
+    }
 } /* namespace vpsim */

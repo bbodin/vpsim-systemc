@@ -27,35 +27,35 @@
 #include "InterruptIf.hpp"
 #include "InterruptSource.hpp"
 
-namespace vpsim{
-class SystemCTarget: public sc_module, public TargetIf<uint8_t>, public InterruptSource  {
-public:
+namespace vpsim {
+    class SystemCTarget : public sc_module, public TargetIf<uint8_t>, public InterruptSource {
+    public:
+        SystemCTarget(sc_module_name name, uint64_t size) : sc_module(name), TargetIf(string(name), size) {
+            TargetIf<uint8_t>::RegisterReadAccess(REGISTER(SystemCTarget, read));
+            TargetIf<uint8_t>::RegisterWriteAccess(REGISTER(SystemCTarget, write));
 
-	SystemCTarget(sc_module_name name, uint64_t size): sc_module(name), TargetIf(string(name),size) {
-		TargetIf <uint8_t>::RegisterReadAccess(REGISTER(SystemCTarget,read));
-		TargetIf <uint8_t>::RegisterWriteAccess(REGISTER(SystemCTarget,write));
+            _int = [this](int line, int value) -> void {
+                setInterruptLine(line);
+                if (value)
+                    raiseInterrupt();
+                else
+                    lowerInterrupt();
+            };
+        }
 
-		_int = [this] (int line, int value) -> void {
-			setInterruptLine(line);
-			if (value)
-				raiseInterrupt();
-			else
-				lowerInterrupt();
-		};
-	}
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay) {
+            _out->b_transport(*payload.original_payload, delay);
+            return payload.original_payload->get_response_status();
+        }
 
-	tlm::tlm_response_status read (payload_t & payload, sc_time & delay){
-		_out->b_transport(*payload.original_payload, delay);
-		return payload.original_payload->get_response_status();
-	}
-	tlm::tlm_response_status write (payload_t & payload, sc_time & delay){
-		_out->b_transport(*payload.original_payload, delay);
-		return payload.original_payload->get_response_status();
-	}
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay) {
+            _out->b_transport(*payload.original_payload, delay);
+            return payload.original_payload->get_response_status();
+        }
 
-	tlm_utils::simple_initiator_socket<SystemCTarget> _out;
-	std::function<void(int,int)> _int;
-};
+        tlm_utils::simple_initiator_socket<SystemCTarget> _out;
+        std::function<void(int, int)> _int;
+    };
 }
 
 

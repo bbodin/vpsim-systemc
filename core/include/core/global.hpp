@@ -56,26 +56,30 @@ using namespace std;
 //! Sub namespace can be implemented for global function storage and differentiation but shall be
 //! avoided to reduce code bloat.
 //!
-namespace vpsim
-{
-
-typedef tlm_utils::simple_target_socket<tlm::tlm_fw_transport_if<>> StdTargetSocket ;//!< A TLM target socket compliant with TLM 2.0 standard (typedef to simplify socket type handling)
-typedef tlm_utils::simple_initiator_socket<tlm::tlm_bw_transport_if<>> StdInitSocket;//!< A TLM initiator socket compliant with TLM 2.0 standard (typedef to simplify socket type handling)
+namespace vpsim {
+    typedef tlm_utils::simple_target_socket<tlm::tlm_fw_transport_if<> > StdTargetSocket;
+    //!< A TLM target socket compliant with TLM 2.0 standard (typedef to simplify socket type handling)
+    typedef tlm_utils::simple_initiator_socket<tlm::tlm_bw_transport_if<> > StdInitSocket;
+    //!< A TLM initiator socket compliant with TLM 2.0 standard (typedef to simplify socket type handling)
 
 #define INTERCONNECT_LATENCY	2
 
-typedef uint8_t BYTE;
+    typedef uint8_t BYTE;
 
-typedef enum DIAG_LEVEL_ { DBG_L0, DBG_L1, DBG_L2 } DIAG_LEVEL;
-typedef enum ACCESS_TYPE_ { READ, WRITE, READ_ATOMIC, WRITE_ATOMIC } ACCESS_TYPE;
-enum ARCHI_TYPE { B16, B32, B64 };
-enum CACHE_WRITE_POLICY { WRITE_THROUGH, WRITE_AROUND, WRITE_BACK };
+    typedef enum DIAG_LEVEL_ { DBG_L0, DBG_L1, DBG_L2 } DIAG_LEVEL;
 
-extern ofstream StatStream;
-extern ofstream DebugStream;
-void OpenVpsimStreams(string RefPath);
-void CloseVpsimStreams();
+    typedef enum ACCESS_TYPE_ { READ, WRITE, READ_ATOMIC, WRITE_ATOMIC } ACCESS_TYPE;
 
+    enum ARCHI_TYPE { B16, B32, B64 };
+
+    enum CACHE_WRITE_POLICY { WRITE_THROUGH, WRITE_AROUND, WRITE_BACK };
+
+    extern ofstream StatStream;
+    extern ofstream DebugStream;
+
+    void OpenVpsimStreams(string RefPath);
+
+    void CloseVpsimStreams();
 } //end namespace vpsim
 
 

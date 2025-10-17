@@ -18,47 +18,50 @@
 #define _COSIMEXTENSIONS_HPP_
 
 namespace vpsim {
+    struct SourceExtension : public tlm::tlm_extension<SourceExtension> {
+        uint8_t type; //0 for cpu, 1 for other devices
+        sc_time time_stamp;
 
-struct SourceExtension : public tlm::tlm_extension<SourceExtension> {
-	uint8_t type;//0 for cpu, 1 for other devices
-    sc_time time_stamp;
- 	virtual tlm::tlm_extension_base* clone() const {
-		SourceExtension* copy = new SourceExtension;
-		*copy=*this;
-		return copy;
-	}
-	virtual void copy_from(tlm::tlm_extension_base const &ext) {
-		*this=dynamic_cast<SourceExtension const &>(ext);
-	}
-};
+        virtual tlm::tlm_extension_base *clone() const {
+            SourceExtension *copy = new SourceExtension;
+            *copy = *this;
+            return copy;
+        }
 
-struct SourceCpuExtension : public SourceExtension {
-	uint32_t cpu_id;
- 	virtual tlm::tlm_extension_base* clone() const override{
-		SourceCpuExtension* copy = new SourceCpuExtension;
-		*copy=*this;
-        copy->type=0;
-		return copy;
-	}
-	virtual void copy_from(tlm::tlm_extension_base const &ext) override{
-		*this=dynamic_cast<SourceCpuExtension const &>(ext);
-	}
+        virtual void copy_from(tlm::tlm_extension_base const &ext) {
+            *this = dynamic_cast<SourceExtension const &>(ext);
+        }
+    };
 
-};
+    struct SourceCpuExtension : public SourceExtension {
+        uint32_t cpu_id;
 
-struct SourceDeviceExtension : public SourceExtension {
-	uint32_t device_id;
- 	virtual tlm::tlm_extension_base* clone() const override{
-		SourceDeviceExtension* copy = new SourceDeviceExtension;
-		*copy=*this;
-		copy->type=1;
-		return copy;
-	}
-	virtual void copy_from(tlm::tlm_extension_base const &ext) override {
-		*this=dynamic_cast<SourceDeviceExtension const &>(ext);
-	}
-};
+        virtual tlm::tlm_extension_base *clone() const override {
+            SourceCpuExtension *copy = new SourceCpuExtension;
+            *copy = *this;
+            copy->type = 0;
+            return copy;
+        }
 
+        virtual void copy_from(tlm::tlm_extension_base const &ext) override {
+            *this = dynamic_cast<SourceCpuExtension const &>(ext);
+        }
+    };
+
+    struct SourceDeviceExtension : public SourceExtension {
+        uint32_t device_id;
+
+        virtual tlm::tlm_extension_base *clone() const override {
+            SourceDeviceExtension *copy = new SourceDeviceExtension;
+            *copy = *this;
+            copy->type = 1;
+            return copy;
+        }
+
+        virtual void copy_from(tlm::tlm_extension_base const &ext) override {
+            *this = dynamic_cast<SourceDeviceExtension const &>(ext);
+        }
+    };
 }
 
 #endif /* _COSIMEXTENSIONS_HPP_ */

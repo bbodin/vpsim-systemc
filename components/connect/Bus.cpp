@@ -18,22 +18,19 @@
 
 using namespace vpsim;
 
-C_Bus::C_Bus(sc_module_name name):
-	C_NoCBase(name),C_NoC(name)
-{
-	//build router
-	unsigned int RouterId=0;
+C_Bus::C_Bus(sc_module_name name) : C_NoCBase(name), C_NoC(name) {
+    //build router
+    unsigned int RouterId = 0;
 
-	//Create router
-	AddRouter(0);
+    //Create router
+    AddRouter(0);
 }
 
 
 void
-C_Bus::BuildRouting()
-{
-	//build routing map
-	C_NoC::BuildDefaultRoutingBidirectional();
+C_Bus::BuildRouting() {
+    //build routing map
+    C_NoC::BuildDefaultRoutingBidirectional();
 
-	RoutingDone=true;
+    RoutingDone = true;
 }

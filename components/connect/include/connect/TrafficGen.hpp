@@ -29,105 +29,96 @@
 
 #define FLOAT_FORMAT std::fixed<<std::setw(8)<<std::setprecision(2)<<std::setfill(' ')
 
-class C_CABATrafficGen:public sc_module
-{
-		private:
-			CycleCount InterReqLatency;
-			T_TargetID SourceID;
-			std::list<T_TargetID> * ValidTargets;
+class C_CABATrafficGen : public sc_module {
+private:
+    CycleCount InterReqLatency;
+    T_TargetID SourceID;
+    std::list<T_TargetID> *ValidTargets;
 
-			//threads
-			void Gen();
+    //threads
+    void Gen();
 
-		public:
-			sc_in_clk clk;
-			sc_fifo_out<NoCFlit> FifoOut; //to send response flits on the NoC
+public:
+    sc_in_clk clk;
+    sc_fifo_out<NoCFlit> FifoOut; //to send response flits on the NoC
 
-			C_CABATrafficGen(sc_module_name name, CycleCount InterReqLatency);
-			SC_HAS_PROCESS(C_CABATrafficGen);
+    C_CABATrafficGen(sc_module_name name, CycleCount InterReqLatency);
 
-			void SetValidTargets(std::list<T_TargetID> * ValidTargets_);
-			void SetSourceID(T_TargetID SourceID_);
-			T_TargetID GetRandomTargetID();
+    SC_HAS_PROCESS(C_CABATrafficGen);
 
+    void SetValidTargets(std::list<T_TargetID> *ValidTargets_);
 
+    void SetSourceID(T_TargetID SourceID_);
+
+    T_TargetID GetRandomTargetID();
 };
 
-class C_CABATrafficCons:public sc_module
-{
-		private:
-
-			CycleCount TotalLatency;
-			unsigned int FlitsCount;
+class C_CABATrafficCons : public sc_module {
+private:
+    CycleCount TotalLatency;
+    unsigned int FlitsCount;
 
 
-			static CycleCount TotalLatencyAll;
-			static unsigned int FlitsCountAll;
+    static CycleCount TotalLatencyAll;
+    static unsigned int FlitsCountAll;
 
-			//threads
-			void Cons();
+    //threads
+    void Cons();
 
-		public:
-			sc_in_clk clk;
-			sc_fifo_in<NoCFlit> FifoIn; //to receive request flits on the NoC
+public:
+    sc_in_clk clk;
+    sc_fifo_in<NoCFlit> FifoIn; //to receive request flits on the NoC
 
-			C_CABATrafficCons(sc_module_name name);
-			SC_HAS_PROCESS(C_CABATrafficCons);
+    C_CABATrafficCons(sc_module_name name);
 
-			void DisplayLoadDelayCurveAll();
+    SC_HAS_PROCESS(C_CABATrafficCons);
 
-			
+    void DisplayLoadDelayCurveAll();
 };
 
-class C_CABABiDirTraffic: public sc_module
-{
-	C_CABATrafficGen* Gen;
-	C_CABATrafficCons* Cons;
+class C_CABABiDirTraffic : public sc_module {
+    C_CABATrafficGen *Gen;
+    C_CABATrafficCons *Cons;
 
-	public:
-	sc_in_clk clk;
-	sc_fifo_out<NoCFlit> FifoOut;
-	sc_fifo_in<NoCFlit> FifoIn;
-	C_CABABiDirTraffic(sc_module_name name_, CycleCount InterReqLatency):sc_module(name_)
-	{
-		Gen = new C_CABATrafficGen("Gen",InterReqLatency);
-		Cons = new C_CABATrafficCons("Cons");
+public:
+    sc_in_clk clk;
+    sc_fifo_out<NoCFlit> FifoOut;
+    sc_fifo_in<NoCFlit> FifoIn;
 
-		//bindings
-		// clk(Gen->clk);
-		// clk(Cons->clk);
+    C_CABABiDirTraffic(sc_module_name name_, CycleCount InterReqLatency) : sc_module(name_) {
+        Gen = new C_CABATrafficGen("Gen", InterReqLatency);
+        Cons = new C_CABATrafficCons("Cons");
 
-		Gen->clk(clk);
-		Cons->clk(clk);
+        //bindings
+        // clk(Gen->clk);
+        // clk(Cons->clk);
 
-		
-		//cout<<"FifoOut "<<& FifoOut<<endl;
-		//cout<<"FifoOut "<<& FifoIn<<endl;
-		Gen->FifoOut(FifoOut);
-		Cons->FifoIn(FifoIn);
-	};
+        Gen->clk(clk);
+        Cons->clk(clk);
 
-	~C_CABABiDirTraffic()
-	{
-		delete Gen;
-		delete Cons;
-	}
 
-	void SetValidTargets(std::list<T_TargetID> * ValidTargets_)
-	{
-		Gen->SetValidTargets(ValidTargets_);
-	};
-			
-	void SetSourceID(T_TargetID SourceID_)
-	{
-		Gen->SetSourceID(SourceID_);
-	};
+        //cout<<"FifoOut "<<& FifoOut<<endl;
+        //cout<<"FifoOut "<<& FifoIn<<endl;
+        Gen->FifoOut(FifoOut);
+        Cons->FifoIn(FifoIn);
+    };
 
-	void DisplayLoadDelayCurveAll()
-	{
-		Cons->DisplayLoadDelayCurveAll();
-	};
+    ~C_CABABiDirTraffic() {
+        delete Gen;
+        delete Cons;
+    }
 
+    void SetValidTargets(std::list<T_TargetID> *ValidTargets_) {
+        Gen->SetValidTargets(ValidTargets_);
+    };
+
+    void SetSourceID(T_TargetID SourceID_) {
+        Gen->SetSourceID(SourceID_);
+    };
+
+    void DisplayLoadDelayCurveAll() {
+        Cons->DisplayLoadDelayCurveAll();
+    };
 };
 
 #endif //TRAFFICGEN_HPP

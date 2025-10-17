@@ -18,16 +18,13 @@
 #include "log.hpp"
 
 namespace vpsim {
+    AddressTranslator::AddressTranslator(sc_module_name name) : sc_module(name), mTranslate(0) {
+        mSockIn.register_b_transport(this, &AddressTranslator::b_transport);
+    }
 
-AddressTranslator::AddressTranslator(sc_module_name name): sc_module(name),mTranslate(0) {
-	mSockIn.register_b_transport ( this, &AddressTranslator::b_transport );
-}
-
-void
-AddressTranslator::b_transport ( tlm::tlm_generic_payload& trans, sc_time& delay )
-{
-	trans.set_address(trans.get_address() + mTranslate);
-	mSockOut->b_transport(trans, delay);
-}
-
+    void
+    AddressTranslator::b_transport(tlm::tlm_generic_payload &trans, sc_time &delay) {
+        trans.set_address(trans.get_address() + mTranslate);
+        mSockOut->b_transport(trans, delay);
+    }
 } /* namespace vpsim */

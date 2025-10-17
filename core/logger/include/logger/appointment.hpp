@@ -34,52 +34,50 @@
 //!
 #define DEBUG_LVL_WIDTH   15
 
-namespace vpsim{
+namespace vpsim {
+    //! @brief Describes an appointment for a logging level change and provides information about it
+    class Appointment {
+    private:
+        //! @brief Logger whose logging level will change at the appointment
+        Logger &mLogger;
 
-//! @brief Describes an appointment for a logging level change and provides information about it
-class Appointment{
-private:
-  //! @brief Logger whose logging level will change at the appointment
-  Logger& mLogger;
+        //! @brief Date of the appointment
+        const sc_core::sc_time mDate;
 
-  //! @brief Date of the appointment
-  const sc_core::sc_time mDate;
+        //! @brief Debug level to set at the appointment
+        const DebugLvl mDebugLvl;
 
-  //! @brief Debug level to set at the appointment
-  const DebugLvl mDebugLvl;
+    public:
+        //! @brief Only public constructor
+        //! @param[in] logger   The logger to be modified when the appointment is reached
+        //! @param[in] date     The date of the appointment
+        //! @param[in] debugLvl The debug level of the logger after the appointment
+        Appointment(Logger &logger,
+                    sc_core::sc_time date,
+                    DebugLvl debugLvl);
 
-public:
-  //! @brief Only public constructor
-  //! @param[in] logger   The logger to be modified when the appointment is reached
-  //! @param[in] date     The date of the appointment
-  //! @param[in] debugLvl The debug level of the logger after the appointment
-  Appointment(Logger& logger,
-              sc_core::sc_time date,
-              DebugLvl debugLvl);
+        //! @brief Tels if the appointment is passed
+        //! @return True if the appointment is passed, false otherwise
+        bool isPassed() const;
 
-  //! @brief Tels if the appointment is passed
-  //! @return True if the appointment is passed, false otherwise
-  bool isPassed() const;
+        //! @brief Tels if the appointment is now
+        //! @return True if the appointment is now, false otherwise
+        bool isNow() const;
 
-  //! @brief Tels if the appointment is now
-  //! @return True if the appointment is now, false otherwise
-  bool isNow() const;
+        //! @brief Tells how much time remains before the appointemnt
+        //! @return Time before the appointment is passed
+        sc_core::sc_time timeTo() const;
 
-  //! @brief Tells how much time remains before the appointemnt
-  //! @return Time before the appointment is passed
-  sc_core::sc_time timeTo() const;
+        //! @brief Set the debug level of the logger in the appointement to the planned debug level
+        //!
+        //! Works wether the appointment is passed or not.
+        void apply();
 
-  //! @brief Set the debug level of the logger in the appointement to the planned debug level
-  //!
-  //! Works wether the appointment is passed or not.
-  void apply();
+        friend std::ostream &operator<<(std::ostream &ostr,
+                                        const Appointment &appointment);
 
-  friend std::ostream& operator<<(std::ostream& ostr,
-                                  const Appointment& appointment);
-
-  Appointment() = delete;
-};
-
+        Appointment() = delete;
+    };
 }
 
 #endif /* end of include guard: _APPOINTMENT_HPP_ */

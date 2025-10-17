@@ -33,81 +33,80 @@ using namespace std;
  * simulation to allow the other test to run properly.
  */
 
-int sc_main(int argc, char* argv[])
-{
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int sc_main(int argc, char *argv[]) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
 
-TEST(Appointment, construction){
-  Logger logger("testAppointmentConstruction");
+TEST(Appointment, construction) {
+    Logger logger("testAppointmentConstruction");
 
-  __attribute__((unused))
-  Appointment test (logger, SC_ZERO_TIME, dbg0);
+    __attribute__((unused))
+            Appointment test(logger, SC_ZERO_TIME, dbg0);
 
-  SUCCEED();//Constructor did not crash: fine
-}
-
-
-TEST(Appointment, timeTo){
-  Logger logger("testAppointmentTimeTo");
-  Appointment test (logger, sc_time_stamp() + sc_time(10, SC_NS), dbg0);
-
-  EXPECT_EQ(sc_time(10, SC_NS), test.timeTo());
-  sc_start(5, SC_NS);
-  EXPECT_EQ(sc_time(5, SC_NS), test.timeTo());
+    SUCCEED(); //Constructor did not crash: fine
 }
 
 
-TEST(Appointment, isPassed){
-  Logger logger("testAppointmentIsPassed");
-  Appointment test (logger, sc_time_stamp() + sc_time(10, SC_NS), dbg0);
+TEST(Appointment, timeTo) {
+    Logger logger("testAppointmentTimeTo");
+    Appointment test(logger, sc_time_stamp() + sc_time(10, SC_NS), dbg0);
 
-  //Before simulation run
-  EXPECT_FALSE(test.isPassed());
-
-  //Before the date is reached
-  sc_start(5, SC_NS);
-  EXPECT_FALSE(test.isPassed());
-
-  //Precisely at the date
-  sc_start(5, SC_NS);
-  EXPECT_FALSE(test.isPassed());
-
-  //Once the date is passed
-  sc_start(5, SC_NS);
-  EXPECT_TRUE(test.isPassed());
+    EXPECT_EQ(sc_time(10, SC_NS), test.timeTo());
+    sc_start(5, SC_NS);
+    EXPECT_EQ(sc_time(5, SC_NS), test.timeTo());
 }
 
 
-TEST(Appointment, apply){
+TEST(Appointment, isPassed) {
+    Logger logger("testAppointmentIsPassed");
+    Appointment test(logger, sc_time_stamp() + sc_time(10, SC_NS), dbg0);
+
+    //Before simulation run
+    EXPECT_FALSE(test.isPassed());
+
+    //Before the date is reached
+    sc_start(5, SC_NS);
+    EXPECT_FALSE(test.isPassed());
+
+    //Precisely at the date
+    sc_start(5, SC_NS);
+    EXPECT_FALSE(test.isPassed());
+
+    //Once the date is passed
+    sc_start(5, SC_NS);
+    EXPECT_TRUE(test.isPassed());
+}
+
+
+TEST(Appointment, apply) {
     LoggerCore::get().enableLogging(true);
     Logger logger("testAppointmentApply");
-    Appointment test (logger, sc_time_stamp(), dbg2);
+    Appointment test(logger, sc_time_stamp(), dbg2);
 
     EXPECT_FALSE(logger.canLogDebug(dbg2));
     test.apply();
     EXPECT_TRUE(logger.canLogDebug(dbg2));
 }
 
-TEST(Appointment, operatorInstert){
-  Logger logger("testAppointmentOperator<<");
-  Appointment test1 (logger, sc_time_stamp(), dbg2);
-  Appointment test2 (logger, sc_time_stamp() + sc_time(1, SC_MS), dbg6);
+TEST(Appointment, operatorInstert) {
+    Logger logger("testAppointmentOperator<<");
+    Appointment test1(logger, sc_time_stamp(), dbg2);
+    Appointment test2(logger, sc_time_stamp() + sc_time(1, SC_MS), dbg6);
 
-  stringstream tested, ref;
-  ref << setw(LOGGER_NAME_WIDTH)  << "testAppointmentOperator<<"  << " |"
-      << setw(DATE_WIDTH)         << sc_time_stamp()              << " |"
-      << setw(DEBUG_LVL_WIDTH)    << dbg2
-      << endl;
+    stringstream tested, ref;
+    ref << setw(LOGGER_NAME_WIDTH) << "testAppointmentOperator<<" << " |"
+            << setw(DATE_WIDTH) << sc_time_stamp() << " |"
+            << setw(DEBUG_LVL_WIDTH) << dbg2
+            << endl;
 
-  ref << setw(LOGGER_NAME_WIDTH)  << "testAppointmentOperator<<"        << " |"
-      << setw(DATE_WIDTH)         << sc_time_stamp() + sc_time(1, SC_MS)<< " |"
-      << setw(DEBUG_LVL_WIDTH)    << dbg6
-      << endl;
+    ref << setw(LOGGER_NAME_WIDTH) << "testAppointmentOperator<<" << " |"
+            << setw(DATE_WIDTH) << sc_time_stamp() + sc_time(1, SC_MS) << " |"
+            << setw(DEBUG_LVL_WIDTH) << dbg6
+            << endl;
 
-  tested << test1;
-  tested << test2;
+    tested << test1;
+    tested << test2;
 
-  EXPECT_EQ(ref.str(), tested.str());
+    EXPECT_EQ(ref.str(), tested.str());
 }

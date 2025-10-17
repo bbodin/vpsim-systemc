@@ -24,23 +24,22 @@
 namespace vpsim {
     struct ExtraIpFeatures_if {
         virtual void registerStringParamTrigger(
-                const string &trigger,
-                const string &module,
-                const AddrSpace &as,
-                const ModuleParameter &param){
-
+            const string &trigger,
+            const string &module,
+            const AddrSpace &as,
+            const ModuleParameter &param) {
             throw std::runtime_error("This Ip doesn't provide registerStringParamTrigger(...)");
         };
 
 
         virtual void registerStringParamTrigger(
-                const string &trigger,
-                const string &module,
-                const ModuleParameter &param){
+            const string &trigger,
+            const string &module,
+            const ModuleParameter &param) {
             registerStringParamTrigger(trigger, module, AddrSpace::maxRange, param);
         }
 
-        virtual void registerCallback(uint64_t val, const std::string& callback){
+        virtual void registerCallback(uint64_t val, const std::string &callback) {
             throw std::runtime_error("This Ip doesn't provide registerCallback(...)");
         }
 

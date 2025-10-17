@@ -22,34 +22,32 @@
 
 #include <sys/time.h> //for timeval
 
-namespace vpsim
-{
+namespace vpsim {
+    class DdsSubscriptionPoint : public sc_module, public vpsim::TargetIf<unsigned char>,
+                                 public dds::SubscriptionPointAdv {
+    private:
+        //Internal shared memory space
+        //sDdsSubscriptionPoint * LocalMemAsSub;
+        //sDdsSubscriptionPoint * BaseAddressAsSub;
 
-class DdsSubscriptionPoint : public sc_module, public vpsim::TargetIf<unsigned char >, public dds::SubscriptionPointAdv {
-	private:
-		//Internal shared memory space
-		//sDdsSubscriptionPoint * LocalMemAsSub;
-		//sDdsSubscriptionPoint * BaseAddressAsSub;
+        //		stringstream ss;
+        //		ss << sizeof(TheType)*8;
+        //		return ss.str();
 
-//		stringstream ss;
-//		ss << sizeof(TheType)*8;
-//		return ss.str();
+        stringstream HostName;
+        stringstream SubName;
 
-		stringstream HostName;
-		stringstream SubName;
+        timeval LastReadDDSTime;
 
-		timeval LastReadDDSTime;
+    public:
+        DdsSubscriptionPoint(sc_module_name Name, uint64_t Size);
 
-	public:
+        virtual ~DdsSubscriptionPoint();
 
-		DdsSubscriptionPoint( sc_module_name Name, uint64_t Size);
-		virtual ~DdsSubscriptionPoint();
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 
-		tlm::tlm_response_status read ( payload_t & payload, sc_time & delay );
-		tlm::tlm_response_status write ( payload_t & payload, sc_time & delay );
-
-};
-
-}//end vpsim namespace
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
+    };
+} //end vpsim namespace
 
 #endif /* DDS_SUBSCRIPTION_POINT_HPP */

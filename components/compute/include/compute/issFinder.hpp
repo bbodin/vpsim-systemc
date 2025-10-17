@@ -25,30 +25,27 @@
 #define DEFAULT_ISS_PATH "./:"
 
 namespace vpsim {
-
-//! @brief Helper class to find suitable iss libraries depending on the architecture
+    //! @brief Helper class to find suitable iss libraries depending on the architecture
 //!
 //! The answer returned by this class only relies on files names and directories layout.
 //! There is no checking performed regarding the validity of the library.
-class IssFinder
-{
-private:
-	std::string mIssBaseDir;
-	std::vector<std::string> mIssSubDirs;
+    class IssFinder {
+    private:
+        std::string mIssBaseDir;
+        std::vector<std::string> mIssSubDirs;
 
-public:
-	IssFinder() = delete;
+    public:
+        IssFinder() = delete;
 
-	//! @brief sets the list of iss libraries directories
+        //! @brief sets the list of iss libraries directories
 	//! @param[in] issDirs string matching the pattern path/to/base/dir:iss1,iss2,...
-	IssFinder(std::string issDirs);
+        IssFinder(std::string issDirs);
 
-	//! @brief get the absolute path to the first suitable iss library
+        //! @brief get the absolute path to the first suitable iss library
 	//! @param[in] targetArch name of the targeted architecture
 	//! @return empty string if no lib available, path to the lib otherwise
-	std::string getIssLibPath(const std::string& targetArch) const;
-};
-
+        std::string getIssLibPath(const std::string &targetArch) const;
+    };
 }
 
 #endif /* _ISSFINDER_HPP_ */

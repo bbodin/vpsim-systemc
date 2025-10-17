@@ -39,132 +39,155 @@
 using namespace tlm;
 
 namespace vpsim {
+    /* Instruction cache model based on CacheBase */
+    class StandaloneInstructionCache : public CacheBase<uint64_t, uint64_t> {
+    public:
+        StandaloneInstructionCache(sc_module_name name,
+                                   int cpu_id,
+                                   uint64_t CacheSize,
+                                   uint64_t CacheLineSize,
+                                   uint64_t Associativity,
+                                   CacheReplacementPolicy ReplPolicy = LRU)
+            : CacheBase<uint64_t, uint64_t>(name, CacheSize, CacheLineSize, Associativity, ReplPolicy) {
+            // anything ?
+            SetEvictionNotifier(StandaloneInstructionCache::OnLineEvicted);
+            mCpuId = cpu_id;
+        }
 
-	/* Instruction cache model based on CacheBase */
-	class StandaloneInstructionCache: public CacheBase<uint64_t,uint64_t> {
-		public:	StandaloneInstructionCache(sc_module_name name,
-				int cpu_id,
-				uint64_t CacheSize,
-				uint64_t CacheLineSize,
-				uint64_t Associativity,
-				CacheReplacementPolicy ReplPolicy=LRU)
-		: CacheBase<uint64_t,uint64_t>(name,CacheSize,CacheLineSize,Associativity,ReplPolicy){
-			// anything ?
-			SetEvictionNotifier(StandaloneInstructionCache::OnLineEvicted);
-			mCpuId=cpu_id;
-		}
+        virtual tlm::tlm_response_status ForwardRead(uint64_t Addr, size_t size, sc_time &delay) override {
+            // register the fetch miss
+            MainMemCosim::NotifyFetchMiss(mCpuId, (void *) Addr, size);
+            return TLM_OK_RESPONSE;
+        }
 
-		virtual tlm::tlm_response_status ForwardRead(uint64_t Addr, size_t size, sc_time& delay) override {
-			// register the fetch miss
-			MainMemCosim::NotifyFetchMiss(mCpuId, (void*)Addr, size);
-			return TLM_OK_RESPONSE;
-		}
+        static void OnLineEvicted(void *handle) {
+            // Check if still valid
+            int **flag = (int **) handle;
 
-		static void OnLineEvicted(void* handle) {
-			// Check if still valid
-			int** flag = (int**)handle;
+            if (*flag != &mZero && *flag != &mOne) {
+                // throw runtime_error("Weird segfault was about to happen... :/");
+            } else {
+                *flag = &mZero; // stop assuming hits.
+            }
+        }
 
-			if(*flag != &mZero && *flag != &mOne) {
-				// throw runtime_error("Weird segfault was about to happen... :/");
-			} else {
-				*flag=&mZero; // stop assuming hits.
-			}
-		}
+        int mCpuId;
+        static int mZero;
+        static int mOne;
 
-		int mCpuId;
-		static int mZero;
-		static int mOne;
+        // victim list
+        static void AppendVictim(void *victim) {
+            Victims[victim] = true;
+        }
 
-		// victim list
-		static void AppendVictim(void* victim) {
-			Victims[victim]=true;
-		}
-
-		static map<void*,bool> Victims;
-
-	};
-
+        static map<void *, bool> Victims;
+    };
 
 
-
-    typedef void (*ThreadFunctionType)(void* cpu, uint64_t quantum);
-
+    typedef void (*ThreadFunctionType)(void *cpu, uint64_t quantum);
 
 
-    typedef uint64_t(*ReadCb)(void *opaque,
-            uint64_t addr,
-            unsigned size);
+    typedef uint64_t (*ReadCb)(void *opaque,
+                               uint64_t addr,
+                               unsigned size);
 
     typedef void (*WriteCb)(void *opaque,
-            uint64_t addr,
-            uint64_t data,
-            unsigned size);
-    typedef void (*SyncCb)(void* opaque, uint64_t executed, int wfi);
+                            uint64_t addr,
+                            uint64_t data,
+                            unsigned size);
 
-    typedef uint64_t (*ICacheMissCb)(void* opaque, uint64_t addr, unsigned size, int* tb_hit);
+    typedef void (*SyncCb)(void *opaque, uint64_t executed, int wfi);
 
-    typedef void (*AddVictimCb)(void* victim);
+    typedef uint64_t (*ICacheMissCb)(void *opaque, uint64_t addr, unsigned size, int *tb_hit);
+
+    typedef void (*AddVictimCb)(void *victim);
+
     typedef void (*MainMemCb)(
-                          void*
-                        , uint64_t exec
-                        , uint8_t is_write
-                        , void* phys
-                        , uint64_t virt
-                        , unsigned int size
-                        );
+        void *
+        , uint64_t exec
+        , uint8_t is_write
+        , void *phys
+        , uint64_t virt
+        , unsigned int size
+    );
 
     typedef uint64_t (*OuterStatGetter)(uint32_t index, enum OuterStat type);
-    typedef void(*FillBiasCb)(uint64_t* ts, int n, double conversion_factor);
+
+    typedef void (*FillBiasCb)(uint64_t *ts, int n, double conversion_factor);
 
     typedef void (*IOAccessCb)(uint32_t device, uint64_t exec, uint8_t is_write
-                        	, void* phys
-                        	, uint64_t virt
-                        	, unsigned int size
-				, uint64_t tag
-                              );
+                               , void *phys
+                               , uint64_t virt
+                               , unsigned int size
+                               , uint64_t tag
+    );
+
     typedef uint64_t (*IOAccessStatGetter)(uint32_t device, enum IOAccessStat type);
-    typedef uint8_t (*IOAccessGetDelayCb)(uint32_t device, uint64_t* time_stamp, uint64_t* delay, uint64_t* tag);
+
+    typedef uint8_t (*IOAccessGetDelayCb)(uint32_t device, uint64_t *time_stamp, uint64_t *delay, uint64_t *tag);
+
     typedef int (*modelprovider_configure_t)(int argc, char **argv, char **envp);
+
     typedef void (*modelprovider_set_default_read_callback_t)(ReadCb cb);
+
     typedef void (*modelprovider_set_default_write_callback_t)(WriteCb cb);
-    typedef void(* modelprovider_set_sync_callback_t)(SyncCb cb);
-    typedef void (*modelprovider_declare_external_dev_t)(char* name, uint64_t base, uint64_t size);
-    typedef void (*modelprovider_declare_external_ram_t)(char* name, uint64_t base, uint64_t size, void* data);
-    typedef void* (*modelprovider_create_internal_cpu_t)(void *proxy, char* type, int index, uint64_t start_pc, int secure, int start_off);
-    typedef void (*modelprovider_run_cpu_t)(void* cpu, uint64_t quantum);
-    typedef void* (*modelprovider_create_internal_dev_default_t)(char* name,
-            uint64_t base,
-            int irq,
-            ReadCb* rd,
-            WriteCb* wr);
+
+    typedef void (*modelprovider_set_sync_callback_t)(SyncCb cb);
+
+    typedef void (*modelprovider_declare_external_dev_t)(char *name, uint64_t base, uint64_t size);
+
+    typedef void (*modelprovider_declare_external_ram_t)(char *name, uint64_t base, uint64_t size, void *data);
+
+    typedef void * (*modelprovider_create_internal_cpu_t)(void *proxy, char *type, int index, uint64_t start_pc,
+                                                          int secure, int start_off);
+
+    typedef void (*modelprovider_run_cpu_t)(void *cpu, uint64_t quantum);
+
+    typedef void * (*modelprovider_create_internal_dev_default_t)(char *name,
+                                                                  uint64_t base,
+                                                                  int irq,
+                                                                  ReadCb *rd,
+                                                                  WriteCb *wr);
+
     typedef void (*modelprovider_poll_io_t)(void);
+
     typedef void (*modelprovider_finalize_config_t)(void);
 
 
-    typedef void (*modelprovider_register_unlock_t)(void(*)(void*), void*);
-    typedef void (*modelprovider_register_wait_unlock_t)(void(*)(void*), void*);
+    typedef void (*modelprovider_register_unlock_t)(void (*)(void *), void *);
+
+    typedef void (*modelprovider_register_wait_unlock_t)(void (*)(void *), void *);
 
     typedef void (*modelprovider_interrupt_t)(int index, int value);
 
-    typedef void (*modelprovider_cpu_get_stats_t)(int index, uint32_t*, void**);
-    typedef void (*modelprovider_show_cpu_t)(void* handle);
+    typedef void (*modelprovider_cpu_get_stats_t)(int index, uint32_t *, void **);
+
+    typedef void (*modelprovider_show_cpu_t)(void *handle);
+
     typedef void (*modelprovider_register_main_mem_callback_t)(MainMemCb, uint64_t);
+
     typedef void (*modelprovider_unregister_main_mem_callback_t)(void);
+
     typedef void (*modelprovider_register_outer_stat_cb_t)(OuterStatGetter);
+
     typedef void (*modelprovider_register_fill_bias_cb_t)(FillBiasCb, double);
 
     typedef void (*modelprovider_register_icache_miss_cb_t)(ICacheMissCb);
+
     typedef void (*modelprovider_register_add_victim_cb_t)(AddVictimCb);
 
     typedef void (*modelprovider_register_ioaccess_callback_t)(IOAccessCb);
+
     typedef void (*modelprovider_register_ioaccess_get_delay_cb_t)(IOAccessGetDelayCb);
+
     typedef void (*modelprovider_register_ioaccess_stat_cb_t)(IOAccessStatGetter);
 
 #define LDFCT(typ,nm) nm=(typ##_t)loadSymbol(#typ)
 
     struct ModelProvider : public sc_module, public InterruptIf {
-
-        ModelProvider(sc_module_name name, string path, uint64_t poll_period, uint64_t quantum = 1000, double conversion_factor = 1.0) : sc_module(name), configured(false), poll_period(poll_period), quantum(quantum), conversion_factor(conversion_factor) {
+        ModelProvider(sc_module_name name, string path, uint64_t poll_period, uint64_t quantum = 1000,
+                      double conversion_factor = 1.0) : sc_module(name), configured(false), poll_period(poll_period),
+                                                        quantum(quantum), conversion_factor(conversion_factor) {
             lib = dlopen(path.c_str(), RTLD_LOCAL | RTLD_LAZY);
 
             if (!lib) {
@@ -212,7 +235,7 @@ namespace vpsim {
                 throw runtime_error("getting symbol from null library !");
 
             dlerror();
-            void* ptr = dlsym(lib, sym.c_str());
+            void *ptr = dlsym(lib, sym.c_str());
             if (!ptr) {
                 dlerror();
                 throw runtime_error(string("ISS Wrapper: unable to load symbol: ") + sym);
@@ -232,9 +255,9 @@ namespace vpsim {
         void config() {
             if (configured)
                 return;
-            char** argv_c = (char**) malloc(sizeof (char*)*argv.size());
+            char **argv_c = (char **) malloc(sizeof(char *) * argv.size());
             int i = 0;
-            for (string& arg : argv) {
+            for (string &arg: argv) {
                 argv_c[i++] = strdup(arg.c_str());
             }
             configure(i, argv_c, nullptr);
@@ -253,7 +276,7 @@ namespace vpsim {
                     * 1000000000);
         }
 
-        static void get_cpu_biases(uint64_t* times, int n, double conversion_factor) {
+        static void get_cpu_biases(uint64_t *times, int n, double conversion_factor) {
             MainMemCosim::FillBiases(times, n, conversion_factor);
         }
 
@@ -336,27 +359,25 @@ namespace vpsim {
         modelprovider_register_ioaccess_stat_cb_t modelprovider_register_ioaccess_stat_cb;
     };
 
-    void model_provider_unlock_cb(void* opaque) {
-        ModelProvider* mp = (ModelProvider*) opaque;
+    void model_provider_unlock_cb(void *opaque) {
+        ModelProvider *mp = (ModelProvider *) opaque;
         mp->unlock();
     }
 
-    void model_provider_wait_unlock_cb(void* opaque) {
-        ModelProvider* mp = (ModelProvider*) opaque;
+    void model_provider_wait_unlock_cb(void *opaque) {
+        ModelProvider *mp = (ModelProvider *) opaque;
         mp->wait_unlock();
     }
 
 
     struct ModelProviderDev : public sc_module {
-
-        ModelProviderDev(sc_module_name name, string model, uint64_t addr, uint32_t size, int irq) :
-        sc_module(name),
-        //TargetIf(string(name), size),
-        model(model),
-        read_callback(nullptr),
-        write_callback(nullptr),
-        internal_dev(nullptr),
-        irq(irq) {
+        ModelProviderDev(sc_module_name name, string model, uint64_t addr, uint32_t size, int irq) : sc_module(name),
+            //TargetIf(string(name), size),
+            model(model),
+            read_callback(nullptr),
+            write_callback(nullptr),
+            internal_dev(nullptr),
+            irq(irq) {
             //TargetIf <REG_T>::RegisterReadAccess(REGISTER(ModelProviderDev,read));
             //TargetIf <REG_T>::RegisterWriteAccess(REGISTER(ModelProviderDev,write));
 
@@ -365,7 +386,7 @@ namespace vpsim {
             base_address = addr;
         }
 
-        tlm::tlm_response_status read(payload_t & payload, sc_time & delay) {
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay) {
             if (!read_callback || !write_callback || !internal_dev)
                 throw runtime_error("ModelProviderDev: not properly initialized !");
 
@@ -375,7 +396,7 @@ namespace vpsim {
             return TLM_OK_RESPONSE;
         }
 
-        tlm::tlm_response_status write(payload_t & payload, sc_time & delay) {
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay) {
             if (!read_callback || !write_callback || !internal_dev)
                 throw runtime_error("ModelProviderDev: not properly initialized !");
 
@@ -390,10 +411,11 @@ namespace vpsim {
             return base_address;
         }
 
-        void setProvider(ModelProvider* prov) {
+        void setProvider(ModelProvider *prov) {
             //prov->config();
             get_stats = prov->get_stats;
-            internal_dev = prov->create_internal_dev_default((char*) model.c_str(), getBaseAddress(), irq, &read_callback, &write_callback);
+            internal_dev = prov->create_internal_dev_default((char *) model.c_str(), getBaseAddress(), irq,
+                                                             &read_callback, &write_callback);
         }
 
         string model;
@@ -408,27 +430,26 @@ namespace vpsim {
     };
 
     struct ModelProviderCpu : public sc_module, public InitiatorIf, public InterruptIf {
+        ModelProviderCpu(sc_module_name name, string model, uint32_t index, uint64_t start_pc, uint64_t quantum,
+                         int secure, int start_off,
+                         uint64_t iCacheSize,
+                         uint64_t iCacheLineSize,
+                         uint64_t iCacheAssociativity,
+                         CacheReplacementPolicy iCacheReplPolicy) : sc_module(name),
+                                                                    InitiatorIf(string(name), quantum, true, 1),
+                                                                    model(model),
+                                                                    index(index),
+                                                                    start_pc(start_pc),
+                                                                    quantum(quantum),
+                                                                    thread_function(nullptr),
+                                                                    internal_cpu(nullptr),
+                                                                    quantum_keeper(quantum),
+                                                                    secure(secure),
+                                                                    start_off(start_off),
 
-        ModelProviderCpu(sc_module_name name, string model, uint32_t index, uint64_t start_pc, uint64_t quantum, int secure, int start_off,
-        		uint64_t iCacheSize,
-				uint64_t iCacheLineSize,
-				uint64_t iCacheAssociativity,
-				CacheReplacementPolicy iCacheReplPolicy) :
-
-			sc_module(name),
-			InitiatorIf(string(name), quantum, true, 1),
-			model(model),
-			index(index),
-			start_pc(start_pc),
-			quantum(quantum),
-			thread_function(nullptr),
-			internal_cpu(nullptr),
-			quantum_keeper(quantum),
-			secure(secure),
-			start_off(start_off),
-
-			icache((string(name)+"_icache").c_str(),index,iCacheSize,iCacheLineSize,iCacheAssociativity,iCacheReplPolicy)
-        {
+                                                                    icache((string(name) + "_icache").c_str(), index,
+                                                                           iCacheSize, iCacheLineSize,
+                                                                           iCacheAssociativity, iCacheReplPolicy) {
             //SC_THREAD(exec_thread_function);
         }
 
@@ -443,22 +464,22 @@ namespace vpsim {
         }
 
         uint64_t do_read(uint64_t addr,
-                unsigned size) {
+                         unsigned size) {
             uint64_t res = 0;
             InitiatorIf::tlm_error_checking(
-                    InitiatorIf::target_mem_access(0, addr, size, (uint8_t *) & res,
-                    READ, local_bias, index)
-                    );
+                InitiatorIf::target_mem_access(0, addr, size, (uint8_t *) &res,
+                                               READ, local_bias, index)
+            );
             return res;
         }
 
         void do_write(uint64_t addr,
-                uint64_t data,
-                unsigned size) {
+                      uint64_t data,
+                      unsigned size) {
             InitiatorIf::tlm_error_checking(
-                    InitiatorIf::target_mem_access(0, addr, size, (uint8_t *) & data,
-                    WRITE, local_bias, index)
-                    );
+                InitiatorIf::target_mem_access(0, addr, size, (uint8_t *) &data,
+                                               WRITE, local_bias, index)
+            );
         }
 
         void sync(uint64_t executed) {
@@ -471,10 +492,11 @@ namespace vpsim {
             //cerr<<"warning: ModelProviderCpu: interrupt not yet implemented."<<endl;
         }
 
-        void setProvider(ModelProvider* prov) {
+        void setProvider(ModelProvider *prov) {
             //prov->config();
             thread_function = prov->run_cpu;
-            internal_cpu = prov->create_internal_cpu((void*) this, (char*) model.c_str(), index, start_pc, secure, start_off);
+            internal_cpu = prov->create_internal_cpu((void *) this, (char *) model.c_str(), index, start_pc, secure,
+                                                     start_off);
             provider = prov;
             get_stats = prov->get_stats;
         }
@@ -489,13 +511,13 @@ namespace vpsim {
         uint64_t quantum;
 
         ThreadFunctionType thread_function;
-        void* internal_cpu;
+        void *internal_cpu;
 
         ParallelQuantumKeeper quantum_keeper;
 
         int secure, start_off;
 
-        ModelProvider* provider;
+        ModelProvider *provider;
         modelprovider_cpu_get_stats_t get_stats;
 
         sc_time local_bias;
@@ -505,65 +527,66 @@ namespace vpsim {
 
 
         // should be a base class (AddressConverter)
-    	vector< tuple<void*,uint64_t,uint64_t> > mMaps;
-    	bool convertAddr(void* host, uint64_t* p) {
-			uint64_t H=(uint64_t)host;
-			for (auto& t: mMaps) {
-				uint64_t Hp=(uint64_t)get<0>(t);
-				//cout<<"Checking range: "<<hex<<Hp<<endl;
-				if (H>=Hp && H < Hp+get<2>(t)){
-					*p = get<1>(t) + (H-Hp);
-					return true;
-				}
-			}
-			return false;
-		}
+        vector<tuple<void *, uint64_t, uint64_t> > mMaps;
+
+        bool convertAddr(void *host, uint64_t *p) {
+            uint64_t H = (uint64_t) host;
+            for (auto &t: mMaps) {
+                uint64_t Hp = (uint64_t) get < 0 > (t);
+                //cout<<"Checking range: "<<hex<<Hp<<endl;
+                if (H >= Hp && H < Hp + get < 2 > (t)) {
+                    *p = get < 1 > (t) + (H - Hp);
+                    return true;
+                }
+            }
+            return false;
+        }
     };
 
     uint64_t model_provider_read_cb(void *opaque,
-            uint64_t addr,
-            unsigned size) {
-        ModelProviderCpu* cpu = (ModelProviderCpu*) opaque;
+                                    uint64_t addr,
+                                    unsigned size) {
+        ModelProviderCpu *cpu = (ModelProviderCpu *) opaque;
         return cpu->do_read(addr, size);
     }
 
     void model_provider_write_cb(void *opaque,
-            uint64_t addr,
-            uint64_t data,
-            unsigned size) {
-        ModelProviderCpu* cpu = (ModelProviderCpu*) opaque;
+                                 uint64_t addr,
+                                 uint64_t data,
+                                 unsigned size) {
+        ModelProviderCpu *cpu = (ModelProviderCpu *) opaque;
         cpu->do_write(addr, data, size);
     }
 
-    uint64_t model_provider_fetch_miss_cb( void* opaque
-                                        , uint64_t addr
-                                        , unsigned size
-                                        , int* tb_hit
-                                        ) {
-        ModelProviderCpu* cpu = (ModelProviderCpu*) opaque;
+    uint64_t model_provider_fetch_miss_cb(void *opaque
+                                          , uint64_t addr
+                                          , unsigned size
+                                          , int *tb_hit
+    ) {
+        ModelProviderCpu *cpu = (ModelProviderCpu *) opaque;
         sc_time null;
-        uint64_t phaddr=0;
-        cpu->convertAddr((void*)addr,&phaddr);
-        cpu->icache.ReadData(nullptr, phaddr, size, cpu->index, cpu->index, null, null, (void*)tb_hit);
-        *(int**)tb_hit = &cpu->icache.mOne;
+        uint64_t phaddr = 0;
+        cpu->convertAddr((void *) addr, &phaddr);
+        cpu->icache.ReadData(nullptr, phaddr, size, cpu->index, cpu->index, null, null, (void *) tb_hit);
+        *(int **) tb_hit = &cpu->icache.mOne;
         return cpu->icache.MissCount;
     }
 
 
-    void model_provider_sync(void* opaque, uint64_t executed, int wfi) {
-        ModelProviderCpu* cpu = (ModelProviderCpu*) opaque;
+    void model_provider_sync(void *opaque, uint64_t executed, int wfi) {
+        ModelProviderCpu *cpu = (ModelProviderCpu *) opaque;
         cpu->provider->sync(executed, wfi);
     }
 
-   /* void model_provider_main_mem_cb(void* opaque,
+    /* void model_provider_main_mem_cb(void* opaque,
     		int write, void* phys, uint64_t virt, uint64_t size) {
     	ModelProviderCpu* cpu = (ModelProviderCpu*) opaque;
     	MainMemCosim::Notify(cpu->index,write,phys,size);
     }*/
-    void model_provider_main_mem_cb(void* opaque,uint64_t exec,
-               uint8_t write, void* phys, uint64_t virt, unsigned int size) {
-        ModelProviderCpu* cpu = (ModelProviderCpu*) opaque;
-        MainMemCosim::Notify(cpu->index,exec,write,phys,size);
+    void model_provider_main_mem_cb(void *opaque, uint64_t exec,
+                                    uint8_t write, void *phys, uint64_t virt, unsigned int size) {
+        ModelProviderCpu *cpu = (ModelProviderCpu *) opaque;
+        MainMemCosim::Notify(cpu->index, exec, write, phys, size);
     }
 
     uint64_t model_provider_outer_stat_cb(uint32_t index, enum OuterStat stat) {
@@ -571,13 +594,15 @@ namespace vpsim {
     }
 
     void model_provider_ioaccess_cb(uint32_t device, uint64_t exec,
-            uint8_t write, void* phys, uint64_t virt, unsigned int size, uint64_t tag) {
-        MainMemCosim::NotifyIO(device,exec,write,phys,virt,size,tag);
+                                    uint8_t write, void *phys, uint64_t virt, unsigned int size, uint64_t tag) {
+        MainMemCosim::NotifyIO(device, exec, write, phys, virt, size, tag);
     }
 
-    uint8_t model_provider_ioaccess_get_delay_cb(uint32_t device, uint64_t* time_stamp, uint64_t* delay, uint64_t* tag) {
+    uint8_t model_provider_ioaccess_get_delay_cb(uint32_t device, uint64_t *time_stamp, uint64_t *delay,
+                                                 uint64_t *tag) {
         return IOAccessCosim::GetDelay(device, time_stamp, delay, tag);
     }
+
     uint64_t model_provider_ioaccess_stat_cb(uint32_t device, enum IOAccessStat stat) {
         return IOAccessCosim::GetStat(device, stat);
     }
@@ -586,13 +611,10 @@ namespace vpsim {
     typedef tlm::tlm_initiator_socket<> OutPortType;
 
     struct DynamicModelProviderCpu
-    : public VpsimIp<InPortType, OutPortType > {
+            : public VpsimIp<InPortType, OutPortType> {
     public:
-
-        DynamicModelProviderCpu(std::string name) :
-        VpsimIp(name),
-        mModulePtr(nullptr) {
-
+        DynamicModelProviderCpu(std::string name) : VpsimIp(name),
+                                                    mModulePtr(nullptr) {
             registerRequiredAttribute("model");
             registerRequiredAttribute("reset_pc");
             registerRequiredAttribute("provider");
@@ -611,14 +633,18 @@ namespace vpsim {
         NEEDS_DMI_OVERRIDE;
         PROCESSOR_OVERRIDE;
 
-        N_IN_PORTS_OVERRIDE(0);
-        N_OUT_PORTS_OVERRIDE(1);
+        N_IN_PORTS_OVERRIDE (
+        0
+        );
+        N_OUT_PORTS_OVERRIDE (
+        1
+        );
 
-        virtual InPortType* getNextInPort() override {
+        virtual InPortType *getNextInPort() override {
             throw runtime_error("No input ports for CPU.");
         }
 
-        virtual OutPortType* getNextOutPort() override {
+        virtual OutPortType *getNextOutPort() override {
             if (!mModulePtr) {
                 throw runtime_error("Please call make() before handling ports.");
             }
@@ -627,38 +653,37 @@ namespace vpsim {
 
         void pushStats() override {
             if (mModulePtr) {
-
                 struct ent {
                     char name[512];
                     uint64_t val;
                 };
-                ent* statlist;
+                ent *statlist;
                 uint32_t count;
-                mModulePtr->get_stats(mModulePtr->index, &count, (void**) &statlist);
+                mModulePtr->get_stats(mModulePtr->index, &count, (void **) &statlist);
 
 
                 //printf("Initial stat push in CPU\n");
                 if (mSegmentedStats.empty()) {
                     mSegmentedStats.push_back({
-						{string(statlist[0].name), "0"},
-						{string(statlist[1].name), "0"},
-						{string(statlist[2].name), "0"},
-						{string(statlist[3].name), "0"},
-						{string(statlist[4].name), "0"},
-						{string(statlist[5].name), "0"},
-						{string(statlist[6].name), "0"},
-						{string(statlist[7].name), "0"}
+                        {string(statlist[0].name), "0"},
+                        {string(statlist[1].name), "0"},
+                        {string(statlist[2].name), "0"},
+                        {string(statlist[3].name), "0"},
+                        {string(statlist[4].name), "0"},
+                        {string(statlist[5].name), "0"},
+                        {string(statlist[6].name), "0"},
+                        {string(statlist[7].name), "0"}
                     });
                 }
 
-                const auto& back = mSegmentedStats.back();
+                const auto &back = mSegmentedStats.back();
 
-//                for (uint32_t i = 0; i < count; i++) {
-//                    instructions[i] = statlist[i].val - stoull(back.at("executed_instructions"));
-//                    mSegmentedStats.push_back({
-//                        {"executed_instructions", to_string(instructions[i])}
-//                    });
-//                }
+                //                for (uint32_t i = 0; i < count; i++) {
+                //                    instructions[i] = statlist[i].val - stoull(back.at("executed_instructions"));
+                //                    mSegmentedStats.push_back({
+                //                        {"executed_instructions", to_string(instructions[i])}
+                //                    });
+                //                }
 
                 mSegmentedStats.push_back({
                     {string(statlist[0].name), to_string(statlist[0].val - stoull(back.at(string(statlist[0].name))))},
@@ -679,24 +704,25 @@ namespace vpsim {
             }
             checkAttributes();
             mModulePtr = new ModelProviderCpu(
-            		getName().c_str(),
-                    getAttr("model"),
-                    getAttrAsUInt64("id"),
-					getAttrAsUInt64("reset_pc"),
-					getAttrAsUInt64("quantum"),
-					getAttrAsUInt64("secure"),
-					getAttrAsUInt64("start_powered_off"),
+                getName().c_str(),
+                getAttr("model"),
+                getAttrAsUInt64("id"),
+                getAttrAsUInt64("reset_pc"),
+                getAttrAsUInt64("quantum"),
+                getAttrAsUInt64("secure"),
+                getAttrAsUInt64("start_powered_off"),
 
-					// icache data
-					/*size*/ getAttrAsUInt64("icache_size"),
-					/* line size */ getAttrAsUInt64("icache_line_size"),
-					/*assoc*/ getAttrAsUInt64("icache_associativity"),
-					/*repl*/ LRU
+                // icache data
+                /*size*/ getAttrAsUInt64("icache_size"),
+                /* line size */ getAttrAsUInt64("icache_line_size"),
+                /*assoc*/ getAttrAsUInt64("icache_associativity"),
+                /*repl*/ LRU
             );
         }
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char* pointer, bool cached, bool has_dmi) override {
-        	mModulePtr->mMaps.push_back(make_tuple(pointer,baseAddr,size));
+        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+                                   bool cached, bool has_dmi) override {
+            mModulePtr->mMaps.push_back(make_tuple(pointer, baseAddr, size));
         }
 
         virtual void addMonitor(uint64_t base, uint64_t size) override {
@@ -729,16 +755,15 @@ namespace vpsim {
 
         virtual void setStatsAndDie() override {
             if (mModulePtr) {
-
                 struct ent {
                     char name[512];
                     uint64_t val;
                 };
 
-                ent* statlist;
+                ent *statlist;
                 uint32_t count;
 
-                mModulePtr->get_stats(mModulePtr->index, &count, (void**) &statlist);
+                mModulePtr->get_stats(mModulePtr->index, &count, (void **) &statlist);
                 for (unsigned i = 0; i < count; i++) {
                     mStats[string(statlist[i].name)] = to_string(statlist[i].val);
                 }
@@ -756,17 +781,14 @@ namespace vpsim {
         }
 
 
-        ModelProviderCpu* mModulePtr;
+        ModelProviderCpu *mModulePtr;
     };
 
     struct DynamicModelProviderDev
-    : public VpsimIp<InPortType, OutPortType > {
+            : public VpsimIp<InPortType, OutPortType> {
     public:
-
-        DynamicModelProviderDev(std::string name) :
-        VpsimIp(name),
-        mModulePtr(nullptr) {
-
+        DynamicModelProviderDev(std::string name) : VpsimIp(name),
+                                                    mModulePtr(nullptr) {
             registerRequiredAttribute("model");
             registerRequiredAttribute("base_address");
             registerRequiredAttribute("size");
@@ -777,15 +799,19 @@ namespace vpsim {
 
         // MEMORY_MAPPED;
 
-        N_IN_PORTS_OVERRIDE(0);
-        N_OUT_PORTS_OVERRIDE(0);
+        N_IN_PORTS_OVERRIDE (
+        0
+        );
+        N_OUT_PORTS_OVERRIDE (
+        0
+        );
 
-        virtual InPortType* getNextInPort() override {
+        virtual InPortType *getNextInPort() override {
             throw runtime_error("model provider device has no output ports.");
             // return &mModulePtr->mTargetSocket;
         }
 
-        virtual OutPortType* getNextOutPort() override {
+        virtual OutPortType *getNextOutPort() override {
             throw runtime_error("model provider device has no output ports.");
         }
 
@@ -795,10 +821,11 @@ namespace vpsim {
             }
             checkAttributes();
             mModulePtr = new ModelProviderDev(getName().c_str(),
-                    getAttr("model"), getAttrAsUInt64("base_address"), getAttrAsUInt64("size"), getAttrAsUInt64("irq"));
+                                              getAttr("model"), getAttrAsUInt64("base_address"),
+                                              getAttrAsUInt64("size"), getAttrAsUInt64("irq"));
         }
 
-                /*
+        /*
                 virtual uint64_t getBaseAddress() override {
                         return getAttrAsUInt64("base_address");
                 }
@@ -807,7 +834,8 @@ namespace vpsim {
                         return getAttrAsUInt64("size");
                 }*/
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char* pointer, bool cached, bool has_dmi) override {
+        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+                                   bool cached, bool has_dmi) override {
         }
 
         virtual void addMonitor(uint64_t base, uint64_t size) override {
@@ -820,7 +848,6 @@ namespace vpsim {
         }
 
         virtual void finalize() override {
-
         }
 
         virtual void setStatsAndDie() override {
@@ -830,36 +857,36 @@ namespace vpsim {
         }
 
 
-
-        ModelProviderDev* mModulePtr;
+        ModelProviderDev *mModulePtr;
     };
 
     struct DynamicModelProviderParam1 : public VpsimIp<InPortType, OutPortType> {
-
-        DynamicModelProviderParam1(std::string name) :
-        VpsimIp(name) {
+        DynamicModelProviderParam1(std::string name) : VpsimIp(name) {
             registerRequiredAttribute("option");
             registerRequiredAttribute("provider");
         }
 
-        N_IN_PORTS_OVERRIDE(0);
-        N_OUT_PORTS_OVERRIDE(0);
+        N_IN_PORTS_OVERRIDE (
+        0
+        );
+        N_OUT_PORTS_OVERRIDE (
+        0
+        );
 
-        virtual InPortType* getNextInPort() override {
+        virtual InPortType *getNextInPort() override {
             throw runtime_error("No input ports for model provider param.");
         }
 
-        virtual OutPortType* getNextOutPort() override {
+        virtual OutPortType *getNextOutPort() override {
             throw runtime_error("no output ports for model provider param.");
-
         }
 
         virtual void make() override {
-
             checkAttributes();
         }
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char* pointer, bool cached, bool has_dmi) override {
+        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+                                   bool cached, bool has_dmi) override {
         }
 
         virtual void addMonitor(uint64_t base, uint64_t size) override {
@@ -884,32 +911,33 @@ namespace vpsim {
     };
 
     struct DynamicModelProviderParam2 : public VpsimIp<InPortType, OutPortType> {
-
-        DynamicModelProviderParam2(std::string name) :
-        VpsimIp(name) {
+        DynamicModelProviderParam2(std::string name) : VpsimIp(name) {
             registerRequiredAttribute("option");
             registerRequiredAttribute("value");
             registerRequiredAttribute("provider");
         }
 
-        N_IN_PORTS_OVERRIDE(0);
-        N_OUT_PORTS_OVERRIDE(0);
+        N_IN_PORTS_OVERRIDE (
+        0
+        );
+        N_OUT_PORTS_OVERRIDE (
+        0
+        );
 
-        virtual InPortType* getNextInPort() override {
+        virtual InPortType *getNextInPort() override {
             throw runtime_error("No input ports for model provider param.");
         }
 
-        virtual OutPortType* getNextOutPort() override {
+        virtual OutPortType *getNextOutPort() override {
             throw runtime_error("no output ports for model provider param.");
-
         }
 
         virtual void make() override {
-
             checkAttributes();
         }
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char* pointer, bool cached, bool has_dmi) override {
+        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+                                   bool cached, bool has_dmi) override {
         }
 
         virtual void addMonitor(uint64_t base, uint64_t size) override {
@@ -934,17 +962,14 @@ namespace vpsim {
     };
 
     struct DynamicModelProvider : public VpsimIp<InPortType, OutPortType> {
-
-        DynamicModelProvider(std::string name) :
-        VpsimIp(name),
-        mModulePtr(nullptr) {
-
+        DynamicModelProvider(std::string name) : VpsimIp(name),
+                                                 mModulePtr(nullptr) {
             registerRequiredAttribute("path");
             registerRequiredAttribute("io_poll_period");
-            registerOptionalAttribute("quantum","1000");
-            registerOptionalAttribute("conversion_factor","1.0");
+            registerOptionalAttribute("quantum", "1000");
+            registerOptionalAttribute("conversion_factor", "1.0");
             registerRequiredAttribute("notify_main_memory_access");
-            registerOptionalAttribute("roi_only","1");
+            registerOptionalAttribute("roi_only", "1");
 
 
             registerRequiredAttribute("simulate_icache");
@@ -954,16 +979,19 @@ namespace vpsim {
 
         NEEDS_DMI_OVERRIDE;
 
-        N_IN_PORTS_OVERRIDE(0);
-        N_OUT_PORTS_OVERRIDE(0);
+        N_IN_PORTS_OVERRIDE (
+        0
+        );
+        N_OUT_PORTS_OVERRIDE (
+        0
+        );
 
-        virtual InPortType* getNextInPort() override {
+        virtual InPortType *getNextInPort() override {
             throw runtime_error("No input ports for model provider.");
         }
 
-        virtual OutPortType* getNextOutPort() override {
+        virtual OutPortType *getNextOutPort() override {
             throw runtime_error("no output ports for model provider.");
-
         }
 
         virtual void make() override {
@@ -971,19 +999,24 @@ namespace vpsim {
                 throw runtime_error("make() already called for DynamicArm");
             }
             checkAttributes();
-            mModulePtr = new ModelProvider(getName().c_str(), getAttr("path"), getAttrAsUInt64("io_poll_period"), getAttrAsUInt64("quantum"), stod(getAttr("conversion_factor")));
+            mModulePtr = new ModelProvider(getName().c_str(), getAttr("path"), getAttrAsUInt64("io_poll_period"),
+                                           getAttrAsUInt64("quantum"), stod(getAttr("conversion_factor")));
 
 
             mModulePtr->set_default_read_callback(model_provider_read_cb);
             mModulePtr->set_default_write_callback(model_provider_write_cb);
             mModulePtr->set_sync_callback(model_provider_sync);
-            mModulePtr->modelprovider_unlock(model_provider_unlock_cb, (void*) mModulePtr);
-            mModulePtr->modelprovider_wait_unlock(model_provider_wait_unlock_cb, (void*) mModulePtr);
-            mModulePtr->modelprovider_register_fill_bias_cb(&ModelProvider::get_cpu_biases, mModulePtr->conversion_factor);
+            mModulePtr->modelprovider_unlock(model_provider_unlock_cb, (void *) mModulePtr);
+            mModulePtr->modelprovider_wait_unlock(model_provider_wait_unlock_cb, (void *) mModulePtr);
+            mModulePtr->modelprovider_register_fill_bias_cb(&ModelProvider::get_cpu_biases,
+                                                            mModulePtr->conversion_factor);
 
             if (getAttrAsUInt64("notify_main_memory_access")) {
-                if (!getAttrAsUInt64("roi_only")) mModulePtr->modelprovider_register_main_mem_callback(model_provider_main_mem_cb, mModulePtr->quantum);
-                else MainMemCosim::addRegisterMainMemCb(mModulePtr->modelprovider_register_main_mem_callback, model_provider_main_mem_cb, mModulePtr->quantum, mModulePtr->modelprovider_unregister_main_mem_callback);
+                if (!getAttrAsUInt64("roi_only")) mModulePtr->modelprovider_register_main_mem_callback(
+                    model_provider_main_mem_cb, mModulePtr->quantum);
+                else MainMemCosim::addRegisterMainMemCb(mModulePtr->modelprovider_register_main_mem_callback,
+                                                        model_provider_main_mem_cb, mModulePtr->quantum,
+                                                        mModulePtr->modelprovider_unregister_main_mem_callback);
                 mModulePtr->modelprovider_register_outer_stat_cb(model_provider_outer_stat_cb);
             }
 
@@ -999,32 +1032,33 @@ namespace vpsim {
             }
         }
 
-        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char* pointer, bool cached, bool has_dmi) override {
+        virtual void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+                                   bool cached, bool has_dmi) override {
             if (mModulePtr == nullptr) {
                 throw runtime_error(getName() + " : calling addDmiAddress() before make() !!!");
             }
             if (!mModulePtr->configured) {
                 VpsimIp::MapTypeIf("ModelProviderParam1",
-                        [this](VpsimIp * target) {
-                            return target->getAttr("provider") == this->getName();
-                        },
-                [this](VpsimIp * target) {
-                    this->mModulePtr->addParam1(target->getAttr("option"));
-                });
+                                   [this](VpsimIp *target) {
+                                       return target->getAttr("provider") == this->getName();
+                                   },
+                                   [this](VpsimIp *target) {
+                                       this->mModulePtr->addParam1(target->getAttr("option"));
+                                   });
                 VpsimIp::MapTypeIf("ModelProviderParam2",
-                        [this](VpsimIp * target) {
-                            return target->getAttr("provider") == this->getName();
-                        },
-                [this](VpsimIp * target) {
-                    this->mModulePtr->addParam2(target->getAttr("option"), target->getAttr("value"));
-                });
+                                   [this](VpsimIp *target) {
+                                       return target->getAttr("provider") == this->getName();
+                                   },
+                                   [this](VpsimIp *target) {
+                                       this->mModulePtr->addParam2(target->getAttr("option"), target->getAttr("value"));
+                                   });
 
                 mModulePtr->config();
             }
             if (has_dmi) {
-                mModulePtr->declare_external_ram((char*) targetIpName.c_str(), baseAddr, size, pointer);
+                mModulePtr->declare_external_ram((char *) targetIpName.c_str(), baseAddr, size, pointer);
             } else {
-                mModulePtr->declare_external_dev((char*) targetIpName.c_str(), baseAddr, size);
+                mModulePtr->declare_external_dev((char *) targetIpName.c_str(), baseAddr, size);
             }
         }
 
@@ -1044,41 +1078,42 @@ namespace vpsim {
             // gather all params !
             if (!mModulePtr->configured) {
                 VpsimIp::MapTypeIf("ModelProviderParam1",
-                        [this](VpsimIp * target) {
-                            return target->getAttr("provider") == this->getName();
-                        },
-                [this](VpsimIp * target) {
-                    this->mModulePtr->addParam1(target->getAttr("option"));
-                });
+                                   [this](VpsimIp *target) {
+                                       return target->getAttr("provider") == this->getName();
+                                   },
+                                   [this](VpsimIp *target) {
+                                       this->mModulePtr->addParam1(target->getAttr("option"));
+                                   });
                 VpsimIp::MapTypeIf("ModelProviderParam2",
-                        [this](VpsimIp * target) {
-                            return target->getAttr("provider") == this->getName();
-                        },
-                [this](VpsimIp * target) {
-                    this->mModulePtr->addParam2(target->getAttr("option"), target->getAttr("value"));
-                });
+                                   [this](VpsimIp *target) {
+                                       return target->getAttr("provider") == this->getName();
+                                   },
+                                   [this](VpsimIp *target) {
+                                       this->mModulePtr->addParam2(target->getAttr("option"), target->getAttr("value"));
+                                   });
 
                 mModulePtr->config();
             }
             VpsimIp::MapTypeIf("ModelProviderDev",
-                    [this](VpsimIp * target) {
-                        return target->getAttr("provider") == this->getName();
-                    },
-            [this](VpsimIp * target) {
-                dynamic_cast<DynamicModelProviderDev*> (target)->mModulePtr->setProvider(this->mModulePtr);
-            });
+                               [this](VpsimIp *target) {
+                                   return target->getAttr("provider") == this->getName();
+                               },
+                               [this](VpsimIp *target) {
+                                   dynamic_cast<DynamicModelProviderDev *>(target)->mModulePtr->setProvider(
+                                       this->mModulePtr);
+                               });
 
 
             VpsimIp::MapTypeIf("ModelProviderCpu",
-                    [this](VpsimIp * target) {
-                        return target->getAttr("provider") == this->getName();
-                    },
-            [this](VpsimIp * target) {
-                dynamic_cast<DynamicModelProviderCpu*> (target)->mModulePtr->setProvider(this->mModulePtr);
-            });
+                               [this](VpsimIp *target) {
+                                   return target->getAttr("provider") == this->getName();
+                               },
+                               [this](VpsimIp *target) {
+                                   dynamic_cast<DynamicModelProviderCpu *>(target)->mModulePtr->setProvider(
+                                       this->mModulePtr);
+                               });
 
             mModulePtr->finalize_config();
-
         }
 
         virtual void setStatsAndDie() override {
@@ -1091,9 +1126,8 @@ namespace vpsim {
             return mModulePtr;
         }
 
-        ModelProvider* mModulePtr;
+        ModelProvider *mModulePtr;
     };
-
 }
 
 #endif /* _MODELPROVIDER_HPP_ */

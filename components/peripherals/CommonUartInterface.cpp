@@ -25,89 +25,81 @@
 
 
 namespace vpsim {
-
-using namespace std;
-using namespace tlm;
-
-
-CommonUartInterface::CommonUartInterface(sc_module_name name): sc_module(name) {
-	SC_THREAD(interruptLoop);
-
-	mIntEnable=false;
-	mOutIntEnable=false;
-	mInterrupting=false;
-	mOutInt=true;
-	mHasTimeout=false;
-	mToIntEnable=false;
-	mTimeoutCounter=0;
-
-	mBaudRate=115200;
-}
-
-CommonUartInterface::~CommonUartInterface() {
-
-}
-void CommonUartInterface::selectChannel(string channel) {
-	mChannel = ChannelManager::get().allocChannel(channel);
-}
-
-void CommonUartInterface::writeByte(char c) {
-	if (write(mChannel.second,&c,1) == -1){
-		std::cerr << "CommonUartInterface: Error on write"<< std::endl;
-		return;
-	}
-}
-char CommonUartInterface::readByte() {
-	unsigned char c;
-	if (read(mChannel.first,&c,1) < 0){
-		std::cerr << "CommonUartInterface: Error on read"<< std::endl;
-		return -1;
-	}
-	return c;
-}
-
-void CommonUartInterface::setPollPeriod(sc_time period) {
-	mPollPeriod=period;
-}
-
-void CommonUartInterface::interruptLoop() {
-	while(true) {
-		sc_core::wait(mPollPeriod);
-		//wait(tlm::tlm_global_quantum::instance().get()/2);
-		//wait(10.0 / mBaudRate,SC_SEC);
-		if (!mInterruptParent)
-			return ; //throw runtime_error("UART must have interrupt parent !");
-
-		//cout.clear(); cout<<"int loop."<<endl;
-
-		if ((mOutIntEnable && mOutInt) || (mIntEnable && inputReady())) {
-			//if (!mInterrupting)
-				raiseInterrupt();
-			mInterrupting=true;
-			//cout.clear() ; cout<<"uart interrupt"<<endl;
-		} else if (mHasTimeout && !inputReady())
-		{
-			if (mTimeoutCounter) --mTimeoutCounter;
-			if (!mTimeoutCounter && mToIntEnable)
-			    raiseInterrupt();
-		}else /*if (mInterrupting)*/{
-			//if (mInterrupting) {
-				lowerInterrupt();
-			//}
-			mInterrupting=false;
-			//cout.clear() ; cout<<"uart low interrupt"<<endl;
-		}
+    using namespace std;
+    using namespace tlm;
 
 
-	}
-}
+    CommonUartInterface::CommonUartInterface(sc_module_name name) : sc_module(name) {
+        SC_THREAD(interruptLoop);
 
-bool CommonUartInterface::inputReady() {
-	return ChannelManager::fdCheckReady(mChannel.first);
-}
+        mIntEnable = false;
+        mOutIntEnable = false;
+        mInterrupting = false;
+        mOutInt = true;
+        mHasTimeout = false;
+        mToIntEnable = false;
+        mTimeoutCounter = 0;
 
+        mBaudRate = 115200;
+    }
 
+    CommonUartInterface::~CommonUartInterface() {
+    }
 
+    void CommonUartInterface::selectChannel(string channel) {
+        mChannel = ChannelManager::get().allocChannel(channel);
+    }
 
+    void CommonUartInterface::writeByte(char c) {
+        if (write(mChannel.second, &c, 1) == -1) {
+            std::cerr << "CommonUartInterface: Error on write" << std::endl;
+            return;
+        }
+    }
 
+    char CommonUartInterface::readByte() {
+        unsigned char c;
+        if (read(mChannel.first, &c, 1) < 0) {
+            std::cerr << "CommonUartInterface: Error on read" << std::endl;
+            return -1;
+        }
+        return c;
+    }
+
+    void CommonUartInterface::setPollPeriod(sc_time period) {
+        mPollPeriod = period;
+    }
+
+    void CommonUartInterface::interruptLoop() {
+        while (true) {
+            sc_core::wait(mPollPeriod);
+            //wait(tlm::tlm_global_quantum::instance().get()/2);
+            //wait(10.0 / mBaudRate,SC_SEC);
+            if (!mInterruptParent)
+                return; //throw runtime_error("UART must have interrupt parent !");
+
+            //cout.clear(); cout<<"int loop."<<endl;
+
+            if ((mOutIntEnable && mOutInt) || (mIntEnable && inputReady())) {
+                //if (!mInterrupting)
+                raiseInterrupt();
+                mInterrupting = true;
+                //cout.clear() ; cout<<"uart interrupt"<<endl;
+            } else if (mHasTimeout && !inputReady()) {
+                if (mTimeoutCounter) --mTimeoutCounter;
+                if (!mTimeoutCounter && mToIntEnable)
+                    raiseInterrupt();
+            } else /*if (mInterrupting)*/ {
+                //if (mInterrupting) {
+                lowerInterrupt();
+                //}
+                mInterrupting = false;
+                //cout.clear() ; cout<<"uart low interrupt"<<endl;
+            }
+        }
+    }
+
+    bool CommonUartInterface::inputReady() {
+        return ChannelManager::fdCheckReady(mChannel.first);
+    }
 } /* namespace vpsim */

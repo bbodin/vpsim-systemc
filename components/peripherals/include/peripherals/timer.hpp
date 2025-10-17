@@ -22,51 +22,52 @@
 
 
 //Class declaration
-namespace vpsim
-{
-	class timer : public sc_core::sc_module,
-		public TargetIf <uint32_t>
-	{
-		typedef timer this_type;
+namespace vpsim {
+    class timer : public sc_core::sc_module,
+                  public TargetIf<uint32_t> {
+        typedef timer this_type;
 
-	private:
-		sc_time mCurrentTime;
-		uint64_t * mWatchdogs;
-		uint32_t mNbWatchdogs;
-		bool mSeparateIntLines;
-		uint32_t mTimerSize;
+    private:
+        sc_time mCurrentTime;
+        uint64_t *mWatchdogs;
+        uint32_t mNbWatchdogs;
+        bool mSeparateIntLines;
+        uint32_t mTimerSize;
 
+    public:
+        timer(sc_module_name Name, uint32_t Quantum);
 
-	public:
-		timer( sc_module_name  Name, uint32_t Quantum );
-		timer( sc_module_name  Name, uint32_t NbWatchdogs, uint32_t Quantum );
-		SC_HAS_PROCESS ( timer );
-		~timer();
+        timer(sc_module_name Name, uint32_t NbWatchdogs, uint32_t Quantum);
 
-		//Communication interface
-		sc_out <bool> mIntr;
+        SC_HAS_PROCESS(timer);
 
-		//Methods
-		void setTimerSize ( uint32_t TimerSize );
-		void setSeparateIntLines ( bool SeparateIntLines );
+        ~timer();
 
-		uint32_t getTimerSize ( );
-		bool getSeparateIntLines ( );
+        //Communication interface
+        sc_out<bool> mIntr;
 
-		void Reset ( );
+        //Methods
+        void setTimerSize(uint32_t TimerSize);
 
-	protected:
+        void setSeparateIntLines(bool SeparateIntLines);
 
-		//Threads and  methods
-		void CoreFunc ( );
+        uint32_t getTimerSize();
 
-		//Other methods
-		tlm::tlm_response_status
-		read ( payload_t & payload, sc_time & delay );
+        bool getSeparateIntLines();
 
-		tlm::tlm_response_status
-		write ( payload_t & payload, sc_time & delay );
-	};
+        void Reset();
+
+    protected:
+        //Threads and  methods
+        void CoreFunc();
+
+        //Other methods
+        tlm::tlm_response_status
+        read(payload_t &payload, sc_time &delay);
+
+        tlm::tlm_response_status
+        write(payload_t &payload, sc_time &delay);
+    };
 }
 
 

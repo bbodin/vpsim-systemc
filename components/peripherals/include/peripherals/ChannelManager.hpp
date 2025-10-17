@@ -26,29 +26,33 @@ using namespace std;
 
 class ChannelManager {
 private:
-	ChannelManager();
-	virtual ~ChannelManager();
+    ChannelManager();
 
-	std::vector<int> mOpenSocks;
+    virtual ~ChannelManager();
+
+    std::vector<int> mOpenSocks;
 
 
-	std::map<int,string> ChanNames;
-	std::map<string, int> ChanNumbers;
-	int ChanCounter;
+    std::map<int, string> ChanNames;
+    std::map<string, int> ChanNumbers;
+    int ChanCounter;
 
-	std::map<int,std::pair<int,int>> Channels;
+    std::map<int, std::pair<int, int> > Channels;
 
 public:
-	static ChannelManager& get();
-	std::pair<int,int> allocChannel(int channel, bool terminal);
-	std::pair<int,int> allocChannel(string channel, bool terminal=false);
+    static ChannelManager &get();
 
-	std::pair<int,int> allocOutgoingChannel(int channel, string ip, uint16_t port);
-	std::pair<int,int> allocOutgoingChannel(string channel, string ip, uint16_t port);
+    std::pair<int, int> allocChannel(int channel, bool terminal);
 
-	static bool fdCheckReady(int fd);
+    std::pair<int, int> allocChannel(string channel, bool terminal = false);
 
-	static ChannelManager singleton;
+    std::pair<int, int> allocOutgoingChannel(int channel, string ip, uint16_t port);
+
+    std::pair<int, int> allocOutgoingChannel(string channel, string ip, uint16_t port);
+
+    static bool fdCheckReady(int fd);
+
+    static ChannelManager singleton;
 };
 
 

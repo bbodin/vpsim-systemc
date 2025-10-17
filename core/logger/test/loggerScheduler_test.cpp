@@ -36,100 +36,99 @@ using namespace std;
  *      must be done on the time at the beginning of a test.
  */
 
-int sc_main(int argc, char* argv[])
-{
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int sc_main(int argc, char *argv[]) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
 
-TEST(LoggerScheduler, construction){
-  new LoggerScheduler("test");
-  SUCCEED(); //Constructor did not crash: fine
-}
-
-
-TEST(LoggerScheduler, addAppointment){
-  LoggerScheduler* loggerScheduler =
-    new LoggerScheduler("testLoggerSchedulerAddAppointment");
-  Logger* loggerA = new Logger("testLoggerSchedulerAddAppointmentA");
-  Logger* loggerB = new Logger("testLoggerSchedulerAddAppointmentB");
-
-  sc_time currentTime = sc_time_stamp();
-
-  loggerScheduler->addAppointment(
-    Appointment(*loggerA, currentTime + sc_time(1, SC_MS), dbg2));
-  loggerScheduler->addAppointment(
-    Appointment(*loggerB, currentTime + sc_time(2, SC_MS), dbg5));
-  loggerScheduler->addAppointment(
-    Appointment(*loggerA, currentTime + sc_time(1.5, SC_MS), dbg0));
-
-  SUCCEED(); //AddAppointment did not crash: fine
-}
-
-TEST(LoggerScheduler, operatorInsert){
-  LoggerScheduler* loggerScheduler =
-  new LoggerScheduler("testLoggerSchedulerOperatorInsert");
-
-  stringstream tested, ref;
-  ref << setw(LOGGER_NAME_WIDTH)  << "LOGGER NAME |"
-      << setw(DATE_WIDTH)         << "APPOINTMENT DATE |"
-      << setw(DEBUG_LVL_WIDTH)    << "DEBUG LEVEL"
-      << endl;
-
-  ref  << string(LOGGER_NAME_WIDTH + DATE_WIDTH + DEBUG_LVL_WIDTH, '-') << endl;
-
-
-  tested << *loggerScheduler;
-
-  EXPECT_EQ(ref.str(), tested.str());
+TEST(LoggerScheduler, construction) {
+    new LoggerScheduler("test");
+    SUCCEED(); //Constructor did not crash: fine
 }
 
 
-TEST(LoggerScheduler, schedule){
-  LoggerScheduler* loggerScheduler =
-    new LoggerScheduler("testLoggerSchedulerSchedule");
-  Logger* loggerA = new Logger("testLoggerSchedulerScheduleA");
-  Logger* loggerB = new Logger("testLoggerSchedulerScheduleB");
+TEST(LoggerScheduler, addAppointment) {
+    LoggerScheduler *loggerScheduler =
+            new LoggerScheduler("testLoggerSchedulerAddAppointment");
+    Logger *loggerA = new Logger("testLoggerSchedulerAddAppointmentA");
+    Logger *loggerB = new Logger("testLoggerSchedulerAddAppointmentB");
 
-  //Test the appointments scheduled before the simulation starts
-  sc_time currentTime = sc_time_stamp();
+    sc_time currentTime = sc_time_stamp();
 
-  loggerScheduler->addAppointment(
-    Appointment(*loggerA, currentTime + sc_time(1, SC_MS), dbg2));
-  loggerScheduler->addAppointment(
-    Appointment(*loggerB, currentTime + sc_time(2, SC_MS), dbg5));
-  loggerScheduler->addAppointment(
-    Appointment(*loggerA, currentTime + sc_time(1.5, SC_MS), dbg0));
+    loggerScheduler->addAppointment(
+        Appointment(*loggerA, currentTime + sc_time(1, SC_MS), dbg2));
+    loggerScheduler->addAppointment(
+        Appointment(*loggerB, currentTime + sc_time(2, SC_MS), dbg5));
+    loggerScheduler->addAppointment(
+        Appointment(*loggerA, currentTime + sc_time(1.5, SC_MS), dbg0));
 
-  LoggerCore::get().enableLogging(true);
+    SUCCEED(); //AddAppointment did not crash: fine
+}
 
-  EXPECT_FALSE(loggerA->canLogDebug(dbg1));
-  EXPECT_FALSE(loggerB->canLogDebug(dbg1));
+TEST(LoggerScheduler, operatorInsert) {
+    LoggerScheduler *loggerScheduler =
+            new LoggerScheduler("testLoggerSchedulerOperatorInsert");
 
-  //Make sure the appointments will be passed for the tests
-  sc_start(1, SC_NS);
+    stringstream tested, ref;
+    ref << setw(LOGGER_NAME_WIDTH) << "LOGGER NAME |"
+            << setw(DATE_WIDTH) << "APPOINTMENT DATE |"
+            << setw(DEBUG_LVL_WIDTH) << "DEBUG LEVEL"
+            << endl;
 
-  sc_start(1, SC_MS);
-  EXPECT_TRUE(loggerA->canLogDebug(dbg2));
-  EXPECT_FALSE(loggerB->canLogDebug(dbg1));
+    ref << string(LOGGER_NAME_WIDTH + DATE_WIDTH + DEBUG_LVL_WIDTH, '-') << endl;
 
-  sc_start(0.5, SC_MS);
-  EXPECT_FALSE(loggerA->canLogDebug(dbg1));
-  EXPECT_FALSE(loggerB->canLogDebug(dbg5));
 
-  sc_start(0.5, SC_MS);
-  EXPECT_FALSE(loggerA->canLogDebug(dbg5));
-  EXPECT_TRUE(loggerB->canLogDebug(dbg5));
+    tested << *loggerScheduler;
 
-  //Test the appointments scheduled once the simulation has started
-  currentTime = sc_time_stamp();
+    EXPECT_EQ(ref.str(), tested.str());
+}
 
-  loggerScheduler->addAppointment(
-    Appointment(*loggerB, currentTime + sc_time(1, SC_MS), dbg0));
 
-  sc_start(1, SC_NS);
+TEST(LoggerScheduler, schedule) {
+    LoggerScheduler *loggerScheduler =
+            new LoggerScheduler("testLoggerSchedulerSchedule");
+    Logger *loggerA = new Logger("testLoggerSchedulerScheduleA");
+    Logger *loggerB = new Logger("testLoggerSchedulerScheduleB");
 
-  EXPECT_TRUE(loggerB->canLogDebug(dbg5));
-  sc_start(1, SC_MS);
-  EXPECT_FALSE(loggerB->canLogDebug(dbg1));
+    //Test the appointments scheduled before the simulation starts
+    sc_time currentTime = sc_time_stamp();
+
+    loggerScheduler->addAppointment(
+        Appointment(*loggerA, currentTime + sc_time(1, SC_MS), dbg2));
+    loggerScheduler->addAppointment(
+        Appointment(*loggerB, currentTime + sc_time(2, SC_MS), dbg5));
+    loggerScheduler->addAppointment(
+        Appointment(*loggerA, currentTime + sc_time(1.5, SC_MS), dbg0));
+
+    LoggerCore::get().enableLogging(true);
+
+    EXPECT_FALSE(loggerA->canLogDebug(dbg1));
+    EXPECT_FALSE(loggerB->canLogDebug(dbg1));
+
+    //Make sure the appointments will be passed for the tests
+    sc_start(1, SC_NS);
+
+    sc_start(1, SC_MS);
+    EXPECT_TRUE(loggerA->canLogDebug(dbg2));
+    EXPECT_FALSE(loggerB->canLogDebug(dbg1));
+
+    sc_start(0.5, SC_MS);
+    EXPECT_FALSE(loggerA->canLogDebug(dbg1));
+    EXPECT_FALSE(loggerB->canLogDebug(dbg5));
+
+    sc_start(0.5, SC_MS);
+    EXPECT_FALSE(loggerA->canLogDebug(dbg5));
+    EXPECT_TRUE(loggerB->canLogDebug(dbg5));
+
+    //Test the appointments scheduled once the simulation has started
+    currentTime = sc_time_stamp();
+
+    loggerScheduler->addAppointment(
+        Appointment(*loggerB, currentTime + sc_time(1, SC_MS), dbg0));
+
+    sc_start(1, SC_NS);
+
+    EXPECT_TRUE(loggerB->canLogDebug(dbg5));
+    sc_start(1, SC_MS);
+    EXPECT_FALSE(loggerB->canLogDebug(dbg1));
 }

@@ -27,20 +27,20 @@
 #include "paramManager.hpp"
 
 namespace vpsim {
+    class AddressTranslator : public sc_module {
+    public:
+        AddressTranslator(sc_module_name name);
 
-class AddressTranslator  : public sc_module {
-public:
-	AddressTranslator(sc_module_name name);
-	void setShift(uint64_t translate) { mTranslate=translate; }
+        void setShift(uint64_t translate) { mTranslate = translate; }
 
-	tlm_utils::simple_target_socket<AddressTranslator> mSockIn;
-	tlm_utils::simple_initiator_socket<AddressTranslator> mSockOut;
-	void b_transport ( tlm::tlm_generic_payload& trans, sc_time& delay );
+        tlm_utils::simple_target_socket<AddressTranslator> mSockIn;
+        tlm_utils::simple_initiator_socket<AddressTranslator> mSockOut;
 
-private:
-	uint64_t mTranslate;
-};
+        void b_transport(tlm::tlm_generic_payload &trans, sc_time &delay);
 
+    private:
+        uint64_t mTranslate;
+    };
 } /* namespace vpsim */
 
 #endif /* _ADDRESSTRANSLATOR_HPP_ */

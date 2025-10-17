@@ -27,28 +27,26 @@
 //using namespace std;
 //using tlm::tlm_transport_if;
 
-namespace vpsim
-{
-
-//-----------------------------------------------------------//
-// Useful macros
-//-----------------------------------------------------------//
+namespace vpsim {
+    //-----------------------------------------------------------//
+    // Useful macros
+    //-----------------------------------------------------------//
 #define SYSTEMC_ERROR(CONST_MSG) {cerr<<"SYSTEMC_ERROR In "<<this->name()<<" @t="<<sc_time_stamp()<<": "<<CONST_MSG<<" ("<<__FILE__<<":"<<__LINE__<<")"<<endl;exit(EXIT_FAILURE);}
 #define SYSTEMC_WARN(CONST_MSG) {cerr<<"SYSTEMC_WARNING In "<<this->name()<<" @t="<<sc_time_stamp()<<": "<<CONST_MSG<<" ("<<__FILE__<<":"<<__LINE__<<")"<<endl;}
 #define SYSTEMC_INFO(CONST_MSG) {cout<<"SYSTEMC_INFO In "<<this->name()<<" @t="<<sc_time_stamp()<<": "<<CONST_MSG<<" ("<<__FILE__<<":"<<__LINE__<<")"<<endl;}
 
-//debug for all routers
-//#define SYSTEMC_DEBUG_ROUTER SYSTEMC_INFO
-//no debug
+    //debug for all routers
+    //#define SYSTEMC_DEBUG_ROUTER SYSTEMC_INFO
+    //no debug
 #define SYSTEMC_DEBUG_ROUTER(CONST_MSG) {}
-//debug for specific routers
-//#define SYSTEMC_DEBUG_ROUTER(CONST_MSG) if(this->Id==12){SYSTEMC_INFO(CONST_MSG)}
+    //debug for specific routers
+    //#define SYSTEMC_DEBUG_ROUTER(CONST_MSG) if(this->Id==12){SYSTEMC_INFO(CONST_MSG)}
 
-//for traffic generator message
+    //for traffic generator message
 #define SYSTEMC_TRAFFIC_GEN(CONST_MSG) {}
-//#define SYSTEMC_TRAFFIC_GEN SYSTEMC_INFO
+    //#define SYSTEMC_TRAFFIC_GEN SYSTEMC_INFO
 
-//for router access stats (CA model)
+    //for router access stats (CA model)
 #define SYSTEMC_ROUTER_ACCESS_STATS(CONST_MSG) {}
 
 #define SYSTEMC_WRAPPER_CA(CONST_MSG) {}
@@ -58,179 +56,170 @@ namespace vpsim
 #define BEGIN_MEMORY_PROTECT {}
 #define END_MEMORY_PROTECT {}
 
-//-----------------------------------------------------------//
-// Types / Class definition
-//-----------------------------------------------------------//
-typedef unsigned int T_RouterID;
-typedef unsigned int T_PortID;
-typedef unsigned int T_LinkID;
-typedef unsigned int T_SlavePortID;
-//typedef std::pair<T_RouterID, T_SlavePortID> T_TargetID;
+    //-----------------------------------------------------------//
+    // Types / Class definition
+    //-----------------------------------------------------------//
+    typedef unsigned int T_RouterID;
+    typedef unsigned int T_PortID;
+    typedef unsigned int T_LinkID;
+    typedef unsigned int T_SlavePortID;
+    //typedef std::pair<T_RouterID, T_SlavePortID> T_TargetID;
 
 
+    class C_TargetID : public std::pair<T_RouterID, T_SlavePortID> {
+        static std::map<C_TargetID, unsigned> TargetToCMUEndPointID;
+        static unsigned NextCMUEndPointID;
 
-class C_TargetID:public std::pair<T_RouterID, T_SlavePortID>{
+    public:
+        C_TargetID() : std::pair<T_RouterID, T_SlavePortID>() {
+        };
 
-	static std::map<C_TargetID, unsigned> TargetToCMUEndPointID;
-	static unsigned NextCMUEndPointID;
+        C_TargetID(T_RouterID RID, T_SlavePortID SPID, bool IsNew = false) : std::pair<T_RouterID, T_SlavePortID>(
+            RID, SPID) {
+            if (IsNew) {
+                TargetToCMUEndPointID[*this] = NextCMUEndPointID++;
+            }
+        }
 
-public:
-	C_TargetID():std::pair<T_RouterID, T_SlavePortID>(){};
+        unsigned int GetCMUEndPointIDTarget() {
+            return TargetToCMUEndPointID[*this];
+        }
+    };
 
-	C_TargetID(T_RouterID RID, T_SlavePortID SPID, bool IsNew=false):std::pair<T_RouterID, T_SlavePortID>(RID,SPID){
-		if (IsNew)
-		{
-			TargetToCMUEndPointID[*this]=NextCMUEndPointID++;
-		}
-	}
+    typedef C_TargetID T_TargetID;
 
-	unsigned int GetCMUEndPointIDTarget(){
-		return TargetToCMUEndPointID[*this];
-	}
-};
+    //typedef long CycleCount;
+    typedef double CycleCount;
 
-typedef C_TargetID T_TargetID;
-
-//typedef long CycleCount;
-typedef double CycleCount;
-
-typedef unsigned int T_MemoryAddress;
-typedef std::pair<T_MemoryAddress, T_MemoryAddress> T_MemoryRegion; // (address begin, address end)
-typedef std::map<T_TargetID, T_MemoryRegion > T_MemoryMap;
-
-
-class NoCFlit {
-	public:
-	T_TargetID TargetId; //used
-	T_TargetID SrcId; //for return path
-	T_RouterID PrevRouterId; //the router from which it originates
-	T_PortID CurrentInputPortID; //used for sorting in the current router (cycle accurate model)
-	bool Last; //is it the last packet from a burst
-	const tlm::tlm_generic_payload * req; //to keep the ac_tlm_if request
-	tlm::ac_tlm_rsp rsp; //to keep the ac_tlm_if response
-	bool IsFW; //TODO delete as it must no longer be used
-	sc_time EmissionTimeStamp;
-
-	friend ostream & operator <<(ostream & os, NoCFlit nf)
-	{
-		os<<"NoCFlit ";
-		if(nf.IsFW)
-		{
-			os<<"FW";
-		}
-		else
-		{
-			os<<"BW";
-		}
-		os<<": src "<<nf.SrcId.first<<" -> "<<nf.TargetId.first<<" (port"<<nf.TargetId.second<<")";
-		return os;
-	};
-
-	void CMUDump()
-	{
-		unsigned TargetIDCMU=TargetId.GetCMUEndPointIDTarget(); //(TargetId.first<<4) + TargetId.second;
-		//cout<<" flit.TargetId.first "<<TargetId.first<<"flit.TargetId.second "<< TargetId.second<<"TargetIDCMU"<<TargetIDCMU<<endl;
-		unsigned SourceIDCMU=SrcId.GetCMUEndPointIDTarget(); //(SrcId.first<<4) + SrcId.second;
-
-		// if (SrcId.second>0xf || SrcId.first>0xf){
-		// 	cerr<<"Invalid router id or port id for SourceIDCMU generation : "<<SrcId.first<<","<<SrcId.second<<endl;
-		// 	exit(EXIT_FAILURE);
-		// }
-		// if (TargetId.second>0xf || TargetId.first>0xf){
-		// 	cerr<<"Invalid router id or port id for TargetIDCMU generation : "<<TargetId.first<<","<<TargetId.second<<endl;
-		// 	exit(EXIT_FAILURE);
-		// }
-
-		//printf("TargetIDCMU %02x %x %x \n",TargetIDCMU, TargetId.first ,TargetId.second);
-		//printf("SourceIDCMU %02x %x %x \n",SourceIDCMU, SrcId.first ,SrcId.second);
-
-		//cout<<" flit.SrcId.first "<<SrcId.first<<"flit.SrcId.second "<< SrcId.second<<"SourceIDCMU"<<SourceIDCMU<<endl;
-		printf("%01x%02x%02x%01x%08x\n",Last, /*src*/ SourceIDCMU, /*dst*/ TargetIDCMU, /*vc*/ 0, /*injection_cycle*/ (int) (sc_time_stamp().to_double()/10) );
-		//cout<<"timestamp debug"<<(int) (sc_time_stamp().to_double()/10)<<" sc_time"<<sc_time_stamp()<<endl;
-
-	};
-
-};
+    typedef unsigned int T_MemoryAddress;
+    typedef std::pair<T_MemoryAddress, T_MemoryAddress> T_MemoryRegion; // (address begin, address end)
+    typedef std::map<T_TargetID, T_MemoryRegion> T_MemoryMap;
 
 
-//class NoCResponse {
-//	public:
-//		bool Success;
-//};
-//
-//typedef tlm_transport_if < NoCFlit,NoCResponse> tlm_noc_if;
+    class NoCFlit {
+    public:
+        T_TargetID TargetId; //used
+        T_TargetID SrcId; //for return path
+        T_RouterID PrevRouterId; //the router from which it originates
+        T_PortID CurrentInputPortID; //used for sorting in the current router (cycle accurate model)
+        bool Last; //is it the last packet from a burst
+        const tlm::tlm_generic_payload *req; //to keep the ac_tlm_if request
+        tlm::ac_tlm_rsp rsp; //to keep the ac_tlm_if response
+        bool IsFW; //TODO delete as it must no longer be used
+        sc_time EmissionTimeStamp;
+
+        friend ostream &operator <<(ostream &os, NoCFlit nf) {
+            os << "NoCFlit ";
+            if (nf.IsFW) {
+                os << "FW";
+            } else {
+                os << "BW";
+            }
+            os << ": src " << nf.SrcId.first << " -> " << nf.TargetId.first << " (port" << nf.TargetId.second << ")";
+            return os;
+        };
+
+        void CMUDump() {
+            unsigned TargetIDCMU = TargetId.GetCMUEndPointIDTarget(); //(TargetId.first<<4) + TargetId.second;
+            //cout<<" flit.TargetId.first "<<TargetId.first<<"flit.TargetId.second "<< TargetId.second<<"TargetIDCMU"<<TargetIDCMU<<endl;
+            unsigned SourceIDCMU = SrcId.GetCMUEndPointIDTarget(); //(SrcId.first<<4) + SrcId.second;
+
+            // if (SrcId.second>0xf || SrcId.first>0xf){
+            // 	cerr<<"Invalid router id or port id for SourceIDCMU generation : "<<SrcId.first<<","<<SrcId.second<<endl;
+            // 	exit(EXIT_FAILURE);
+            // }
+            // if (TargetId.second>0xf || TargetId.first>0xf){
+            // 	cerr<<"Invalid router id or port id for TargetIDCMU generation : "<<TargetId.first<<","<<TargetId.second<<endl;
+            // 	exit(EXIT_FAILURE);
+            // }
+
+            //printf("TargetIDCMU %02x %x %x \n",TargetIDCMU, TargetId.first ,TargetId.second);
+            //printf("SourceIDCMU %02x %x %x \n",SourceIDCMU, SrcId.first ,SrcId.second);
+
+            //cout<<" flit.SrcId.first "<<SrcId.first<<"flit.SrcId.second "<< SrcId.second<<"SourceIDCMU"<<SourceIDCMU<<endl;
+            printf("%01x%02x%02x%01x%08x\n", Last, /*src*/ SourceIDCMU, /*dst*/ TargetIDCMU, /*vc*/ 0,
+                   /*injection_cycle*/ (int) (sc_time_stamp().to_double() / 10));
+            //cout<<"timestamp debug"<<(int) (sc_time_stamp().to_double()/10)<<" sc_time"<<sc_time_stamp()<<endl;
+        };
+    };
 
 
-class TLMMasterBindInfo{
-public:
-	 sc_port<ac_tlm_transport_if>* MasterPort;
-	 T_RouterID RouterID;
-	 T_PortID RouterFWPort;
-	 T_PortID RouterBWPort;
-};
-
-class TLMSlaveBindInfo{
-public:
-	sc_export<ac_tlm_transport_if>* SlavePort;
-	 T_RouterID RouterID;
-	 T_PortID RouterFWPort;
-	 T_PortID RouterBWPort;
-};
-
-class CABAMasterBindInfo{
-public:
-	sc_fifo_out<NoCFlit>* Master;
-	T_RouterID RouterID;
-	T_PortID InPortID;
-};
-
-class CABASlaveBindInfo{
-public:
-	sc_fifo_in<NoCFlit>* Slave;
-	T_RouterID RouterID;
-	T_PortID OutPortID;
-};
+    //class NoCResponse {
+    //	public:
+    //		bool Success;
+    //};
+    //
+    //typedef tlm_transport_if < NoCFlit,NoCResponse> tlm_noc_if;
 
 
+    class TLMMasterBindInfo {
+    public:
+        sc_port<ac_tlm_transport_if> *MasterPort;
+        T_RouterID RouterID;
+        T_PortID RouterFWPort;
+        T_PortID RouterBWPort;
+    };
 
-//TODO remove from code (use NoCFlit structs instead)
-// class C_Req
-// {
-// 	private:
-// 		unsigned int SrcID;
-// 		unsigned int DestID;
-// 		CycleCount InitLocalTime;
+    class TLMSlaveBindInfo {
+    public:
+        sc_export<ac_tlm_transport_if> *SlavePort;
+        T_RouterID RouterID;
+        T_PortID RouterFWPort;
+        T_PortID RouterBWPort;
+    };
 
-// 		//static unsigned int InstancesCounter;
-		
+    class CABAMasterBindInfo {
+    public:
+        sc_fifo_out<NoCFlit> *Master;
+        T_RouterID RouterID;
+        T_PortID InPortID;
+    };
 
-// 	public:
-// 		C_Req(unsigned int _SrcID, unsigned int _DestID, CycleCount _InitLocalTime)
-// 		{
-// 			//constants for this request
-// 			SrcID=_SrcID;
-// 			DestID=_DestID;
-// 			InitLocalTime=_InitLocalTime;
+    class CABASlaveBindInfo {
+    public:
+        sc_fifo_in<NoCFlit> *Slave;
+        T_RouterID RouterID;
+        T_PortID OutPortID;
+    };
 
-// 			//InstancesCounter++;
-// 		}
 
-// 		unsigned int  GetSrcID()
-// 		{
-// 			return SrcID;
-// 		}
+    //TODO remove from code (use NoCFlit structs instead)
+    // class C_Req
+    // {
+    // 	private:
+    // 		unsigned int SrcID;
+    // 		unsigned int DestID;
+    // 		CycleCount InitLocalTime;
 
-// 		unsigned int  GetDestID()
-// 		{
-// 			return DestID;
-// 		}
+    // 		//static unsigned int InstancesCounter;
 
-// 		CycleCount GetInitLocalTime()
-// 		{
-// 			return InitLocalTime;
-// 		}
-// };
 
-};//end namespace vpsim
+    // 	public:
+    // 		C_Req(unsigned int _SrcID, unsigned int _DestID, CycleCount _InitLocalTime)
+    // 		{
+    // 			//constants for this request
+    // 			SrcID=_SrcID;
+    // 			DestID=_DestID;
+    // 			InitLocalTime=_InitLocalTime;
+
+    // 			//InstancesCounter++;
+    // 		}
+
+    // 		unsigned int  GetSrcID()
+    // 		{
+    // 			return SrcID;
+    // 		}
+
+    // 		unsigned int  GetDestID()
+    // 		{
+    // 			return DestID;
+    // 		}
+
+    // 		CycleCount GetInitLocalTime()
+    // 		{
+    // 			return InitLocalTime;
+    // 		}
+    // };
+}; //end namespace vpsim
 
 #endif //NOC_BASIC_TYPES_HPP

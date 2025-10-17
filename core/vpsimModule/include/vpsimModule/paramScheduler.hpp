@@ -21,36 +21,33 @@
 #include <set>
 #include "paramAppointment.hpp"
 
-namespace vpsim{
+namespace vpsim {
+    //! @brief SystemC module responsible for changing the logging parameter of the Logger instances during the simulation
+    SC_MODULE(ParamScheduler) {
+    private:
+        //! @brief Ordered list of the Appointments to come
+        std::multiset<ParamAppointment> mSchedule;
 
-//! @brief SystemC module responsible for changing the logging parameter of the Logger instances during the simulation
-SC_MODULE(ParamScheduler){
+        //! @brief Event to notify when an Appointment is added to mSchedule
+        sc_core::sc_event mNewAppointmentEvent;
 
-private:
-  //! @brief Ordered list of the Appointments to come
-  std::multiset<ParamAppointment> mSchedule;
+    public:
+        //! @brief SystemC standard constructor
+        //! @param[in] name Name of the ParamScheduler as a systemC module
+        ParamScheduler(sc_core::sc_module_name name);
 
-  //! @brief Event to notify when an Appointment is added to mSchedule
-  sc_core::sc_event mNewAppointmentEvent;
+        //! @cond
+        // Ignore this systemc specificity for the documentation
+        SC_HAS_PROCESS(ParamScheduler);
+        //! @endcond
 
-public:
-  //! @brief SystemC standard constructor
-  //! @param[in] name Name of the ParamScheduler as a systemC module
-  ParamScheduler(sc_core::sc_module_name name);
-  //! @cond
-  // Ignore this systemc specificity for the documentation
-  SC_HAS_PROCESS(ParamScheduler);
-  //! @endcond
+        //! @brief SC_THREAD which wakes up when an Appointment expires or is added to the schedule
+        void schedule();
 
-  //! @brief SC_THREAD which wakes up when an Appointment expires or is added to the schedule
-  void schedule();
-
-  //! @brief Adds an Appointment to the schedule
-  //! @param[in] appointment Appointment to be added to the Schedule
-  void addAppointment(const ParamAppointment& appointment);
-
-};
-
+        //! @brief Adds an Appointment to the schedule
+        //! @param[in] appointment Appointment to be added to the Schedule
+        void addAppointment(const ParamAppointment &appointment);
+    };
 }
 
 #endif /* end of include guard: _PARAMSCHEDULER_HPP_ */

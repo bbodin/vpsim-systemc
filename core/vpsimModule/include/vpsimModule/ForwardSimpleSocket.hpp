@@ -32,8 +32,7 @@ namespace vpsim {
     class ForwardSimpleSocket :
             public sc_core::sc_module,
             public tlm::tlm_fw_transport_if<>,
-            public tlm::tlm_bw_transport_if<>
-    {
+            public tlm::tlm_bw_transport_if<> {
         using socketIn_t = tlm_utils::simple_target_socket<ForwardSimpleSocket>;
         using socketOut_t = tlm_utils::simple_initiator_socket<vpsim::ForwardSimpleSocket>;
         socketIn_t mSocketIn;
@@ -49,22 +48,25 @@ namespace vpsim {
 
     public:
         ForwardSimpleSocket(sc_module_name name, const shared_ptr<VpsimModule> &vpsimModule, size_t portNum);
-        SC_HAS_PROCESS ( ForwardSimpleSocket );
 
-        socketIn_t& socketIn() {return mSocketIn;}
-        socketOut_t& socketOut() {return mSocketOut;}
+        SC_HAS_PROCESS(ForwardSimpleSocket);
+
+        socketIn_t &socketIn() { return mSocketIn; }
+        socketOut_t &socketOut() { return mSocketOut; }
 
         //---------------------------------------------------
         //TLM 2.0 communication interface
-        void b_transport( tlm::tlm_generic_payload& trans, sc_core::sc_time& delay ) override;
+        void b_transport(tlm::tlm_generic_payload &trans, sc_core::sc_time &delay) override;
 
-        bool get_direct_mem_ptr(tlm::tlm_generic_payload& trans, tlm::tlm_dmi& dmi_data) override;
+        bool get_direct_mem_ptr(tlm::tlm_generic_payload &trans, tlm::tlm_dmi &dmi_data) override;
 
-        unsigned int transport_dbg(tlm::tlm_generic_payload& trans) override;
+        unsigned int transport_dbg(tlm::tlm_generic_payload &trans) override;
 
-        tlm::tlm_sync_enum nb_transport_fw(tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_core::sc_time& t) override;
+        tlm::tlm_sync_enum nb_transport_fw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase,
+                                           sc_core::sc_time &t) override;
 
-        tlm::tlm_sync_enum nb_transport_bw ( tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_core::sc_time& t ) override;
+        tlm::tlm_sync_enum nb_transport_bw(tlm::tlm_generic_payload &trans, tlm::tlm_phase &phase,
+                                           sc_core::sc_time &t) override;
 
         void invalidate_direct_mem_ptr(sc_dt::uint64 start, sc_dt::uint64 end) override;
     };

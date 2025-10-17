@@ -19,19 +19,17 @@
 
 #include "NoC.hpp"
 
-namespace vpsim{
-class C_Ring:public C_NoC
-{
-		private:
-			unsigned int Size;
-			bool  Bidirectional;
+namespace vpsim {
+    class C_Ring : public C_NoC {
+    private:
+        unsigned int Size;
+        bool Bidirectional;
 
-			//builds a routing that sends request in the X axis then the Y axis
-			void BuildRoutingXY();
+        //builds a routing that sends request in the X axis then the Y axis
+        void BuildRoutingXY();
 
-		public:
-			C_Ring(sc_module_name name, unsigned int Size,bool Bidirectional=true, bool debug=true);
-
-};
+    public:
+        C_Ring(sc_module_name name, unsigned int Size, bool Bidirectional = true, bool debug = true);
+    };
 }; //end namespace vpsim
 #endif

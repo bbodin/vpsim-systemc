@@ -18,59 +18,56 @@
 #include <core/TlmCallbackPrivate.hpp>
 
 namespace vpsim {
+    VirtioTlm::VirtioTlm(sc_module_name name) : sc_module(name), TargetIf(string(name), 0x10000), mRdFct(nullptr),
+                                                mWrFct(nullptr), mProxyPtr(nullptr) {
+        TargetIf<REG_T>::RegisterReadAccess(REGISTER(VirtioTlm, read));
+        TargetIf<REG_T>::RegisterWriteAccess(REGISTER(VirtioTlm, write));
 
-VirtioTlm::VirtioTlm(sc_module_name name) :
-		sc_module(name), TargetIf(string(name), 0x10000), mRdFct(nullptr), mWrFct(nullptr), mProxyPtr(nullptr) {
-	TargetIf <REG_T>::RegisterReadAccess(REGISTER(VirtioTlm,read));
-	TargetIf <REG_T>::RegisterWriteAccess(REGISTER(VirtioTlm,write));
+        // SC_THREAD(main);
+    }
 
-	// SC_THREAD(main);
+    tlm::tlm_response_status VirtioTlm::read(payload_t &payload, sc_time &delay) {
+        if (!mProxyPtr) {
+            throw runtime_error("VIRTIO: Provider Proxy Pointer was not initialized.");
+        }
+        if (!mRdFct) {
+            throw runtime_error("VIRTIO: Read function was not initialized.");
+        }
 
-}
+        uint64_t data = mRdFct(mProxyPtr, payload.addr - getBaseAddress(), payload.len);
+        memcpy(payload.ptr, &data, payload.len);
 
-tlm::tlm_response_status VirtioTlm::read (payload_t & payload, sc_time & delay) {
-	if (!mProxyPtr) {
-		throw runtime_error("VIRTIO: Provider Proxy Pointer was not initialized.");
-	}
-	if (!mRdFct) {
-		throw runtime_error("VIRTIO: Read function was not initialized.");
-	}
+        //cout<<"Virtio-read: "<<hex<<payload.addr-getBaseAddress()<<" val: "<<(uint64_t)data<<dec<<endl;
 
-	uint64_t data = mRdFct(mProxyPtr, payload.addr-getBaseAddress(), payload.len);
-	memcpy(payload.ptr, &data, payload.len);
+        return tlm::TLM_OK_RESPONSE;
+    }
 
-	//cout<<"Virtio-read: "<<hex<<payload.addr-getBaseAddress()<<" val: "<<(uint64_t)data<<dec<<endl;
+    tlm::tlm_response_status VirtioTlm::write(payload_t &payload, sc_time &delay) {
+        if (!mProxyPtr) {
+            throw runtime_error("VIRTIO: Provider Proxy Pointer was not initialized.");
+        }
+        if (!mWrFct) {
+            throw runtime_error("VIRTIO: Write function was not initialized.");
+        }
+        uint64_t tmp = 0;
+        memcpy(&tmp, payload.ptr, payload.len);
+        mWrFct(mProxyPtr, payload.addr - getBaseAddress(), tmp, payload.len);
 
-	return tlm::TLM_OK_RESPONSE;
-}
+        if (mIoStep)
+            mIoStep();
 
-tlm::tlm_response_status VirtioTlm::write (payload_t & payload, sc_time & delay) {
-	if (!mProxyPtr) {
-		throw runtime_error("VIRTIO: Provider Proxy Pointer was not initialized.");
-	}
-	if (!mWrFct) {
-		throw runtime_error("VIRTIO: Write function was not initialized.");
-	}
-	uint64_t tmp=0;
-	memcpy(&tmp, payload.ptr, payload.len);
-	mWrFct(mProxyPtr, payload.addr-getBaseAddress(), tmp, payload.len);
+        //cout<<"Virtio-write: "<<hex<<payload.addr-getBaseAddress()<<" val: "<<(uint64_t)tmp<<dec<<endl;
 
-	if(mIoStep)
-		mIoStep();
+        return tlm::TLM_OK_RESPONSE;
+    }
 
-	//cout<<"Virtio-write: "<<hex<<payload.addr-getBaseAddress()<<" val: "<<(uint64_t)tmp<<dec<<endl;
+    void VirtioTlm::main() {
+        if (!mIoStep)
+            throw runtime_error("IOStep function not set (VirtioTlm).");
 
-	return tlm::TLM_OK_RESPONSE;
-}
-
-void VirtioTlm::main() {
-	if (!mIoStep)
-		throw runtime_error("IOStep function not set (VirtioTlm).");
-
-	while (true) {
-		wait(tlm::tlm_global_quantum::instance().get());
-		mIoStep();
-	}
-}
-
+        while (true) {
+            wait(tlm::tlm_global_quantum::instance().get());
+            mIoStep();
+        }
+    }
 } /* namespace vpsim */

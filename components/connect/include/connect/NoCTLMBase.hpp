@@ -22,31 +22,29 @@
 #include "WrapperNoC.hpp"
 //#include "ac_tlm_protocol.H"
 
-namespace vpsim
-{
+namespace vpsim {
+    class C_NoCTLMBase : public sc_module, public ac_tlm_transport_if {
+    public:
+        //Construct
+        C_NoCTLMBase(sc_module_name name_, C_NoCBase *Topo_) : sc_module(name_) {
+            Topo = Topo_;
+            SYSTEMC_INFO("Constructor called");
+        }
 
-class C_NoCTLMBase: public sc_module, public ac_tlm_transport_if
-{
-	public:
-	//Construct
-	C_NoCTLMBase (sc_module_name name_, C_NoCBase* Topo_ ): sc_module(name_) {
-		Topo=Topo_;
-		SYSTEMC_INFO("Constructor called");
-	}
-	virtual C_NoCTLMBase ( ) =0;
+        virtual C_NoCTLMBase() =0;
 
-	//TLM wrapping features
-	protected:
-	std::map<T_RouterID, std::map<T_SlavePortID,sc_port<ac_tlm_transport_if>* > > OutPorts; //todo replace by vectors
+        //TLM wrapping features
+    protected:
+        std::map<T_RouterID, std::map<T_SlavePortID, sc_port<ac_tlm_transport_if> *> > OutPorts;
+        //todo replace by vectors
 
-	list< C_BasicWrapperMasterNoC * > BasicWrapperMasterNoCs;
-	void DoPortInstanciationAndBinding();
-	void DoPortDeallocation();
+        list<C_BasicWrapperMasterNoC *> BasicWrapperMasterNoCs;
 
-};
+        void DoPortInstanciationAndBinding();
 
-};//namespace vpsim
-
+        void DoPortDeallocation();
+    };
+}; //namespace vpsim
 
 
 #endif //NOCTLMBASE_HPP

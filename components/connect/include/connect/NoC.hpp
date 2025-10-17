@@ -24,112 +24,101 @@
 #include "NoCNoContention.hpp"
 #include <sys/time.h>
 
-namespace vpsim
-{
-
-//!
+namespace vpsim {
+    //!
 //! central class use to instanciate all levels of description and implementing
 //! the requested level of description
 //!
-class C_NoC: public C_NoCBase
-{
-
-	public:
-	//!
+    class C_NoC : public C_NoCBase {
+    public:
+        //!
 	//! Defines all acceptable level of abstraction
 	//!
-	enum E_ModellingLevel {
-		Undef,//!< undefined level (default value)
-		CycleAccurate,//!< use cycle accurate NoC models
-		QuantumHistory,//!< unimplemented : target fast estimation of contention based on historical knowledge
-		QuantumProba,//!< unimplemented : target fast estimation of contention based on probabilities
-		NoContention,//!< do not compute any contention (hop count) but use timings
-		NoDelay//!< do not compute any timings for the communication
-	};
+        enum E_ModellingLevel {
+            Undef, //!< undefined level (default value)
+            CycleAccurate, //!< use cycle accurate NoC models
+            QuantumHistory, //!< unimplemented : target fast estimation of contention based on historical knowledge
+            QuantumProba, //!< unimplemented : target fast estimation of contention based on probabilities
+            NoContention, //!< do not compute any contention (hop count) but use timings
+            NoDelay //!< do not compute any timings for the communication
+        };
 
-	private:
-	E_ModellingLevel ModelLevel;//!< The currently used level of abstraction
-	bool IsModelLevelSet;
+    private:
+        E_ModellingLevel ModelLevel; //!< The currently used level of abstraction
+        bool IsModelLevelSet;
 
-	//timing features
-	bool SimuPerfAnalysis; //!< flag to enable perf analysis
-	long int TotalCalcLatencyTime;//!< keeps track of
+        //timing features
+        bool SimuPerfAnalysis; //!< flag to enable perf analysis
+        long int TotalCalcLatencyTime; //!< keeps track of
 
-	bool BeforeElaborationDone;
+        bool BeforeElaborationDone;
 
-	C_NoCCycleAccurate* NoCCycleAccurate;
-	C_NoCNoContention*  NoCNoContention;
-	C_NoCBase* NoCNoCBase; //common to all
+        C_NoCCycleAccurate *NoCCycleAccurate;
+        C_NoCNoContention *NoCNoContention;
+        C_NoCBase *NoCNoCBase; //common to all
 
-	public:
-		C_NoC(sc_module_name name_):C_NoCBase(name_)
-		{
-			ModelLevel=Undef;
-			TotalCalcLatencyTime=0;
-			SimuPerfAnalysis=true;
-			BeforeElaborationDone=false;
-			IsModelLevelSet=false;
+    public:
+        C_NoC(sc_module_name name_) : C_NoCBase(name_) {
+            ModelLevel = Undef;
+            TotalCalcLatencyTime = 0;
+            SimuPerfAnalysis = true;
+            BeforeElaborationDone = false;
+            IsModelLevelSet = false;
 
-			NoCNoCBase=(C_NoCBase* )this;
-			NoCCycleAccurate=NULL;
-			NoCNoContention=NULL;
-		};
+            NoCNoCBase = (C_NoCBase *) this;
+            NoCCycleAccurate = NULL;
+            NoCNoContention = NULL;
+        };
 
-		~C_NoC()
-		{
-			cout<<"TotalCalcLatencyTime "<<TotalCalcLatencyTime<<endl;
-		}
+        ~C_NoC() {
+            cout << "TotalCalcLatencyTime " << TotalCalcLatencyTime << endl;
+        }
 
-		void SetAccuracyLevel(E_ModellingLevel lvl)
-		{
-			if(BeforeElaborationDone)
-				SYSTEMC_ERROR("BeforeElaborationDone already invoked");
-			ModelLevel=lvl;
-			cout << "called SetAccuracyLevel with param "<<lvl<<endl;
-			IsModelLevelSet=true;
-		}
+        void SetAccuracyLevel(E_ModellingLevel lvl) {
+            if (BeforeElaborationDone)
+                SYSTEMC_ERROR("BeforeElaborationDone already invoked");
+            ModelLevel = lvl;
+            cout << "called SetAccuracyLevel with param " << lvl << endl;
+            IsModelLevelSet = true;
+        }
 
-		void SetAccuracyLevel(E_ModellingLevel lvl)
-		{
-			if(BeforeElaborationDone)
-				SYSTEMC_ERROR("BeforeElaborationDone already invoked, cannot set level of description");
-			ModelLevel=lvl;
-			//cout << "called SetAccuracyLevel with param "<<lvl<<endl;
-			IsModelLevelSet=true;
-		}
+        void SetAccuracyLevel(E_ModellingLevel lvl) {
+            if (BeforeElaborationDone)
+                SYSTEMC_ERROR("BeforeElaborationDone already invoked, cannot set level of description");
+            ModelLevel = lvl;
+            //cout << "called SetAccuracyLevel with param "<<lvl<<endl;
+            IsModelLevelSet = true;
+        }
 
 
-		void before_end_of_elaboration()
-		{
-			if(!IsModelLevelSet)
-			{
-				 SYSTEMC_ERROR("undefined level of description in before_end_of_elaboration");
-			}
+        void before_end_of_elaboration() {
+            if (!IsModelLevelSet) {
+                SYSTEMC_ERROR("undefined level of description in before_end_of_elaboration");
+            }
 
-			switch( ModelLevel)
-			{
-				case CycleAccurate: {
-						stringstream ss;
-						ss<<this->name()<<"_CycleAccurate";
-						NoCCycleAccurate=new C_NoCCycleAccurate(ss.str().c_str(),NoCNoCBase);
-						break;
-				}
-				case NoContention: {
-						stringstream ss;
-						ss<<this->name()<<"_NoContention";
-						NoCNoContention=new C_NoCNoContention(ss.str().c_str(),NoCNoCBase);
-						break;
-				}
-				case QuantumProba:
-				case Undef:
-				default: SYSTEMC_ERROR("undefined level of description"<<ModelLevel); break;
-			}
+            switch (ModelLevel) {
+                case CycleAccurate: {
+                    stringstream ss;
+                    ss << this->name() << "_CycleAccurate";
+                    NoCCycleAccurate = new C_NoCCycleAccurate(ss.str().c_str(), NoCNoCBase);
+                    break;
+                }
+                case NoContention: {
+                    stringstream ss;
+                    ss << this->name() << "_NoContention";
+                    NoCNoContention = new C_NoCNoContention(ss.str().c_str(), NoCNoCBase);
+                    break;
+                }
+                case QuantumProba:
+                case Undef:
+                default: SYSTEMC_ERROR("undefined level of description" << ModelLevel);
+                    break;
+            }
 
 
-			BeforeElaborationDone=true;
-		}
-};
-
-};//namespace vpsim
+            BeforeElaborationDone = true;
+        }
+    };
+}; //namespace vpsim
 
 #endif //NOC_HPP

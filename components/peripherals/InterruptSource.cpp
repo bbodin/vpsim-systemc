@@ -17,19 +17,26 @@
 #include "InterruptSource.hpp"
 
 namespace vpsim {
+    InterruptSource::InterruptSource() {
+        // TODO Auto-generated constructor stub
+        mInterruptParent = nullptr;
+        mInterruptLine = 0;
+    }
 
-InterruptSource::InterruptSource() {
-	// TODO Auto-generated constructor stub
-	mInterruptParent=nullptr;
-	mInterruptLine=0;
-}
+    InterruptSource::~InterruptSource() {
+        // TODO Auto-generated destructor stub
+    }
 
-InterruptSource::~InterruptSource() {
-	// TODO Auto-generated destructor stub
-}
+    void InterruptSource::setInterruptParent(InterruptIf *parent) { mInterruptParent = parent; }
+    void InterruptSource::setInterruptLine(uint32_t index) { mInterruptLine = index; }
 
-void InterruptSource::setInterruptParent(InterruptIf* parent) { mInterruptParent=parent; }
-void InterruptSource::setInterruptLine(uint32_t index) { mInterruptLine=index; }
-void InterruptSource::raiseInterrupt() {if (!mInterruptParent) return ; /*throw runtime_error("Raising IRQ with no interrupt parent.");*/ mInterruptParent->update_irq(1,mInterruptLine);}
-void InterruptSource::lowerInterrupt() {if (!mInterruptParent) return ; /*throw runtime_error("Lowering IRQ with no interrupt parent.");*/ mInterruptParent->update_irq(0,mInterruptLine);}
+    void InterruptSource::raiseInterrupt() {
+        if (!mInterruptParent) return; /*throw runtime_error("Raising IRQ with no interrupt parent.");*/
+        mInterruptParent->update_irq(1, mInterruptLine);
+    }
+
+    void InterruptSource::lowerInterrupt() {
+        if (!mInterruptParent) return; /*throw runtime_error("Lowering IRQ with no interrupt parent.");*/
+        mInterruptParent->update_irq(0, mInterruptLine);
+    }
 } /* namespace vpsim */

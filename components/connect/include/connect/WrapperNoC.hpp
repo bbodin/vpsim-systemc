@@ -23,100 +23,94 @@
 
 #include <algorithm>
 
-namespace vpsim
-{
+namespace vpsim {
+    //this wrapper updates the id field in incoming ac_tlm_req so that they match the router ID
+    class C_BasicWrapperMasterNoC : public sc_module, public ac_tlm_transport_if {
+        unsigned int ID;
 
-//this wrapper updates the id field in incoming ac_tlm_req so that they match the router ID
-class C_BasicWrapperMasterNoC: public sc_module, public ac_tlm_transport_if
-{
-		unsigned int ID;
+    public:
+        sc_export<ac_tlm_transport_if> MasterIn;
+        sc_port<ac_tlm_transport_if> MasterOut;
 
-	public: 
-		sc_export<ac_tlm_transport_if> MasterIn;
-		sc_port<ac_tlm_transport_if> MasterOut;
+        C_BasicWrapperMasterNoC(sc_module_name name, unsigned int _ID);
 
-		C_BasicWrapperMasterNoC(sc_module_name name, unsigned int _ID);
-
-		//ac_tlm_rsp transport(ac_tlm_req const &  req);
-		void b_transport( tlm::tlm_generic_payload& trans, sc_time& delay );
-};
+        //ac_tlm_rsp transport(ac_tlm_req const &  req);
+        void b_transport(tlm::tlm_generic_payload &trans, sc_time &delay);
+    };
 
 
+    class C_WrapperMasterNoCToFifo : public sc_module, public ac_tlm_transport_if {
+        unsigned int ID;
 
-class C_WrapperMasterNoCToFifo: public sc_module, public ac_tlm_transport_if
-{
-		unsigned int ID;
+        //NoC speed parameters
+        float FrequencyScaling;
+        //sc_time NoCCycle;
+        unsigned int LinkSizeInBytes;
+        unsigned int volatile ParallelAccessCount;
 
-		//NoC speed parameters
-		float FrequencyScaling;
-		//sc_time NoCCycle;
-		unsigned int LinkSizeInBytes;
-		 unsigned int volatile ParallelAccessCount;
+        T_MemoryMap *MemMap;
 
-		T_MemoryMap* MemMap;
-
-		//to find the Target_ID for a given address
-		T_TargetID GetTargetIDFromAddress(T_MemoryAddress MemoryAddress);
+        //to find the Target_ID for a given address
+        T_TargetID GetTargetIDFromAddress(T_MemoryAddress MemoryAddress);
 
 
-		//we use the request address to address the response address
-		// the response address is null as long as no response has been received,
-		// i.e it is the response status
-		std::map<tlm::tlm_generic_payload*,bool> ResponseReceived;
-		std::map<tlm::tlm_generic_payload*,bool> DEBUG_CurRequests;
+        //we use the request address to address the response address
+        // the response address is null as long as no response has been received,
+        // i.e it is the response status
+        std::map<tlm::tlm_generic_payload *, bool> ResponseReceived;
+        std::map<tlm::tlm_generic_payload *, bool> DEBUG_CurRequests;
 
-	public:
-		sc_in_clk clk;
-		sc_export<ac_tlm_transport_if> MasterIn;
-		sc_fifo_out<NoCFlit> FifoOut; //to send flits on the NoC
-		sc_fifo_in<NoCFlit> FifoIn; //to receive response flits
+    public:
+        sc_in_clk clk;
+        sc_export<ac_tlm_transport_if> MasterIn;
+        sc_fifo_out<NoCFlit> FifoOut; //to send flits on the NoC
+        sc_fifo_in<NoCFlit> FifoIn; //to receive response flits
 
-		C_WrapperMasterNoCToFifo(sc_module_name name, unsigned int _ID, unsigned int _LinkSizeInBytes, float _FrequencyScaling, bool NoTiming);
+        C_WrapperMasterNoCToFifo(sc_module_name name, unsigned int _ID, unsigned int _LinkSizeInBytes,
+                                 float _FrequencyScaling, bool NoTiming);
 
-		SC_HAS_PROCESS(C_WrapperMasterNoCToFifo);
+        SC_HAS_PROCESS(C_WrapperMasterNoCToFifo);
 
-		void SetMemoryMap(T_MemoryMap* _MemMap);
+        void SetMemoryMap(T_MemoryMap *_MemMap);
 
-		//the transport interface that creates NoCFlit messages and send them to the wrapper Fifo
-		//then waits for a response handled by the RouteBW thread
-		//ac_tlm_rsp transport(ac_tlm_req const &  req);
-		void b_transport( tlm::tlm_generic_payload& trans, sc_time& delay );
+        //the transport interface that creates NoCFlit messages and send them to the wrapper Fifo
+        //then waits for a response handled by the RouteBW thread
+        //ac_tlm_rsp transport(ac_tlm_req const &  req);
+        void b_transport(tlm::tlm_generic_payload &trans, sc_time &delay);
 
-		//thread handling response Flits for requests sent by the transport IF
-		void RouteBW();
+        //thread handling response Flits for requests sent by the transport IF
+        void RouteBW();
+    };
 
-};
+    class C_WrapperSlaveFifoToNoC : public sc_module {
+        unsigned int ID;
 
-class C_WrapperSlaveFifoToNoC: public sc_module
-{
-		unsigned int ID;
+        //NoC speed parameters
+        float FrequencyScaling;
+        //sc_time NoCCycle;
+        unsigned int LinkSizeInBytes;
 
-		//NoC speed parameters
-		float FrequencyScaling;
-		//sc_time NoCCycle;
-		unsigned int LinkSizeInBytes;
+    public:
+        sc_in_clk clk;
+        //std::map<T_PortID, sc_port<ac_tlm_transport_if>*> SlaveOuts;
+        sc_port<ac_tlm_transport_if> SlaveOut;
 
-	public:
-		sc_in_clk clk;
-		//std::map<T_PortID, sc_port<ac_tlm_transport_if>*> SlaveOuts;
-		sc_port<ac_tlm_transport_if> SlaveOut;
+        sc_fifo_out<NoCFlit> FifoOut; //to send response flits on the NoC
+        sc_fifo_in<NoCFlit> FifoIn; //to receive request flits on the NoC
 
-		sc_fifo_out<NoCFlit> FifoOut; //to send response flits on the NoC
-		sc_fifo_in<NoCFlit> FifoIn; //to receive request flits on the NoC
+        //Constructor
+        C_WrapperSlaveFifoToNoC(sc_module_name name, unsigned int _ID, unsigned int _LinkSizeInBytes,
+                                float _FrequencyScaling, bool NoTiming);
 
-		//Constructor
-		C_WrapperSlaveFifoToNoC(sc_module_name name, unsigned int _ID, unsigned int _LinkSizeInBytes, float _FrequencyScaling, bool NoTiming);
+        SC_HAS_PROCESS(C_WrapperSlaveFifoToNoC);
 
-		SC_HAS_PROCESS(C_WrapperSlaveFifoToNoC);
+        //binding function that instantiates as many slave ports as required
+        void bind(sc_export<ac_tlm_transport_if> &SlavePort);
 
-		//binding function that instantiates as many slave ports as required
-		void bind(sc_export<ac_tlm_transport_if> & SlavePort);
-
-		//The slave wrapper thread that deals with input NoCFlit to send a TLM request to slave
-		//and re-emmit Backward NoCFlit response
-		void RouteFW();
-};
-
-};//namespace vpsim
+        //The slave wrapper thread that deals with input NoCFlit to send a TLM request to slave
+        //and re-emmit Backward NoCFlit response
+        void RouteFW();
+    };
+}; //namespace vpsim
 
 #endif

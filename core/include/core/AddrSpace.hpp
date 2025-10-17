@@ -20,99 +20,98 @@
 #include "global.hpp"
 #include <vector>
 
-namespace vpsim
-{
-	class AddrSpace {
-	protected:
-		uint64_t mBaseAddress; //!< the base address of the TargetIf, i.e any access between BASE_ADDRESS and BASE_ADDRESS+SIZE shall be mapped to internal local_mem
-		uint64_t mEndAddress; //!< end of address mapped to local mem
+namespace vpsim {
+    class AddrSpace {
+    protected:
+        uint64_t mBaseAddress;
+        //!< the base address of the TargetIf, i.e any access between BASE_ADDRESS and BASE_ADDRESS+SIZE shall be mapped to internal local_mem
+        uint64_t mEndAddress; //!< end of address mapped to local mem
 
 
+    public:
+        AddrSpace(uint64_t Size = 0);
 
-	public:
+        AddrSpace(uint64_t base, uint64_t end);
 
-		AddrSpace(uint64_t Size = 0);
-		AddrSpace(uint64_t base, uint64_t end);
-		~AddrSpace();
+        ~AddrSpace();
 
-		static AddrSpace const maxRange;
+        static AddrSpace const maxRange;
 
-		//!
-		//! sets the value of mBaseAddress to that of BaseAddress
-		//! @param [in] BaseAddress
-		//!
-		void setBaseAddress(uint64_t BaseAddress);
+        //!
+        //! sets the value of mBaseAddress to that of BaseAddress
+        //! @param [in] BaseAddress
+        //!
+        void setBaseAddress(uint64_t BaseAddress);
 
-		//!
-		//! sets the value of mEndAddress to that of endAddress
-		//! @param [in] BaseAddress
-		//!
-		void setEndAddress(uint64_t endAddress);
+        //!
+        //! sets the value of mEndAddress to that of endAddress
+        //! @param [in] BaseAddress
+        //!
+        void setEndAddress(uint64_t endAddress);
 
-		//!
-		//! sets the value of mSize to that of Size
-		//! @param [in] Size
-		//!
-		void setSize(uint64_t Size);
+        //!
+        //! sets the value of mSize to that of Size
+        //! @param [in] Size
+        //!
+        void setSize(uint64_t Size);
 
-		//!
-		//! @return the value of mBaseAddress
-		//!
-		uint64_t getBaseAddress() const;
+        //!
+        //! @return the value of mBaseAddress
+        //!
+        uint64_t getBaseAddress() const;
 
-		//!
-		//! @return the value of mSize
-		//!
-		uint64_t getSize() const;
+        //!
+        //! @return the value of mSize
+        //!
+        uint64_t getSize() const;
 
-		//!
-		//! @return the value of mEndAddress
-		//!
-		uint64_t getEndAddress() const;
+        //!
+        //! @return the value of mEndAddress
+        //!
+        uint64_t getEndAddress() const;
 
-		//!
-		//! @param that AddrSpace used for the test
-		//! @return true if that equals *this
-		//!
-		bool operator==(const AddrSpace& that) const;
+        //!
+        //! @param that AddrSpace used for the test
+        //! @return true if that equals *this
+        //!
+        bool operator==(const AddrSpace &that) const;
 
 
-		//!
-		//! @param that AddrSpace used for the test
-		//! @return true if that is different from *this
-		//!
-		bool operator!=(const AddrSpace& that) const {return !(*this == that);};
+        //!
+        //! @param that AddrSpace used for the test
+        //! @return true if that is different from *this
+        //!
+        bool operator!=(const AddrSpace &that) const { return !(*this == that); };
 
-		//!
-		//! @param that AddrSpace used for the test
-		//! @return true if that is greater than *this
-		//!
-		bool operator<(const AddrSpace& that) const;
+        //!
+        //! @param that AddrSpace used for the test
+        //! @return true if that is greater than *this
+        //!
+        bool operator<(const AddrSpace &that) const;
 
-		//!
-		//! @param that AddrSpace used for the test
-		//! @return true if that is contained by *this
-		//!
-		bool contains(const AddrSpace& that) const;
+        //!
+        //! @param that AddrSpace used for the test
+        //! @return true if that is contained by *this
+        //!
+        bool contains(const AddrSpace &that) const;
 
-		//!
-		//! @param that AddrSpace used for the test
-		//! @return true if that intersect with *this
-		//!
-		bool intersect(const AddrSpace& that) const;
+        //!
+        //! @param that AddrSpace used for the test
+        //! @return true if that intersect with *this
+        //!
+        bool intersect(const AddrSpace &that) const;
 
-		//!
-		//! @param[in] that AddrSpace to intersect with *this
-		//! @return the intersaction of *this and that
-		AddrSpace intersection(const AddrSpace& that) const;
+        //!
+        //! @param[in] that AddrSpace to intersect with *this
+        //! @return the intersaction of *this and that
+        AddrSpace intersection(const AddrSpace &that) const;
 
-		//!
-		//! @param that AddrSpace used to compute the relative complement
-		//! @return the relative complement of that in *this (*this \ that)
-		//!
-		vector<AddrSpace> relativeComplement(const AddrSpace& that) const;
-	};
-
+        //!
+        //! @param that AddrSpace used to compute the relative complement
+        //! @return the relative complement of that in *this (*this \ that)
+        //!
+        vector<AddrSpace> relativeComplement(const AddrSpace &that) const;
+    };
 }
 
 #endif /* ADDRSPACE_HPP_ */

@@ -25,8 +25,7 @@
 #include <core/TargetIf.hpp>
 #include <core/TlmCallbackPrivate.hpp>
 
-namespace vpsim{
-
+namespace vpsim {
     template<class T>
     class CallbackRegister {
         using callback_t = std::function<void()>;
@@ -39,7 +38,7 @@ namespace vpsim{
 
     public:
         std::map<std::string, callback_t> callbacks = {
-                {"stop_simulation", []{sc_core::sc_stop();}}
+            {"stop_simulation", [] { sc_core::sc_stop(); }}
         };
 
     public:
@@ -51,68 +50,67 @@ namespace vpsim{
             return mWriteAccesses;
         }
 
-        T read(){
+        T read() {
             mReadAccesses++;
             return mReg;
         }
 
-        void write(const T& v){
+        void write(const T &v) {
             mWriteAccesses++;
             mReg = v;
 
-            for(auto& cb: mCallbacks){
-                auto& val = cb.first;
-                auto& callback = cb.second;
-                if(v == val) callback();
+            for (auto &cb: mCallbacks) {
+                auto &val = cb.first;
+                auto &callback = cb.second;
+                if (v == val) callback();
             }
         }
 
-        void registerCallback(const T& val, const std::string& callback){
+        void registerCallback(const T &val, const std::string &callback) {
             mCallbacks.insert({val, callbacks[callback]});
         }
     };
 
     template<class T>
-    class TLMCallbackRegister:
+    class TLMCallbackRegister :
             public CallbackRegister<T>,
             public sc_core::sc_module,
             public TargetIf<T> {
-
-        tlm::tlm_response_status read (payload_t & payload, sc_time & delay){
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay) {
             LOG_DEBUG(dbg1) << "Read access to " << this->mName << endl;
             LOG_DEBUG(dbg2) << "\tAt address: 0x" << hex << payload.addr
-                            << " (length: 0x" << payload.len << dec << ")"<< endl;
+                    << " (length: 0x" << payload.len << dec << ")" << endl;
 
-            if(payload.addr != this->getBaseAddress()) {
+            if (payload.addr != this->getBaseAddress()) {
                 LOG_ERROR << "Trying to read at an illegal address in TLMCallbackRegister " << this->mName << ": "
-                          << hex << payload.addr << dec << endl;
+                        << hex << payload.addr << dec << endl;
                 return tlm::TLM_ADDRESS_ERROR_RESPONSE;
             }
 
-            if(payload.len != sizeof(T)){
+            if (payload.len != sizeof(T)) {
                 LOG_ERROR << "Trying to read an illegal length in TLMCallbackRegister " << this->mName << ": "
-                          << hex << payload.len << dec << endl;
+                        << hex << payload.len << dec << endl;
                 return tlm::TLM_ADDRESS_ERROR_RESPONSE;
             }
 
-            *reinterpret_cast<T*>(payload.ptr) = CallbackRegister<T>::read();
+            *reinterpret_cast<T *>(payload.ptr) = CallbackRegister<T>::read();
 
             return tlm::TLM_OK_RESPONSE;
         }
 
 
-        tlm::tlm_response_status write (payload_t & payload, sc_time & delay){
-            if(payload.addr != this->getBaseAddress() || payload.len != sizeof(T)){
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay) {
+            if (payload.addr != this->getBaseAddress() || payload.len != sizeof(T)) {
                 LOG_ERROR << "Trying to write at an address not allowed by " << this->mName << ": "
-                          << hex << payload.addr << dec << endl;
+                        << hex << payload.addr << dec << endl;
                 return tlm::TLM_ADDRESS_ERROR_RESPONSE;
             }
 
-            auto val = *reinterpret_cast<T*>(payload.ptr);
+            auto val = *reinterpret_cast<T *>(payload.ptr);
 
             LOG_DEBUG(dbg1) << "Write access to " << this->mName << endl;
             LOG_DEBUG(dbg2) << "\tAt address: 0x" << hex << payload.addr
-                            << " (length: 0x" << payload.len << dec << ")" << endl;
+                    << " (length: 0x" << payload.len << dec << ")" << endl;
             LOG_DEBUG(dbg3) << "\tvalue: 0x" << hex << val << dec << ")" << endl;
 
             CallbackRegister<T>::write(val);
@@ -121,15 +119,13 @@ namespace vpsim{
         }
 
     public:
-        explicit TLMCallbackRegister(sc_module_name name):
-                sc_module(name),
-                TargetIf<T>(string(name), sizeof(T)){
-            TargetIf <T>::RegisterReadAccess(REGISTER(TLMCallbackRegister,read));
-            TargetIf <T>::RegisterWriteAccess(REGISTER(TLMCallbackRegister,write));
-
+        explicit TLMCallbackRegister(sc_module_name name) : sc_module(name),
+                                                            TargetIf<T>(string(name), sizeof(T)) {
+            TargetIf<T>::RegisterReadAccess(REGISTER(TLMCallbackRegister, read));
+            TargetIf<T>::RegisterWriteAccess(REGISTER(TLMCallbackRegister, write));
         }
-        SC_HAS_PROCESS ( TLMCallbackRegister );
 
+        SC_HAS_PROCESS(TLMCallbackRegister);
     };
 }
 

@@ -28,16 +28,12 @@ using namespace std;
 //! Sub namespace can be implemented for global function storage and differentiation but shall be
 //! avoided to reduce code bloat.
 //!
-namespace vpsim
-{
-
-static inline std::string
-get_pwd ()
-{
-   char the_path[PATH_MAX];
-   return ( string( getcwd(the_path, PATH_MAX) ) );
-}
-
+namespace vpsim {
+    static inline std::string
+    get_pwd() {
+        char the_path[PATH_MAX];
+        return (string(getcwd(the_path, PATH_MAX)));
+    }
 } //end namespace vpsim
 
 

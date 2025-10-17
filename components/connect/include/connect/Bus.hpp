@@ -19,28 +19,24 @@
 
 #include "NoC.hpp"
 
-namespace vpsim
-{
-
-//!
+namespace vpsim {
+    //!
 //! C_Bus provides functions to implement a bus based Topology of
 //!
-class C_Bus:public C_NoC
-{
-public:
-	//!
+    class C_Bus : public C_NoC {
+    public:
+        //!
 	//! Constructor of C_Mesh
 	//! @param [in] name : unique sc_module name of the C_Mesh instance (used for debugging and statistics)
 	//!
-	C_Bus(sc_module_name name);
+        C_Bus(sc_module_name name);
 
 
-	//!
+        //!
 	//!Populates the routing tables for all routers
 	//!
-	void BuildRouting();
-};
-
-};//namespace vpsim
+        void BuildRouting();
+    };
+}; //namespace vpsim
 
 #endif

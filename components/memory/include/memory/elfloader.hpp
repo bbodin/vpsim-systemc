@@ -23,37 +23,32 @@
 
 using namespace ELFIO;
 
-namespace vpsim
-{
-	class elfloader
-	{
-	private:
+namespace vpsim {
+    class elfloader {
+    private:
+        elfio elf_struct;
+        char *elf_memory_ptr;
+        uint64_t elf_memory_size;
 
-		elfio elf_struct;
-		char * elf_memory_ptr;
-		uint64_t elf_memory_size;
+    public:
+        void
+        elfloader_init(char *ptr_mem, uint64_t size_);
 
-	public:
+        void
+        dump_elf_file();
 
-		void
-		elfloader_init ( char * ptr_mem, uint64_t size_ );
+        void
+        load_elf_file(const string name, uint64_t base_addr, uint64_t size, bool debug = false);
 
-		void
-		dump_elf_file ();
+        void
+        print_elf_segments_info();
 
-		void
-		load_elf_file ( const string name, uint64_t base_addr, uint64_t size, bool debug = false );
+        void
+        print_elf_sections_info();
 
-		void
-		print_elf_segments_info ( );
-
-		void
-		print_elf_sections_info ( );
-
-		void
-		print_elf_properties ( );
-	};
-
+        void
+        print_elf_properties();
+    };
 }
 
 #endif /* ELFLOADER_HPP_ */

@@ -19,39 +19,45 @@
 
 #include "global.hpp"
 
-namespace vpsim
-{
-	class LatencyIf {
-	protected:
+namespace vpsim {
+    class LatencyIf {
+    protected:
+        bool mEnableLatency; //!< a boolean flag to inform whether or not accesses shall be timed
+        int mCyclesPerRead; //!< the latency for read accesses
+        int mCyclesPerWrite; //!< the latency for write accesses
+        int mInitialCyclesPerAccess; //!< the latency for init accesses
+        sc_time mCycleDuration; //!< the latency for a single cycle ??
 
-		bool mEnableLatency; //!< a boolean flag to inform whether or not accesses shall be timed
-		int mCyclesPerRead; //!< the latency for read accesses
-		int mCyclesPerWrite; //!< the latency for write accesses
-		int mInitialCyclesPerAccess; //!< the latency for init accesses
-		sc_time mCycleDuration; //!< the latency for a single cycle ??
+    public:
+        LatencyIf();
 
-	public:
-
-		LatencyIf();
-		~LatencyIf();
+        ~LatencyIf();
 
 
-		void setEnableLatency(bool EnableLatency);
-		void setCyclesPerRead(int CyclesPerRead);
-		void setCyclesPerWrite(int CyclesPerWrite);
-		void setInitialCyclesPerAccess(int InitialCyclesPerAccess);
-		void setCycleDuration(sc_time mCycleDuration);
+        void setEnableLatency(bool EnableLatency);
 
-		bool getEnableLatency();
-		int getCyclesPerRead();
-		int	getCyclesPerWrite();
-		int	getInitialCyclesPerAccess();
-		sc_time	getReadWordLatency();
-		virtual sc_time	getWriteWordLatency();
-		virtual sc_time	getCycleDuration();
+        void setCyclesPerRead(int CyclesPerRead);
 
-	};
+        void setCyclesPerWrite(int CyclesPerWrite);
 
+        void setInitialCyclesPerAccess(int InitialCyclesPerAccess);
+
+        void setCycleDuration(sc_time mCycleDuration);
+
+        bool getEnableLatency();
+
+        int getCyclesPerRead();
+
+        int getCyclesPerWrite();
+
+        int getInitialCyclesPerAccess();
+
+        sc_time getReadWordLatency();
+
+        virtual sc_time getWriteWordLatency();
+
+        virtual sc_time getCycleDuration();
+    };
 }
 
 #endif /* LATENCYIF_HPP_ */

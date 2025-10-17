@@ -9,46 +9,39 @@ using namespace std;
 
 using namespace vpsim;
 
-int Comparator::operator() ( const pair<int,float>& p1, const pair<int,float> &p2)
-{
-    return p1.second>p2.second;
+int Comparator::operator()(const pair<int, float> &p1, const pair<int, float> &p2) {
+    return p1.second > p2.second;
 };
 
 
-void dijkstra(const Graph  &G,const int &source,const int &destination,vector<int> &path)
-{
+void dijkstra(const Graph &G, const int &source, const int &destination, vector<int> &path) {
     vector<float> d(G.size());
     vector<int> parent(G.size());
-    for(unsigned int i = 0 ;i < G.size(); i++)
-    {
+    for (unsigned int i = 0; i < G.size(); i++) {
         d[i] = std::numeric_limits<float>::max();
         parent[i] = -1;
     }
-    priority_queue<pair<int,float>, vector<pair<int,float> >, Comparator> Q;
+    priority_queue<pair<int, float>, vector<pair<int, float> >, Comparator> Q;
     d[source] = 0.0f;
-    Q.push(make_pair(source,d[source]));
-    while(!Q.empty())
-    {
+    Q.push(make_pair(source, d[source]));
+    while (!Q.empty()) {
         int u = Q.top().first;
-        if(u==destination) break;
+        if (u == destination) break;
         Q.pop();
-        for(unsigned int i=0; i < G[u].size(); i++)
-        {
-            int v= G[u][i].first;
+        for (unsigned int i = 0; i < G[u].size(); i++) {
+            int v = G[u][i].first;
             float w = G[u][i].second;
-            if(d[v] > d[u]+w)
-            {
-                d[v] = d[u]+w;
+            if (d[v] > d[u] + w) {
+                d[v] = d[u] + w;
                 parent[v] = u;
-                Q.push(make_pair(v,d[v]));
+                Q.push(make_pair(v, d[v]));
             }
         }
     }
     path.clear();
     int p = destination;
     path.push_back(destination);
-    while(p!=source)
-    {
+    while (p != source) {
         p = parent[p];
         path.push_back(p);
     }

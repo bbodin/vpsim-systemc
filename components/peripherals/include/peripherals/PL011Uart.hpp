@@ -23,19 +23,18 @@
 #include "CommonUartInterface.hpp"
 
 namespace vpsim {
+    class PL011Uart : public CommonUartInterface,
+                      public TargetIf<uint32_t> {
+    public:
+        PL011Uart(sc_module_name name);
 
-class PL011Uart: public CommonUartInterface,
-					public TargetIf<uint32_t> {
-public:
-	PL011Uart(sc_module_name name);
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 
-	tlm::tlm_response_status read (payload_t & payload, sc_time & delay);
-	tlm::tlm_response_status write (payload_t & payload, sc_time & delay);
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
 
-private:
-	uint32_t mRxReady;
-};
-
+    private:
+        uint32_t mRxReady;
+    };
 } /* namespace vpsim */
 
 #endif /* _PL011UART_HPP_ */

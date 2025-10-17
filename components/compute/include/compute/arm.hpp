@@ -21,21 +21,17 @@
 #include "global.hpp"
 #include "issFinder.hpp"
 
-namespace vpsim{
-
-
-	class arm : public IssWrapper
-	{
-	public:
-		//---------------------------------------------------
-		//Constructor
-		arm (sc_module_name name, std::string model, const IssFinder& iss, uint32_t id, uint32_t quantum, bool is_gdb, bool simflag, uint64_t init_pc):
-			IssWrapper (name, id, iss.getIssLibPath("arm-softmmu"),
-					model.c_str() /*"arm1136"*/ /*arm926*/ /*"cortex-r5f"*/, quantum, is_gdb, B64, simflag, init_pc)
-
-		{}
-	};
-
+namespace vpsim {
+    class arm : public IssWrapper {
+    public:
+        //---------------------------------------------------
+        //Constructor
+        arm(sc_module_name name, std::string model, const IssFinder &iss, uint32_t id, uint32_t quantum, bool is_gdb,
+            bool simflag, uint64_t init_pc) : IssWrapper(name, id, iss.getIssLibPath("arm-softmmu"),
+                                                         model.c_str() /*"arm1136"*/ /*arm926*/ /*"cortex-r5f"*/,
+                                                         quantum, is_gdb, B64, simflag, init_pc) {
+        }
+    };
 } //end namespace vpsim
 
 #endif

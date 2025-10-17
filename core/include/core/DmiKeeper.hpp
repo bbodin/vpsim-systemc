@@ -25,32 +25,29 @@
 using namespace std;
 
 namespace vpsim {
+    struct DmiKeeper {
+        DmiKeeper(uint32_t nports) {
+            mRanges.resize(nports);
+        }
 
-struct DmiKeeper {
+        unsigned char *getDmi(uint32_t port, uint64_t addr) {
+            for (auto &entry: mRanges[port]) {
+                if (addr >= get<0>(entry) && addr < get<0>(entry) + get<1>(entry)) {
+                    return get<2>(entry) + addr - get<0>(entry);
+                }
+            }
+            return nullptr;
+        }
 
-	DmiKeeper(uint32_t nports) {
-		mRanges.resize(nports);
-	}
+        void setDmiRange(uint32_t port, uint64_t base, uint64_t size, unsigned char *ptr) {
+            mRanges[port].push_back(make_tuple(base, size, ptr));
+        }
 
-	unsigned char* getDmi(uint32_t port, uint64_t addr) {
-		for (auto & entry: mRanges[port]) {
-			if (addr >= get<0>(entry) && addr < get<0>(entry)+get<1>(entry)) {
-				return get<2>(entry) + addr-get<0>(entry);
-			}
-		}
-		return nullptr;
-	}
-
-	void setDmiRange(uint32_t port, uint64_t base, uint64_t size, unsigned char* ptr) {
-		mRanges[port].push_back(make_tuple(base, size, ptr));
-	}
-
-private:
-	std::vector<
-	    std::deque<
-		    std::tuple<uint64_t, uint64_t, unsigned char*> > > mRanges;
-};
-
+    private:
+        std::vector<
+            std::deque<
+                std::tuple<uint64_t, uint64_t, unsigned char *> > > mRanges;
+    };
 }
 
 #endif /* _DMIKEEPER_HPP_ */

@@ -24,39 +24,36 @@
 #include <stdio.h>
 
 namespace vpsim {
+    RemoteTarget::RemoteTarget(sc_module_name name, size_t size) : sc_module(name), TargetIf(string(name), size) {
+        TargetIf<REG_T>::RegisterReadAccess(REGISTER(RemoteTarget, read));
+        TargetIf<REG_T>::RegisterWriteAccess(REGISTER(RemoteTarget, write));
+        SC_THREAD(rtPoll);
+    }
 
-RemoteTarget::RemoteTarget(sc_module_name name, size_t size): sc_module(name),TargetIf(string(name),size) {
-	TargetIf <REG_T>::RegisterReadAccess(REGISTER(RemoteTarget,read));
-	TargetIf <REG_T>::RegisterWriteAccess(REGISTER(RemoteTarget,write));
-	SC_THREAD(rtPoll);
-}
+    RemoteTarget::~RemoteTarget() {
+    }
 
-RemoteTarget::~RemoteTarget() {
-}
+    tlm::tlm_response_status RemoteTarget::read(payload_t &payload, sc_time &delay) {
+        if (!payload.ptr) {
+            throw runtime_error("Remote Target does not support null payloads !");
+        }
 
-tlm::tlm_response_status RemoteTarget::read (payload_t & payload, sc_time & delay) {
-	if (!payload.ptr) {
-		throw runtime_error("Remote Target does not support null payloads !");
-	}
+        if (remoteRead(payload.addr, payload.len, payload.ptr) == REMOTE_READ_OK) {
+            return tlm::TLM_OK_RESPONSE;
+        } else {
+            return tlm::TLM_ADDRESS_ERROR_RESPONSE;
+        }
+    }
 
-	if (remoteRead(payload.addr, payload.len, payload.ptr)==REMOTE_READ_OK) {
-		return tlm::TLM_OK_RESPONSE;
-	} else {
-		return tlm::TLM_ADDRESS_ERROR_RESPONSE;
-	}
+    tlm::tlm_response_status RemoteTarget::write(payload_t &payload, sc_time &delay) {
+        if (!payload.ptr) {
+            throw runtime_error("Remote Target does not support null payloads !");
+        }
 
-}
-
-tlm::tlm_response_status RemoteTarget::write (payload_t & payload, sc_time & delay) {
-	if (!payload.ptr) {
-		throw runtime_error("Remote Target does not support null payloads !");
-	}
-
-	if (remoteWrite(payload.addr, payload.len, payload.ptr)==REMOTE_WRITE_OK) {
-		return tlm::TLM_OK_RESPONSE;
-	} else {
-		return tlm::TLM_ADDRESS_ERROR_RESPONSE;
-	}
-}
-
+        if (remoteWrite(payload.addr, payload.len, payload.ptr) == REMOTE_WRITE_OK) {
+            return tlm::TLM_OK_RESPONSE;
+        } else {
+            return tlm::TLM_ADDRESS_ERROR_RESPONSE;
+        }
+    }
 } /* namespace vpsim */

@@ -34,26 +34,26 @@ void (*provider_io_step)();
 
 typedef
 void (*virtio_mmio_write_type)(void *opaque, uint64_t offset, uint64_t value,
-		                              unsigned size);
+                               unsigned size);
 
 namespace vpsim {
+    class VirtioTlm : public sc_module, public TargetIf<uint8_t> {
+    public:
+        VirtioTlm(sc_module_name name);
 
-class VirtioTlm: public sc_module, public TargetIf<uint8_t>  {
-public:
-	VirtioTlm(sc_module_name name);
-	tlm::tlm_response_status read (payload_t & payload, sc_time & delay);
-	tlm::tlm_response_status write (payload_t & payload, sc_time & delay);
+        tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 
-	SC_HAS_PROCESS(VirtioTlm);
+        tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
 
-	void main();
+        SC_HAS_PROCESS(VirtioTlm);
 
-	virtio_mmio_read_type mRdFct;
-	virtio_mmio_write_type mWrFct;
-	provider_io_step mIoStep;
-	void *mProxyPtr;
-};
+        void main();
 
+        virtio_mmio_read_type mRdFct;
+        virtio_mmio_write_type mWrFct;
+        provider_io_step mIoStep;
+        void *mProxyPtr;
+    };
 } /* namespace vpsim */
 
 #endif /* _VIRTIOTLM_HPP_ */

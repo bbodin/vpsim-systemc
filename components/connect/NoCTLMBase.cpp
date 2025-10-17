@@ -18,33 +18,26 @@
 
 using namespace vpsim;
 
-void C_NoCTLMBase::DoPortInstanciationAndBinding()
-	{
+void C_NoCTLMBase::DoPortInstanciationAndBinding() {
+}
 
-	}
+void C_NoCTLMBase::DoPortDeallocation() {
+    //SYSTEMC_INFO("DoPortDeallocation Called");
+    //delete master wrappers
+    list<C_BasicWrapperMasterNoC *>::iterator IT;
+    for (IT = BasicWrapperMasterNoCs.begin(); IT != BasicWrapperMasterNoCs.end(); IT++) {
+        delete (*IT);
+    }
+    BasicWrapperMasterNoCs.clear();
 
-	void C_NoCTLMBase::DoPortDeallocation()
-	{
-		//SYSTEMC_INFO("DoPortDeallocation Called");
-		//delete master wrappers
-		list< C_BasicWrapperMasterNoC * >::iterator IT;
-		for(IT=BasicWrapperMasterNoCs.begin();IT!=BasicWrapperMasterNoCs.end(); IT++)
-		{
-			delete (*IT);
-		}
-		BasicWrapperMasterNoCs.clear();
-
-		//delete slave ports
-		std::map<T_RouterID, std::map<T_SlavePortID,sc_port<ac_tlm_transport_if>* > >::iterator IT2;
-		for(IT2=OutPorts.begin(); IT2!=OutPorts.end(); IT2++)
-		{
-			std::map<T_SlavePortID,sc_port<ac_tlm_transport_if>* >::iterator IT3;
-			for(IT3=IT2->second.begin(); IT3!=IT2->second.end(); IT3++)
-			{
-				delete IT3->second;
-			}
-			IT2->second.clear();
-		}
-		OutPorts.clear();
-
-	}
+    //delete slave ports
+    std::map<T_RouterID, std::map<T_SlavePortID, sc_port<ac_tlm_transport_if> *> >::iterator IT2;
+    for (IT2 = OutPorts.begin(); IT2 != OutPorts.end(); IT2++) {
+        std::map<T_SlavePortID, sc_port<ac_tlm_transport_if> *>::iterator IT3;
+        for (IT3 = IT2->second.begin(); IT3 != IT2->second.end(); IT3++) {
+            delete IT3->second;
+        }
+        IT2->second.clear();
+    }
+    OutPorts.clear();
+}

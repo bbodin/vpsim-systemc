@@ -20,16 +20,15 @@
 #include "Payload.hpp"
 
 namespace vpsim {
+    class TlmCallbackIf {
+    public:
+        virtual tlm::tlm_response_status operator()(payload_t &payload, sc_core::sc_time &delay) =0;
 
+        virtual ~TlmCallbackIf() {
+        };
+    };
 
-class TlmCallbackIf {
-public:
-  virtual tlm::tlm_response_status operator()( payload_t & payload, sc_core::sc_time & delay )=0;
-  virtual ~TlmCallbackIf(){};
-};
-
-typedef TlmCallbackIf Callback_t; //TODO do a clean refactoring when valid!
-
+    typedef TlmCallbackIf Callback_t; //TODO do a clean refactoring when valid!
 } /* namespace vpsim */
 
 #endif /* _TLMCALLBACKIF_HPP_ */

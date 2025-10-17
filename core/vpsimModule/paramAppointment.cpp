@@ -19,57 +19,49 @@
 
 using namespace std;
 
-namespace vpsim{
+namespace vpsim {
+    ParamAppointment::ParamAppointment(string module,
+                                       AddrSpace as,
+                                       sc_core::sc_time date,
+                                       const ModuleParameter &param) : mModule(module),
+                                                                       mAddrSpace(as),
+                                                                       mParam(param.clone()),
+                                                                       mDate(date),
+                                                                       mUseDefaultAs(false) {
+    }
 
-ParamAppointment::ParamAppointment(string module,
-								   AddrSpace as,
-								   sc_core::sc_time date,
-								   const ModuleParameter &param):
-	mModule(module),
-	mAddrSpace(as),
-	mParam(param.clone()),
-	mDate(date),
-	mUseDefaultAs(false)
-{}
-
-ParamAppointment::ParamAppointment(string module,
-								   sc_core::sc_time date,
-								   const ModuleParameter &param):
-	mModule(module),
-	mParam(param.clone()),
-	mDate(date),
-	mUseDefaultAs(true)
-{}
+    ParamAppointment::ParamAppointment(string module,
+                                       sc_core::sc_time date,
+                                       const ModuleParameter &param) : mModule(module),
+                                                                       mParam(param.clone()),
+                                                                       mDate(date),
+                                                                       mUseDefaultAs(true) {
+    }
 
 
-bool ParamAppointment::isPassed() const
-{
-	return mDate < sc_core::sc_time_stamp();
-}
+    bool ParamAppointment::isPassed() const {
+        return mDate < sc_core::sc_time_stamp();
+    }
 
 
-bool ParamAppointment::isNow() const {
-	return mDate == sc_core::sc_time_stamp();
-}
+    bool ParamAppointment::isNow() const {
+        return mDate == sc_core::sc_time_stamp();
+    }
 
 
-sc_core::sc_time ParamAppointment::timeTo() const
-{
-	return mDate - sc_core::sc_time_stamp();
-}
+    sc_core::sc_time ParamAppointment::timeTo() const {
+        return mDate - sc_core::sc_time_stamp();
+    }
 
-void ParamAppointment::apply() const
-{
-	if(mUseDefaultAs){
-		ParamManager::get().setParameter(mModule, *mParam);
-	} else {
-		ParamManager::get().setParameter(mModule, mAddrSpace, *mParam);
-	}
-}
+    void ParamAppointment::apply() const {
+        if (mUseDefaultAs) {
+            ParamManager::get().setParameter(mModule, *mParam);
+        } else {
+            ParamManager::get().setParameter(mModule, mAddrSpace, *mParam);
+        }
+    }
 
-bool ParamAppointment::operator<(const ParamAppointment& that) const
-{
-	return mDate < that.mDate;
-}
-
+    bool ParamAppointment::operator<(const ParamAppointment &that) const {
+        return mDate < that.mDate;
+    }
 }

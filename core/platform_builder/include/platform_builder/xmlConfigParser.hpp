@@ -21,9 +21,9 @@
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
 #include "rapidxml_print.hpp"
-namespace vpsim{
 
-class XmlConfigParser{
+namespace vpsim {
+    class XmlConfigParser {
         rapidxml::file<> mSource;
         rapidxml::xml_document<> mXml;
 
@@ -33,24 +33,36 @@ class XmlConfigParser{
 
         std::string mCallbackRegisterType;
         std::string mCallbackRegisterName;
-    public:
 
-        explicit XmlConfigParser(const std::string& xmlFile);
+    public:
+        explicit XmlConfigParser(const std::string &xmlFile);
+
         bool read();
 
         void readFromPythonXml();
-        void readVpsim(rapidxml::xml_node<>*);
-        void readPlatform(rapidxml::xml_node<>*);
-        void readIps(rapidxml::xml_node<>*);
-        void readLinks(rapidxml::xml_node<>*);
-        void readIpAttributes(rapidxml::xml_node<>*);
-        void readLink(rapidxml::xml_node<>*);
-        void readSimulation(rapidxml::xml_node<>*);
-        void readLogSchedule(rapidxml::xml_node<>*);
-        void readBlockingTLMSchedule(rapidxml::xml_node<>*);
 
-        AddrSpace readAddrRange(rapidxml::xml_node<>*);
-        void readCallback(rapidxml::xml_node<>*);
+        void readVpsim(rapidxml::xml_node<> *);
+
+        void readPlatform(rapidxml::xml_node<> *);
+
+        void readIps(rapidxml::xml_node<> *);
+
+        void readLinks(rapidxml::xml_node<> *);
+
+        void readIpAttributes(rapidxml::xml_node<> *);
+
+        void readLink(rapidxml::xml_node<> *);
+
+        void readSimulation(rapidxml::xml_node<> *);
+
+        void readLogSchedule(rapidxml::xml_node<> *);
+
+        void readBlockingTLMSchedule(rapidxml::xml_node<> *);
+
+        AddrSpace readAddrRange(rapidxml::xml_node<> *);
+
+        void readCallback(rapidxml::xml_node<> *);
+
         void unsupportedXmlFile();
     };
 }

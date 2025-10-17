@@ -37,8 +37,8 @@
 //! @param[in] lvl Level of debug of the message
 #define LOG_DEBUG(lvl)  if(Logger::canLogDebug((lvl))) Logger::logDebug((lvl)) << "[Debug" << (lvl) << "] "
 
-namespace vpsim{
-  extern Logger globalLogger;
+namespace vpsim {
+    extern Logger globalLogger;
 }
 
 //! @brief provides a stream to the logging file for a line of INFO in the global log file

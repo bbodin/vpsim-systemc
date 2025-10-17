@@ -23,22 +23,24 @@
 #include "InterruptIf.hpp"
 
 namespace vpsim {
+    class InterruptSource {
+    public:
+        InterruptSource();
 
-class InterruptSource {
-public:
-	InterruptSource();
-	virtual ~InterruptSource();
+        virtual ~InterruptSource();
 
-	void setInterruptParent(InterruptIf* parent);
-	void setInterruptLine(uint32_t index);
-	void raiseInterrupt();
-	void lowerInterrupt();
+        void setInterruptParent(InterruptIf *parent);
 
-protected:
-	InterruptIf* mInterruptParent;
-	uint32_t mInterruptLine;
-};
+        void setInterruptLine(uint32_t index);
 
+        void raiseInterrupt();
+
+        void lowerInterrupt();
+
+    protected:
+        InterruptIf *mInterruptParent;
+        uint32_t mInterruptLine;
+    };
 } /* namespace vpsim */
 
 #endif /* _INTERRUPTSOURCE_HPP_ */

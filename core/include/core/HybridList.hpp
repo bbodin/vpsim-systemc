@@ -28,9 +28,8 @@
  * @tparam value_t      Copy assignable type stored in the container
  * @tparam array_size   Size of the blocks
  */
-template <class value_t, size_t array_size = 1024>
-class HybridList
-{
+template<class value_t, size_t array_size = 1024>
+class HybridList {
     static_assert(std::is_copy_assignable<value_t>::value,
                   "value_t must be copy_assignable");
     static_assert(array_size > 0,
@@ -43,25 +42,24 @@ class HybridList
     size_t mCurrentIdx;
 
     //! Forward iterator
-    template <typename T>
-    class Iterator
-    {
+    template<typename T>
+    class Iterator {
         typename container_type::iterator mIt;
         typename array_type::iterator mSubIt;
 
     public:
-        using iterator_category =  std::forward_iterator_tag ;
+        using iterator_category = std::forward_iterator_tag;
 
-        explicit Iterator(HybridList& hl, bool end = false) :
-                mIt(end ? --hl.mContainer.end() : hl.mContainer.begin()),
-                mSubIt(end ? mIt->begin() + hl.mCurrentIdx :
-                       hl.mContainer.begin()->begin())
-        {}
+        explicit Iterator(HybridList &hl, bool end = false) : mIt(end ? --hl.mContainer.end() : hl.mContainer.begin()),
+                                                              mSubIt(end
+                                                                         ? mIt->begin() + hl.mCurrentIdx
+                                                                         : hl.mContainer.begin()->begin()) {
+        }
 
         Iterator operator++() {
             auto i = *this;
             mSubIt++;
-            if(mSubIt == mIt->end()){
+            if (mSubIt == mIt->end()) {
                 mIt++;
                 mSubIt = mIt->begin();
             }
@@ -70,48 +68,54 @@ class HybridList
 
         Iterator operator++(int) {
             mSubIt++;
-            if(mSubIt == mIt->end()){
+            if (mSubIt == mIt->end()) {
                 mIt++;
                 mSubIt = mIt->begin();
             }
             return *this;
         }
 
-        T& operator*() { return *mSubIt; }
-        T* operator->() { return mSubIt; }
-        bool operator==(const Iterator& rhs) { return mSubIt == rhs.mSubIt; }
-        bool operator!=(const Iterator& rhs) { return mSubIt != rhs.mSubIt; }
+        T &operator*() { return *mSubIt; }
+        T *operator->() { return mSubIt; }
+        bool operator==(const Iterator &rhs) { return mSubIt == rhs.mSubIt; }
+        bool operator!=(const Iterator &rhs) { return mSubIt != rhs.mSubIt; }
     };
-    template<typename> friend class Iterator;
+
+    template<typename>
+    friend class Iterator;
 
 public:
     using value_type = value_t;
     using iterator = HybridList::Iterator<value_type>;
     using const_iterator = HybridList::Iterator<const value_type>;
 
-    HybridList(): mContainer(1), mCurrentIdx(0){}
+    HybridList() : mContainer(1), mCurrentIdx(0) {
+    }
 
     template<class T>
-    value_t& emplace_back(T &&val){
-        if(mCurrentIdx >= array_size){
+    value_t &emplace_back(T &&val) {
+        if (mCurrentIdx >= array_size) {
             mContainer.emplace_back(array_type());
             mCurrentIdx = 0;
         }
 
-        auto& array = *(mContainer.rbegin());
+        auto &array = *(mContainer.rbegin());
         return array[mCurrentIdx++] = std::forward<T>(val);
     }
 
-    iterator begin(){
+    iterator begin() {
         return iterator(*this);
     }
-    iterator end(){
+
+    iterator end() {
         return iterator(*this, true);
     }
-    const_iterator cbegin(){
+
+    const_iterator cbegin() {
         return const_iterator(*this);
     }
-    const_iterator cend(){
+
+    const_iterator cend() {
         return const_iterator(*this, true);
     }
 };

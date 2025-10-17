@@ -17,110 +17,106 @@
 #include "logger.hpp"
 #include "loggerCore.hpp"
 
-namespace vpsim{
+namespace vpsim {
+    Logger globalLogger("globalLog");
 
-Logger globalLogger("globalLog");
-
-Logger::Logger(std::string name, std::ostream& stream):
-  mName(name), mLogName(name.append(".log")), mDebugLvl(dbg0), mOfstream(stream), mEnabled(false)
-{
-  //The logger must be registered to be accessible by the LoggerCore
-  LoggerCore::get().registerLogger(*this);
-}
-
-Logger::~Logger()
-{
-  //Unregistering the logger prevents from segmentation fault if
-  //the LoggerCore tries to access it after deletion
-  LoggerCore::get().unregisterLogger(*this);
-}
-
-
-std::string Logger::name() const{
-  return mName;
-}
-
-
-std::string Logger::logName() const{
-  return mLogName;
-}
-
-
-bool Logger::canLogInfo() const{
-  return mEnabled;
-}
-
-
-bool Logger::canLogWarning() const{
-  return mEnabled;
-}
-
-
-bool Logger::canLogError() const{
-  return mEnabled;
-}
-
-
-bool Logger::canLogStats() const{
-  return mEnabled;
-}
-
-
-bool Logger::canLogDebug(DebugLvl lvl) const {
-  return mEnabled && (lvl <= mDebugLvl);
-}
-
-
-std::ostream& Logger::logInfo(){
-  if(canLogInfo()){
-    mOfstream.clear();
-  } else {
-    mOfstream.clear(std::ios::failbit);
-  }
-  return mOfstream;
-}
-
-
-std::ostream& Logger::logWarning(){
-  if(canLogWarning()){
-    mOfstream.clear();
-  } else {
-    mOfstream.clear(std::ios::failbit);
-  }
-  return mOfstream;
-}
-
-
-std::ostream& Logger::logError(){
-  if(canLogError()){
-    mOfstream.clear();
-  } else {
-    mOfstream.clear(std::ios::failbit);
-  }
-  return mOfstream;
-}
-
-
-std::ofstream& Logger::logStats(){
-  if(canLogStats()){
-    if (!mStatStream.is_open()){
-      mStatStream.open(mLogName.c_str(), std::ofstream::out);
+    Logger::Logger(std::string name, std::ostream &stream) : mName(name), mLogName(name.append(".log")),
+                                                             mDebugLvl(dbg0), mOfstream(stream), mEnabled(false) {
+        //The logger must be registered to be accessible by the LoggerCore
+        LoggerCore::get().registerLogger(*this);
     }
-    mStatStream.clear();
-  } else {
-	  mStatStream.clear(std::ios::failbit);
-  }
-  return mStatStream;
-}
+
+    Logger::~Logger() {
+        //Unregistering the logger prevents from segmentation fault if
+        //the LoggerCore tries to access it after deletion
+        LoggerCore::get().unregisterLogger(*this);
+    }
 
 
-std::ostream& Logger::logDebug(DebugLvl lvl){
-  if(canLogDebug(lvl)){
-    mOfstream.clear();
-  } else {
-    mOfstream.clear(std::ios::failbit);
-  }
-  return mOfstream;
-}
+    std::string Logger::name() const {
+        return mName;
+    }
 
+
+    std::string Logger::logName() const {
+        return mLogName;
+    }
+
+
+    bool Logger::canLogInfo() const {
+        return mEnabled;
+    }
+
+
+    bool Logger::canLogWarning() const {
+        return mEnabled;
+    }
+
+
+    bool Logger::canLogError() const {
+        return mEnabled;
+    }
+
+
+    bool Logger::canLogStats() const {
+        return mEnabled;
+    }
+
+
+    bool Logger::canLogDebug(DebugLvl lvl) const {
+        return mEnabled && (lvl <= mDebugLvl);
+    }
+
+
+    std::ostream &Logger::logInfo() {
+        if (canLogInfo()) {
+            mOfstream.clear();
+        } else {
+            mOfstream.clear(std::ios::failbit);
+        }
+        return mOfstream;
+    }
+
+
+    std::ostream &Logger::logWarning() {
+        if (canLogWarning()) {
+            mOfstream.clear();
+        } else {
+            mOfstream.clear(std::ios::failbit);
+        }
+        return mOfstream;
+    }
+
+
+    std::ostream &Logger::logError() {
+        if (canLogError()) {
+            mOfstream.clear();
+        } else {
+            mOfstream.clear(std::ios::failbit);
+        }
+        return mOfstream;
+    }
+
+
+    std::ofstream &Logger::logStats() {
+        if (canLogStats()) {
+            if (!mStatStream.is_open()) {
+                mStatStream.open(mLogName.c_str(), std::ofstream::out);
+            }
+            mStatStream.clear();
+        } else {
+            mStatStream.clear(std::ios::failbit);
+        }
+        return mStatStream;
+    }
+
+
+    std::ostream &Logger::logDebug(DebugLvl lvl) {
+        if (canLogDebug(lvl)) {
+            mOfstream.clear();
+        } else {
+            mOfstream.clear(std::ios::failbit);
+        }
+        return mOfstream;
+    }
 }

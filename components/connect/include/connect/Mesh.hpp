@@ -19,49 +19,44 @@
 
 #include "NoC.hpp"
 
-namespace vpsim
-{
-
-//!
+namespace vpsim {
+    //!
 //! C_Mesh provides an extension to C_NoC to implement a Noc topology
 //! composed of a regular mesh of Routers in a rectangular X*Y grid
 //!
-class C_Mesh:public C_NoC
-{
-		private:
-			unsigned int SizeX; //!< Number of router in the X axis
-			unsigned int SizeY; //!< Number of router in the Y axis
+    class C_Mesh : public C_NoC {
+    private:
+        unsigned int SizeX; //!< Number of router in the X axis
+        unsigned int SizeY; //!< Number of router in the Y axis
 
-			//!
+        //!
 			//! builds a routing that sends request in the X axis then the Y axis
 			//!
-			void BuildRoutingXY();
+        void BuildRoutingXY();
 
-		public:
-
-			//!
+    public:
+        //!
 			//! Constructor of C_Mesh
 			//! @param [in] name : unique sc_module name of the C_Mesh instance (used for debugging and statistics)
 			//! @param [in] _SizeX : the number of router in the X axis
 			//! @param [in] _SizeX : the number of router in the Y axis
 			//!
-			C_Mesh(sc_module_name name, unsigned int _SizeX, unsigned int _SizeY);
+        C_Mesh(sc_module_name name, unsigned int _SizeX, unsigned int _SizeY);
 
-			//!
+        //!
 			//! Enumberation of available routing modes for C_Mesh
 			//!
-			enum E_RoutingMode {
-				Generic, //!< Stands for the base C_NoC routing
-				XY //!< Stands for the XY routing defined by C_Mesh
-			};
+        enum E_RoutingMode {
+            Generic, //!< Stands for the base C_NoC routing
+            XY //!< Stands for the XY routing defined by C_Mesh
+        };
 
-			//!
+        //!
 			//! Populates the routing tables for all routers
 			//! @param [in] RMode : the routing method to use
 			//!
-			void BuildRouting(E_RoutingMode RMode);
-};
-
-};//namespace vpsim
+        void BuildRouting(E_RoutingMode RMode);
+    };
+}; //namespace vpsim
 
 #endif

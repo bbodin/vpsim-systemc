@@ -23,61 +23,57 @@
 using namespace std;
 using namespace vpsim;
 
-IssFinder::IssFinder(string issDirs)
-{
-	//Reminder : the syntax for iss paths is
-	//	path/to/base/dir:iss1,iss2,...
+IssFinder::IssFinder(string issDirs) {
+    //Reminder : the syntax for iss paths is
+    //	path/to/base/dir:iss1,iss2,...
 
 
-	//Get the path before ":"
-	size_t columnPos = issDirs.find_last_of(':');
-	mIssBaseDir = issDirs.substr(0, columnPos) + '/';
+    //Get the path before ":"
+    size_t columnPos = issDirs.find_last_of(':');
+    mIssBaseDir = issDirs.substr(0, columnPos) + '/';
 
-	//Erase up to the ":"
-	issDirs.erase(0, columnPos + 1);
+    //Erase up to the ":"
+    issDirs.erase(0, columnPos + 1);
 
-	if (columnPos == issDirs.npos || issDirs.empty()){
-		throw(invalid_argument("invalid IssType list\n"
-				"correct syntax is path/to/iss/base/folder:issType1Folder,issType2Folder"));
-	}
+    if (columnPos == issDirs.npos || issDirs.empty()) {
+        throw(invalid_argument("invalid IssType list\n"
+            "correct syntax is path/to/iss/base/folder:issType1Folder,issType2Folder"));
+    }
 
-	//get the iss names
-	while(!issDirs.empty()){
-		size_t commaPos = issDirs.find_first_of(',');
-		mIssSubDirs.push_back(issDirs.substr(0, commaPos));
+    //get the iss names
+    while (!issDirs.empty()) {
+        size_t commaPos = issDirs.find_first_of(',');
+        mIssSubDirs.push_back(issDirs.substr(0, commaPos));
 
-		//If it is the last iss so that find_first_of didn't finf ','
-		if(commaPos == string::npos)
-			issDirs.clear();
-		else
-			issDirs.erase(0, commaPos + 1);
-	}
-
+        //If it is the last iss so that find_first_of didn't finf ','
+        if (commaPos == string::npos)
+            issDirs.clear();
+        else
+            issDirs.erase(0, commaPos + 1);
+    }
 }
 
-string IssFinder::getIssLibPath(const string& targetArch) const
-{
-	string libFile{ISS_LIB_PREFIX + targetArch + ISS_LIB_SUFFIX};
-	string path;
+string IssFinder::getIssLibPath(const string &targetArch) const {
+    string libFile{ISS_LIB_PREFIX + targetArch + ISS_LIB_SUFFIX};
+    string path;
 
-	for(auto iss:mIssSubDirs){
-		path = mIssBaseDir + iss + '/' + libFile;
-		if(ifstream(path)) //fast test for existence through ifstream opening and close (upon destruction)
-			return path;
-	}
+    for (auto iss: mIssSubDirs) {
+        path = mIssBaseDir + iss + '/' + libFile;
+        if (ifstream(path)) //fast test for existence through ifstream opening and close (upon destruction)
+            return path;
+    }
 
 
-	//handling error messages
-	cerr<<"failed to find ISS library "<<libFile<<endl;
-	if (mIssSubDirs.size()>0){
-		cerr<<"within any of the following folders"<<endl;
-		for(auto iss:mIssSubDirs){
-				path = mIssBaseDir + iss ;
-				cerr<<path<<endl;
-		}
-	}
-	else{
-		cerr<<"no Iss path specified"<<endl;
-	}
-	exit(EXIT_FAILURE);
+    //handling error messages
+    cerr << "failed to find ISS library " << libFile << endl;
+    if (mIssSubDirs.size() > 0) {
+        cerr << "within any of the following folders" << endl;
+        for (auto iss: mIssSubDirs) {
+            path = mIssBaseDir + iss;
+            cerr << path << endl;
+        }
+    } else {
+        cerr << "no Iss path specified" << endl;
+    }
+    exit(EXIT_FAILURE);
 }
