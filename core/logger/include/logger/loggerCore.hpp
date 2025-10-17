@@ -35,10 +35,10 @@ namespace vpsim {
         //! @brief SystemC module responsible for dynamically changing the debug lvl during the simulation
         LoggerScheduler mLoggerScheduler;
 
-        //! @brief Tells wether or not the logging is globally enabled
+        //! @brief Tells whether the logging is globally enabled
         bool mLoggingEnabled;
 
-        //! @brief Tells wether or not the logging has been made impossible (e.g. by an error)
+        //! @brief Tells whether the logging has been made impossible (e.g. by an error)
         bool mLoggingImpossible;
 
         //! @brief Global lvl of debug
@@ -98,7 +98,7 @@ namespace vpsim {
         //! @param[in] logger Logger to be unregistered
         void unregisterLogger(const Logger &logger);
 
-        //! @brief Tells wether or not a given Logger is registered in the LoggerCore
+        //! @brief Tells whether a given Logger is registered in the LoggerCore
         //! @param[in] logger Logger to be tested
         //! @return True if the Logger passed in the argument is registered, false otherwise
         bool isRegistered(const Logger &logger) const;
