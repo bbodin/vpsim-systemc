@@ -16,7 +16,7 @@
 
 #include "TargetIf.hpp"
 #include "log.hpp"
-#include "string.h"
+#include <cstring>
 
 namespace vpsim {
     //-----------------------------------------------------------------------------
