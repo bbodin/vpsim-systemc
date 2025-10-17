@@ -15,7 +15,7 @@ namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;
     typedef tlm::tlm_initiator_socket<> OutPortType;
 
-    struct DynamicSesamController :
+    struct DynamicSesamController final :
             public VpsimIp<InPortType, OutPortType>,
             public SesamController {
     private:
@@ -39,8 +39,8 @@ namespace vpsim {
     public:
         explicit DynamicSesamController(const std::string& name) : VpsimIp(name),
                                                             SesamController(name.c_str()) {
-            registerRequiredAttribute("base_address");
-            registerOptionalAttribute("size", "4");
+            VpsimIp<InPortType, OutPortType>::registerRequiredAttribute("base_address");
+            VpsimIp<InPortType, OutPortType>::registerOptionalAttribute("size", "4");
 
             mState = RUN;
             mBytesPerLine = 8;
@@ -56,22 +56,22 @@ namespace vpsim {
 
         SC_HAS_PROCESS(DynamicSesamController);
 
-        virtual ~DynamicSesamController() override {
+        ~DynamicSesamController() override {
         }
 
         N_IN_PORTS_OVERRIDE(1);
         N_OUT_PORTS_OVERRIDE(0);
         MEMORY_MAPPED_OVERRIDE;
 
-        virtual InPortType *getNextInPort() override {
+        InPortType *getNextInPort() override {
             return &mTargetSocket;
         }
 
-        virtual OutPortType *getNextOutPort() override {
+        OutPortType *getNextOutPort() override {
             throw runtime_error(VpsimIp::getName() + " : SesamController has no out sockets.");
         }
 
-        virtual void make() override {
+        void make() override {
             checkAttributes();
             setBaseAddress(getAttrAsUInt64("base_address"));
             setPtrState(&mState);
@@ -87,24 +87,24 @@ namespace vpsim {
         }
 
 
-        bool ready() {
+        static bool ready() {
             return ChannelManager::fdCheckReady(0);
         }
 
-        string getLine() {
+        static string getLine() {
             char line[1024];
             fgets(line, 1024, stdin);
             return string(line);
         }
 
-        string prompt() {
+        static string prompt() {
             stringstream ss;
             ss << "\n" << "@" << sc_time_stamp();
             printf("%s sesam # ", ss.str().c_str());
             return getLine();
         }
 
-        vector<string> getArgv(istringstream &ss) {
+        static vector<string> getArgv(istringstream &ss) {
             vector<string> argv;
             ss >> std::skipws;
             string curr;
@@ -117,7 +117,7 @@ namespace vpsim {
         void finalize() override {
             VpsimIp *ip = VpsimIp::Find("SystemCCosim0");
             if (ip) {
-                DynamicSystemCCosimulator *cosim = dynamic_cast<DynamicSystemCCosimulator *>(ip);
+                const auto cosim = dynamic_cast<DynamicSystemCCosimulator *>(ip);
                 MainMemPtr = cosim->mModulePtr;
                 cosim->mModulePtr->setMonitorPtr(this);
             };
@@ -128,7 +128,7 @@ namespace vpsim {
                 [this](VpsimIp *ip) {
                     return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain && ip->getDelayStatCapture());
                 }, // Delayed IPs
-                [this](VpsimIp *ip) {
+                [](VpsimIp *ip) {
                     ip->pushStats();
                 }
             );
@@ -140,7 +140,7 @@ namespace vpsim {
                 [this](VpsimIp *ip) {
                     return (ip->getAttrAsUInt64("domain") == this->mBenchDomain && ip->getDelayStatCapture());
                 }, // Delayed IPs
-                [this,&outputBuffer](VpsimIp *ip) {
+                [&outputBuffer](VpsimIp *ip) {
                     ip->pushStats();
                     auto &stats = ip->getSegStats().back();
                     if (stats.size()) {
@@ -196,8 +196,6 @@ namespace vpsim {
 
                     auto &stats = ip->getSegStats().back();
 
-                    //printf("Fetching stats for IP %s, has %ld stats\n", ip->getName().c_str(), stats.size());
-                    //fflush(stdout);
 
 
                     if (stats.size()) {
@@ -220,12 +218,12 @@ namespace vpsim {
             fclose(LogFile);
         }
 
-        void process_quit_command() {
+        static void process_quit_command() {
             sc_stop();
             return;
         }
 
-        bool process_show_cmd(vector<string> &args) {
+        static bool process_show_cmd(const vector<string> &args) {
             if (args.size() - 1 < 1) {
                 printf("Usage: show component1_name component2_name ...\n");
                 return true;
@@ -242,7 +240,7 @@ namespace vpsim {
             return false;
         }
 
-        bool process_showmem_cmd(vector<string> &args) {
+        bool process_showmem_cmd(const vector<string> &args) const {
             if (args.size() - 1 != 2) {
                 printf("Usage: showmem start_addr size\n");
                 return true;
@@ -262,7 +260,7 @@ namespace vpsim {
                                    return ip->getAttrAsUInt64("domain") == this->mCurrentDomain
                                           && ip->isMemoryMapped()
                                           && ip->getActualAddress() != nullptr
-                                          && ip->getActualAddress() != (unsigned char *) -1
+                                          && ip->getActualAddress() != reinterpret_cast<unsigned char *>(-1)
                                           && ip->getBaseAddress() <= start
                                           && start < ip->getBaseAddress() + ip->getSize();
                                }
@@ -299,7 +297,7 @@ namespace vpsim {
             return false;
         }
 
-        bool process_list_cmd(vector<string> &args) {
+        bool process_list_cmd(const vector<string> &args) {
             if (args.size() - 1 != 0) {
                 printf("Usage: list\n");
                 return true;
@@ -316,7 +314,7 @@ namespace vpsim {
             return false;
         }
 
-        bool process_config_cmd(vector<string> &args) {
+        static bool process_config_cmd(const vector<string> &args) {
             if (args.size() - 1 < 3) {
                 printf("Usage: configure component_family parameter value\n");
                 return true;
@@ -333,7 +331,7 @@ namespace vpsim {
             return false;
         }
 
-        bool process_debug_cmd(vector<string> &args) {
+        static bool process_debug_cmd(const vector<string> &args) {
             if (args.size() - 1 < 2) {
                 printf("Usage: debug lvl component1 component2 component3 ... \n");
                 return true;
@@ -343,14 +341,14 @@ namespace vpsim {
             lv >> lvl;
             for (unsigned i = 2; i < args.size(); i++) {
                 LoggerCore::get().enableLogging(true);
-                LoggerCore::get().setDebugLvl(args[i], (DebugLvl) lvl);
+                LoggerCore::get().setDebugLvl(args[i], static_cast<DebugLvl>(lvl));
 
                 // Also make sure accesses reach the component.
             }
             return false;
         }
 
-        bool process_watch_cmd(vector<string> &args) {
+        bool process_watch_cmd(const vector<string> &args) const {
             if (args.size() - 1 < 2) {
                 printf("Usage: watch base size\n");
                 return true;
@@ -367,7 +365,7 @@ namespace vpsim {
             VpsimIp::MapIf(
                 [this](VpsimIp *ip) { return ip->getAttrAsUInt64("domain") == this->mCurrentDomain; },
                 [&start,&size](VpsimIp *ip) {
-                    AddrSpace as(start, start + size - 1);
+                    const AddrSpace as(start, start + size - 1);
                     // First make sure accesses reach their targets (i.e. No DMI !)
                     try {
                         ParamManager::get().setParameter(
@@ -382,7 +380,7 @@ namespace vpsim {
             return false;
         }
 
-        bool process_unwatch_cmd(vector<string> &args) {
+        bool process_unwatch_cmd(const vector<string> &args) const {
             if (args.size() - 1 < 2) {
                 printf("Usage: unwatch base size\n");
                 return true;
@@ -400,7 +398,7 @@ namespace vpsim {
                 [this](VpsimIp *ip) { return ip->getAttrAsUInt64("domain") == this->mCurrentDomain; },
                 // all IPs
                 [&start,&size](VpsimIp *ip) {
-                    AddrSpace as(start, start + size - 1);
+                    const AddrSpace as(start, start + size - 1);
                     // First make sure accesses reach their targets (i.e. No DMI !)
 
                     // broken, should use default param instead.
@@ -417,7 +415,7 @@ namespace vpsim {
             return false;
         }
 
-        bool process_benchmark_cmd(vector<string> &args) {
+        bool process_benchmark_cmd(const vector<string> &args) {
             if (args.size() - 2 != 0) {
                 printf("Usage: benchmark app\n");
                 return true;
