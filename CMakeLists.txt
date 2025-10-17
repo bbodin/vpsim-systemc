@@ -16,10 +16,18 @@ project(vpsim_components)
 
 set(CMAKE_CXX_STANDARD 11)
 
+# Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+    cmake_policy(SET CMP0135 NEW)
+endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-variable -Wno-unused-parameter -Wno-unused-private-field")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-unused-variable -Wno-unused-parameter -Wno-unused-private-field")
 set(CMAKE_EXE_LINKER_FLAGS "-no-pie")
+
+# This is for TTB
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-changes-meaning")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-changes-meaning")
 
 # Doxygen package
 find_package(Doxygen QUIET)
