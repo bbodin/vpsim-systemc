@@ -43,11 +43,11 @@ void SmartUart::write(char c) {
     if (c != '\0') {
         //mOutput << c << flush;
         for (auto &t: mTriggers) {
-            auto &i = get < 0 > (t);
-            auto &pattern = get < 1 > (t);
-            auto &module = get < 0 > (get < 2 > (t));
-            auto &addr = get < 1 > (get < 2 > (t));
-            auto &param = get < 2 > (get < 2 > (t));
+            auto &i = get<0>(t);
+            auto &pattern = get<1>(t);
+            auto &module = get<0>(get<2>(t));
+            auto &addr = get<1>(get<2>(t));
+            auto &param = get<2>(get<2>(t));
 
             if (pattern[i++] == c) {
                 if (i == pattern.size()) {

@@ -216,8 +216,8 @@ namespace vpsim {
             if (addr >= range.first && addr < range.first + range.second) {
                 std::cout << "[\e[32mCPU with ID " << get_cpu_id() << " (" << getName() << ")\e[39m] ";
                 std::cout << (rw == READ ? "read " : "write ") << "0x" << hex << addr << " value: " << (rw == WRITE
-                    ? value
-                    : *(uint64_t *) mLib.getResultBuffer());
+                        ? value
+                        : *(uint64_t *) mLib.getResultBuffer());
                 std::cout << " size: " << num_bytes << endl;
             }
         }
@@ -291,8 +291,8 @@ namespace vpsim {
 
     uint64_t IssWrapper::iss_get_time(uint64_t nosync) {
         // in ns
-        return (uint64_t)((mQuantumKeeper.get_current_time()
-                           + sc_time(nosync, SC_NS)).to_seconds() * 1000000000)
+        return (uint64_t) ((mQuantumKeeper.get_current_time()
+                            + sc_time(nosync, SC_NS)).to_seconds() * 1000000000)
                + HOST_TIME_START;
     }
 
@@ -342,11 +342,10 @@ namespace vpsim {
         //std::cout<<"ISS main loop exited again"<<std::endl<<flush;
 
 
-        if (sim_flag &&cpu_id
-        ==
-        0
-        )
-        {
+        if (sim_flag && cpu_id
+            ==
+            0
+        ) {
             //Stop simulation when core 0 finishes
             sc_stop();
         }

@@ -64,10 +64,10 @@ namespace vpsim {
 
         for (uint64_t i = StartAddress; i < EndAddress; i += 4) {
             cout << "[0x" << hex << i << dec << "]=0x" << hex;
-            fprintf(stdout, "%02x", (uint32_t)(getLocalMem()[i + 3]));
-            fprintf(stdout, "%02x", (uint32_t)(getLocalMem()[i + 2]));
-            fprintf(stdout, "%02x", (uint32_t)(getLocalMem()[i + 1]));
-            fprintf(stdout, "%02x", (uint32_t)(getLocalMem()[i]));
+            fprintf(stdout, "%02x", (uint32_t) (getLocalMem()[i + 3]));
+            fprintf(stdout, "%02x", (uint32_t) (getLocalMem()[i + 2]));
+            fprintf(stdout, "%02x", (uint32_t) (getLocalMem()[i + 1]));
+            fprintf(stdout, "%02x", (uint32_t) (getLocalMem()[i]));
             cout << dec << std::endl;
         }
     }

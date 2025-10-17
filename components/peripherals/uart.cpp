@@ -43,7 +43,7 @@ namespace vpsim {
         TargetIf<uint8_t>::setDmiEnable(false);
 
         //Compute number of bytes
-        mWordLengthInByte = sizeof (uint8_t);
+        mWordLengthInByte = sizeof(uint8_t);
 
         //Instantiate addressable memory
         for (unsigned i = 0; i < getSize(); i++) getLocalMem()[i] = '\0';

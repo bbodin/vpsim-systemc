@@ -92,8 +92,9 @@ namespace vpsim {
             if (elf_struct.sections[i]->get_flags() & SHF_ALLOC && elf_struct.sections[i]->get_data() != nullptr) {
                 memcpy((char *) (elf_memory_ptr + pos), elf_struct.sections[i]->get_data(),
                        elf_struct.sections[i]->get_size());
-                if (debug) cout << "\t " << std::hex << elf_struct.sections[i]->get_size() << std::dec << "Data loaded."
-                           << std::endl;
+                if (debug)
+                    cout << "\t " << std::hex << elf_struct.sections[i]->get_size() << std::dec << "Data loaded."
+                            << std::endl;
             } else {
                 if (debug) cout << "\t " << "Section is not loaded." << std::endl;
             }

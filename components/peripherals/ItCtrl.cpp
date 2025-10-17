@@ -89,9 +89,8 @@ namespace vpsim {
                 << std::dec << endl;
 
         uint32_t TargetLine = (payload.addr - getBaseAddress()) / mLineSize;
-        uint32_t Value = EndianHelper::GuestToHost < unsigned int
-        ,
-        true, true > (payload.ptr, payload.len);
+        uint32_t Value = EndianHelper::GuestToHost<unsigned int,
+            true, true>(payload.ptr, payload.len);
 
         LOG_DEBUG(dbg1) << "ItCtrl.cpp: TargetLine = " << TargetLine << " Value = " << Value << endl;
 

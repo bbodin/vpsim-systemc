@@ -52,34 +52,34 @@ namespace vpsim {
           , SLCInterleaveLength(slcInterleaveLength) {
         for (unsigned i = 0; i < NUM_CACHE_IN; i++) {
             mCacheSocketsIn.push_back(
-                new tlm_utils::simple_target_socket < CoherenceInterconnect > ((string("cache_in_") + to_string(i)).
+                new tlm_utils::simple_target_socket<CoherenceInterconnect>((string("cache_in_") + to_string(i)).
                     c_str()));
             mCacheSocketsIn[i]->register_b_transport(this, &CoherenceInterconnect::b_transport);
         }
         for (unsigned i = 0; i < NUM_CACHE_OUT; i++) {
             mCacheSocketsOut.push_back(
-                new tlm_utils::simple_initiator_socket < CoherenceInterconnect > ((string("cache_out_") + to_string(i)).
+                new tlm_utils::simple_initiator_socket<CoherenceInterconnect>((string("cache_out_") + to_string(i)).
                     c_str()));
         }
         for (unsigned i = 0; i < NUM_HOME_IN; i++) {
             mHomeSocketsIn.push_back(
-                new tlm_utils::simple_target_socket < CoherenceInterconnect > ((string("home_in_") + to_string(i)).
+                new tlm_utils::simple_target_socket<CoherenceInterconnect>((string("home_in_") + to_string(i)).
                     c_str()));
             mHomeSocketsIn[i]->register_b_transport(this, &CoherenceInterconnect::b_transport);
         }
         for (unsigned i = 0; i < NUM_HOME_OUT; i++) {
             mHomeSocketsOut.push_back(
-                new tlm_utils::simple_initiator_socket < CoherenceInterconnect > ((string("home_out_") + to_string(i)).
+                new tlm_utils::simple_initiator_socket<CoherenceInterconnect>((string("home_out_") + to_string(i)).
                     c_str()));
         }
         for (unsigned i = 0; i < NUM_MMAPPED; i++) {
             mMMappedSocketsOut.push_back(
-                new tlm_utils::simple_initiator_socket < CoherenceInterconnect > ((
+                new tlm_utils::simple_initiator_socket<CoherenceInterconnect>((
                     string("mmapped_out_") + to_string(i)).c_str()));
         }
         for (unsigned i = 0; i < NUM_DEVICE; i++) {
             mDeviceSocketsIn.push_back(
-                new tlm_utils::simple_target_socket < CoherenceInterconnect > ((string("device_") + to_string(i)).
+                new tlm_utils::simple_target_socket<CoherenceInterconnect>((string("device_") + to_string(i)).
                     c_str()));
             mDeviceSocketsIn[i]->register_b_transport(this, &CoherenceInterconnect::b_transport_device);
         }
@@ -95,11 +95,13 @@ namespace vpsim {
         IndexFirstMemoryController = UINT32_MAX;
 
 
-        if (!MemoryInterleaveLength) get_noc_pos_by_address = &
-                                     CoherenceInterconnect::get_noc_pos_by_address_without_interleave;
+        if (!MemoryInterleaveLength)
+            get_noc_pos_by_address = &
+                    CoherenceInterconnect::get_noc_pos_by_address_without_interleave;
         else get_noc_pos_by_address = &CoherenceInterconnect::get_noc_pos_by_address_with_interleave;
-        if (!SLCInterleaveLength) get_home_pos_by_address = &
-                                  CoherenceInterconnect::get_home_pos_by_address_without_interleave;
+        if (!SLCInterleaveLength)
+            get_home_pos_by_address = &
+                    CoherenceInterconnect::get_home_pos_by_address_without_interleave;
         else get_home_pos_by_address = &CoherenceInterconnect::get_home_pos_by_address_with_interleave;
     }
 
@@ -354,8 +356,8 @@ namespace vpsim {
         uint64_t addr, size_t &index) {
         index = 0;
         for (auto &mapping: mAddressIDs) {
-            if (addr >= get < 0 > (mapping) && addr < get < 1 > (mapping) + get < 0 > (mapping)) {
-                return get < 2 > (mapping);
+            if (addr >= get<0>(mapping) && addr < get<1>(mapping) + get<0>(mapping)) {
+                return get<2>(mapping);
             }
             ++index;
         }
@@ -371,7 +373,7 @@ namespace vpsim {
         uint64_t addr, size_t &index) {
         if (addr >= RamBaseAddr && addr < RamLastAddr) {
             index += ((addr - RamBaseAddr) / MemoryInterleaveLength) % mAddressIDs.size();
-            return get < 2 > (mAddressIDs[index]);
+            return get<2>(mAddressIDs[index]);
         } else
             return get_noc_pos_by_address_without_interleave(addr, index);
     }
@@ -379,8 +381,8 @@ namespace vpsim {
     CoherenceInterconnect::mesh_pos CoherenceInterconnect::get_noc_pos_by_id(idx_t id) {
         assert(id != NULL_IDX);
         for (auto &mapping: mCpuIDs)
-            if (id == get < 0 > (mapping)) {
-                return get < 1 > (mapping);
+            if (id == get<0>(mapping)) {
+                return get<1>(mapping);
             }
         throw runtime_error("Unknown ID: " + to_string(id));
     }
@@ -388,16 +390,16 @@ namespace vpsim {
     CoherenceInterconnect::mesh_pos CoherenceInterconnect::get_device_noc_pos_by_id(idx_t id) {
         assert(id != NULL_IDX);
         for (auto &mapping: mDeviceIDs)
-            if (id == get < 0 > (mapping)) {
-                return get < 1 > (mapping);
+            if (id == get<0>(mapping)) {
+                return get<1>(mapping);
             }
         throw runtime_error("Unknown Device ID: " + to_string(id));
     }
 
     CoherenceInterconnect::mesh_pos CoherenceInterconnect::get_home_pos_by_address_without_interleave(uint64_t addr) {
         for (auto &mapping: mHomeIDs)
-            if (addr >= get < 0 > (mapping) && addr < get < 1 > (mapping) + get < 0 > (mapping)) {
-                return get < 2 > (mapping);
+            if (addr >= get<0>(mapping) && addr < get<1>(mapping) + get<0>(mapping)) {
+                return get<2>(mapping);
             }
         throw runtime_error("Unknown Address: " + to_string(addr));
     }
@@ -408,7 +410,7 @@ namespace vpsim {
             index = ((addr - RamBaseAddr) / SLCInterleaveLength) % mHomeIDs.size();
         } else
             throw runtime_error("Unknown Address: " + to_string(addr));
-        return get < 2 > (mHomeIDs[index]);
+        return get<2>(mHomeIDs[index]);
     }
 
     inline void CoherenceInterconnect::computeNoCPerformance(uint64_t distance, sc_time latency) {
@@ -471,10 +473,10 @@ namespace vpsim {
   */
     void CoherenceInterconnect::FillInitTotalStats(idx_t id, mesh_pos src_pos, uint64_t dist, sc_time lat) {
         string position = to_string(src_pos.x_id) + '_' + to_string(src_pos.y_id);
-        get < 0 > (initTotalStats[id]) = position;
-        get < 1 > (initTotalStats[id]) += 1;
-        get < 2 > (initTotalStats[id]) += dist;
-        get < 3 > (initTotalStats[id]) += lat;
+        get<0>(initTotalStats[id]) = position;
+        get<1>(initTotalStats[id]) += 1;
+        get<2>(initTotalStats[id]) += dist;
+        get<3>(initTotalStats[id]) += lat;
     }
 
     /**
@@ -527,22 +529,26 @@ namespace vpsim {
             // the destination router is the source router
             path.push_back(make_tuple(dst_x, dst_y, 'L'));
             // the output port of the traversed router and its position are added to the packet's path
-            for (uint32_t count = 0; count < nbFlits; ++count) ((noc[make_tuple(dst_x, dst_y)])['L']).
-                    insert(make_pair(id + count, t0)); // update the router's outputBuffer with the arriving packet's id
+            for (uint32_t count = 0; count < nbFlits; ++count)
+                ((noc[make_tuple(dst_x, dst_y)])['L']).
+                        insert(make_pair(id + count, t0));
+            // update the router's outputBuffer with the arriving packet's id
             RouterPacketsCount[dst_x + (dst_y * mX)] += nbFlits;
         } else {
             if (dst_x < src_x) {
                 for (i = src_x; i > dst_x; i--) {
                     path.push_back(make_tuple(i, src_y, 'W'));
-                    for (uint32_t count = 0; count < nbFlits; ++count) ((noc[make_tuple(i, src_y)])['W']).insert(
-                        make_pair(id + count, t0));
+                    for (uint32_t count = 0; count < nbFlits; ++count)
+                        ((noc[make_tuple(i, src_y)])['W']).insert(
+                            make_pair(id + count, t0));
                     RouterPacketsCount[i + (src_y * mX)] += nbFlits;
                 }
             } else if (dst_x > src_x) {
                 for (i = src_x; i < dst_x; i++) {
                     path.push_back(make_tuple(i, src_y, 'E'));
-                    for (uint32_t count = 0; count < nbFlits; ++count) ((noc[make_tuple(i, src_y)])['E']).insert(
-                        make_pair(id + count, t0));
+                    for (uint32_t count = 0; count < nbFlits; ++count)
+                        ((noc[make_tuple(i, src_y)])['E']).insert(
+                            make_pair(id + count, t0));
                     RouterPacketsCount[i + (src_y * mX)] += nbFlits;
                 }
             }
@@ -552,8 +558,9 @@ namespace vpsim {
                 }
                 for (j = src_y; j > dst_y; j--) {
                     path.push_back(make_tuple(i, j, 'N'));
-                    for (uint32_t count = 0; count < nbFlits; ++count) ((noc[make_tuple(i, j)])['N']).insert(
-                        make_pair(id + count, t0));
+                    for (uint32_t count = 0; count < nbFlits; ++count)
+                        ((noc[make_tuple(i, j)])['N']).insert(
+                            make_pair(id + count, t0));
                     RouterPacketsCount[i + (j * mX)] += nbFlits;
                 }
             }
@@ -563,15 +570,17 @@ namespace vpsim {
                 }
                 for (j = src_y; j < dst_y; j++) {
                     path.push_back(make_tuple(i, j, 'S'));
-                    for (uint32_t count = 0; count < nbFlits; ++count) ((noc[make_tuple(i, j)])['S']).insert(
-                        make_pair(id + count, t0));
+                    for (uint32_t count = 0; count < nbFlits; ++count)
+                        ((noc[make_tuple(i, j)])['S']).insert(
+                            make_pair(id + count, t0));
                     RouterPacketsCount[i + (j * mX)] += nbFlits;
                 }
             }
             //Don't forget to update the destination router's local outputBuffer
             path.push_back(make_tuple(dst_x, dst_y, 'L'));
-            for (uint32_t count = 0; count < nbFlits; ++count) ((noc[make_tuple(dst_x, dst_y)])['L']).insert(
-                make_pair(id + count, t0));
+            for (uint32_t count = 0; count < nbFlits; ++count)
+                ((noc[make_tuple(dst_x, dst_y)])['L']).insert(
+                    make_pair(id + count, t0));
             RouterPacketsCount[dst_x + (dst_y * mX)] += nbFlits;
         }
         return path;
@@ -614,24 +623,24 @@ namespace vpsim {
             packetId_t prev_pkt = NULL_PACKET; //id of previous packet
             sc_time prev_wait = sc_time(0, SC_NS); //contention delay (i.e. buffer waiting time) of the previous packet
             total_wait = sc_time(0, SC_NS);
-            for (auto rt = (get < 1 > (pkt)).begin(); rt != (get < 1 > (pkt)).end(); rt++) {
+            for (auto rt = (get<1>(pkt)).begin(); rt != (get<1>(pkt)).end(); rt++) {
                 //rt is an iterator on the router list forming the "route" of the considered packet
                 //Remember that route is a vector <tuple<idx_t, idx_t, char>>
                 //So, get<0>(*rt) is the router id in X axis and get<1>(*rt) is the router id in Y axis (both of idx_t type)
                 buffer_wait = sc_time(0, SC_NS);
-                if ((get < 0 > (pkt)) == (((noc[make_tuple(get < 0 > (*rt), get < 1 > (*rt))])[get < 2 > (*rt)]).
+                if ((get<0>(pkt)) == (((noc[make_tuple(get<0>(*rt), get<1>(*rt))])[get<2>(*rt)]).
                         begin())->first) {
                     //if packet is the first in the outputBuffer then its waiting time in the buffer is 0
                     //First packet in buffer
                     buffer_wait = sc_time(0, SC_NS);
                     total_wait += buffer_wait;
-                    ((noc[make_tuple(get < 0 > (*rt), get < 1 > (*rt))])[get < 2 > (*rt)])[get < 0 > (pkt)] =
+                    ((noc[make_tuple(get<0>(*rt), get<1>(*rt))])[get<2>(*rt)])[get<0>(pkt)] =
                             buffer_wait;
-                    RouterTotalLatency[get < 0 > (*rt) + (get < 1 > (*rt) * mX)] += buffer_wait;
+                    RouterTotalLatency[get<0>(*rt) + (get<1>(*rt) * mX)] += buffer_wait;
                 } else {
                     //There are one or more packets in the outputBuffer before the current packet
-                    outputBuffer::iterator it = ((noc[make_tuple(get < 0 > (*rt), get < 1 > (*rt))])[get < 2 > (*rt)]).
-                            find(get < 0 > (pkt)); //find position of the current packet in the outputBuffer
+                    outputBuffer::iterator it = ((noc[make_tuple(get<0>(*rt), get<1>(*rt))])[get<2>(*rt)]).
+                            find(get<0>(pkt)); //find position of the current packet in the outputBuffer
                     //noc[make_tuple(get<0>(*rt),get<1>(*rt))] retrieves the router in the NoC
                     //then router [get<2>(*rt)] retrieves the considered output buffer a map <uint64_t, sc_time> standing for <packet_id,waiting_time>
                     //Finally, we get an iterator pointing to the considered packet in its output buffer
@@ -645,48 +654,48 @@ namespace vpsim {
                         {
                             buffer_wait = sc_time(0, SC_NS);
                             total_wait += buffer_wait;
-                            ((noc[make_tuple(get < 0 > (*rt), get < 1 > (*rt))])[get < 2 > (*rt)])[get < 0 > (pkt)] =
+                            ((noc[make_tuple(get<0>(*rt), get<1>(*rt))])[get<2>(*rt)])[get<0>(pkt)] =
                                     buffer_wait;
-                            RouterTotalLatency[get < 0 > (*rt) + (get < 1 > (*rt) * mX)] += buffer_wait;
+                            RouterTotalLatency[get<0>(*rt) + (get<1>(*rt) * mX)] += buffer_wait;
                         } else {
                             buffer_wait = it->second;
                             total_wait += buffer_wait;
-                            ((noc[make_tuple(get < 0 > (*rt), get < 1 > (*rt))])[get < 2 > (*rt)])[get < 0 > (pkt)] =
+                            ((noc[make_tuple(get<0>(*rt), get<1>(*rt))])[get<2>(*rt)])[get<0>(pkt)] =
                                     buffer_wait;
-                            RouterTotalLatency[get < 0 > (*rt) + (get < 1 > (*rt) * mX)] += buffer_wait;
+                            RouterTotalLatency[get<0>(*rt) + (get<1>(*rt) * mX)] += buffer_wait;
                         }
                     } else
                     //first convergence point between current packet and the previous one; contention should be accounted for here
                     {
                         buffer_wait = QueueWaitingTime(it->second, mRouterLatency, mLinkLatency, mContentionInterval,
-                                                       ((noc[make_tuple(get < 0 > (*rt), get < 1 > (*rt))])[
-                                                           get < 2 > (*rt)]).size());
+                                                       ((noc[make_tuple(get<0>(*rt), get<1>(*rt))])[
+                                                           get<2>(*rt)]).size());
                         total_wait += buffer_wait;
-                        ((noc[make_tuple(get < 0 > (*rt), get < 1 > (*rt))])[get < 2 > (*rt)])[get < 0 > (pkt)] =
+                        ((noc[make_tuple(get<0>(*rt), get<1>(*rt))])[get<2>(*rt)])[get<0>(pkt)] =
                                 buffer_wait;
-                        RouterTotalLatency[get < 0 > (*rt) + (get < 1 > (*rt) * mX)] += buffer_wait;
+                        RouterTotalLatency[get<0>(*rt) + (get<1>(*rt) * mX)] += buffer_wait;
                         prev_pkt = it->first;
                         prev_wait = it->second;
                     }
                     //Dealing with Head Of Line (HOL) blocking
-                    if ((get < 2 > (*rt)) != 'L') //If the current router is not the last router in the pckt's path
+                    if ((get<2>(*rt)) != 'L') //If the current router is not the last router in the pckt's path
                     {
                         route::iterator rt1 = next(rt);
-                        route::iterator rt2 = find((get < 1 > (packetBuffer[prev_pkt - 1])).begin(),
-                                                   (get < 1 > (packetBuffer[prev_pkt - 1])).end(),
-                                                   make_tuple(get < 0 > (*rt), get < 1 > (*rt), get < 2 > (*rt)));
+                        route::iterator rt2 = find((get<1>(packetBuffer[prev_pkt - 1])).begin(),
+                                                   (get<1>(packetBuffer[prev_pkt - 1])).end(),
+                                                   make_tuple(get<0>(*rt), get<1>(*rt), get<2>(*rt)));
                         // find position of previous pckt that is in the same current router, in packetBuffer
                         route::iterator rt3 = next(rt2);
-                        if ((get < 0 > (*rt1) != get < 0 > (*rt3)) || (get < 1 > (*rt1) != get < 1 > (*rt3)) || (
-                                get < 2 > (*rt1) != get < 2 > (*rt3)))
+                        if ((get<0>(*rt1) != get<0>(*rt3)) || (get<1>(*rt1) != get<1>(*rt3)) || (
+                                get<2>(*rt1) != get<2>(*rt3)))
                         // check if next router of the previous packet is not the same as next router of current packet. If so, we may have HOL blocking
                         {
                             unsigned index;
-                            outputBuffer::iterator ob = ((noc[make_tuple(get < 0 > (*rt3), get < 1 > (*rt3))])[
-                                get < 2 > (*rt3)]).begin();
-                            for (index = 0; index < ((noc[make_tuple(get < 0 > (*rt3), get < 1 > (*rt3))])[
-                                                get < 2 > (*rt3)]).size(); index++) {
-                                if ((get < 0 > (*ob)) == (get < 0 > (*it)))
+                            outputBuffer::iterator ob = ((noc[make_tuple(get<0>(*rt3), get<1>(*rt3))])[
+                                get<2>(*rt3)]).begin();
+                            for (index = 0; index < ((noc[make_tuple(get<0>(*rt3), get<1>(*rt3))])[
+                                                get<2>(*rt3)]).size(); index++) {
+                                if ((get<0>(*ob)) == (get<0>(*it)))
                                     break;
                                 ob = next(ob);
                             }
@@ -697,19 +706,19 @@ namespace vpsim {
                                 if (mBufferSize > 1) {
                                     it1 = prev(it, (mBufferSize * mVirtualChannels) - 1);
                                 }
-                                buffer_wait = ((noc[make_tuple(get < 0 > (*rt3), get < 1 > (*rt3))])[get < 2 > (*rt3)])[
-                                    get < 0 > (*it1)];
+                                buffer_wait = ((noc[make_tuple(get<0>(*rt3), get<1>(*rt3))])[get<2>(*rt3)])[
+                                    get<0>(*it1)];
                                 total_wait += buffer_wait;
-                                ((noc[make_tuple(get < 0 > (*rt), get < 1 > (*rt))])[get < 2 > (*rt)])[get < 0 > (pkt)]
+                                ((noc[make_tuple(get<0>(*rt), get<1>(*rt))])[get<2>(*rt)])[get<0>(pkt)]
                                         += buffer_wait;
-                                RouterTotalLatency[get < 0 > (*rt) + (get < 1 > (*rt) * mX)] += buffer_wait;
+                                RouterTotalLatency[get<0>(*rt) + (get<1>(*rt) * mX)] += buffer_wait;
                             }
                         }
                     }
                 }
             }
-            packet_latency = PacketLatency(total_wait, mRouterLatency, mLinkLatency, (get < 1 > (pkt)).size());
-            get < 2 > (pkt) = packet_latency;
+            packet_latency = PacketLatency(total_wait, mRouterLatency, mLinkLatency, (get<1>(pkt)).size());
+            get<2>(pkt) = packet_latency;
             avg_latency += packet_latency;
         }
         return avg_latency;
@@ -718,7 +727,7 @@ namespace vpsim {
     void CoherenceInterconnect::PrintPath(route path) {
         cout << "***path***:" << endl;
         for (const auto &i: path) {
-            cout << get < 0 > (i) << "_" << get < 1 > (i) << "_" << get < 2 > (i) << endl;
+            cout << get<0>(i) << "_" << get<1>(i) << "_" << get<2>(i) << endl;
         }
         cout << "*****" << endl;
     }
@@ -727,11 +736,11 @@ namespace vpsim {
         cout.flush();
         cout << "***PacketBuffer***:" << endl;
         for (const auto &i: packetBuffer) {
-            cout << "packet_id: " << get < 0 > (i) << endl;
-            for (const auto &j: get < 1 > (i)) {
-                cout << "path:  " << get < 0 > (j) << "_" << get < 1 > (j) << "_" << get < 2 > (j) << endl;
+            cout << "packet_id: " << get<0>(i) << endl;
+            for (const auto &j: get<1>(i)) {
+                cout << "path:  " << get<0>(j) << "_" << get<1>(j) << "_" << get<2>(j) << endl;
             }
-            cout << "packet_latency: " << ((get < 2 > (i)).to_seconds()) * 1000000000 << " ns" << endl;
+            cout << "packet_latency: " << ((get<2>(i)).to_seconds()) * 1000000000 << " ns" << endl;
             cout << "-----" << endl;
         }
         cout << "*****" << endl;
@@ -740,26 +749,26 @@ namespace vpsim {
     void CoherenceInterconnect::PrintNoc() {
         cout << "***NoC***:" << endl;
         for (auto &j: noc) {
-            cout << "router_" << get < 0 > (get < 0 > (j)) << "_" << get < 1 > (get < 0 > (j)) << ":" << endl;
-            cout << "port N, number of packets= " << ((get < 1 > (j))['N']).size() << endl;
-            for (const auto &k: (get < 1 > (j))['N']) {
-                cout << "port N: pkt_id: " << get < 0 > (k) << " ,wait= " << get < 1 > (k) << endl;
+            cout << "router_" << get<0>(get<0>(j)) << "_" << get<1>(get<0>(j)) << ":" << endl;
+            cout << "port N, number of packets= " << ((get<1>(j))['N']).size() << endl;
+            for (const auto &k: (get<1>(j))['N']) {
+                cout << "port N: pkt_id: " << get<0>(k) << " ,wait= " << get<1>(k) << endl;
             }
-            cout << "port S, number of packets= " << ((get < 1 > (j))['S']).size() << endl;
-            for (const auto &k: (get < 1 > (j))['S']) {
-                cout << "port S: pkt_id: " << get < 0 > (k) << " ,wait= " << get < 1 > (k) << endl;
+            cout << "port S, number of packets= " << ((get<1>(j))['S']).size() << endl;
+            for (const auto &k: (get<1>(j))['S']) {
+                cout << "port S: pkt_id: " << get<0>(k) << " ,wait= " << get<1>(k) << endl;
             }
-            cout << "port E, number of packets= " << ((get < 1 > (j))['E']).size() << endl;
-            for (const auto &k: (get < 1 > (j))['E']) {
-                cout << "port E: pkt_id: " << get < 0 > (k) << " ,wait= " << get < 1 > (k) << endl;
+            cout << "port E, number of packets= " << ((get<1>(j))['E']).size() << endl;
+            for (const auto &k: (get<1>(j))['E']) {
+                cout << "port E: pkt_id: " << get<0>(k) << " ,wait= " << get<1>(k) << endl;
             }
-            cout << "port W, number of packets= " << ((get < 1 > (j))['W']).size() << endl;
-            for (const auto &k: (get < 1 > (j))['W']) {
-                cout << "port W: pkt_id: " << get < 0 > (k) << " ,wait= " << get < 1 > (k) << endl;
+            cout << "port W, number of packets= " << ((get<1>(j))['W']).size() << endl;
+            for (const auto &k: (get<1>(j))['W']) {
+                cout << "port W: pkt_id: " << get<0>(k) << " ,wait= " << get<1>(k) << endl;
             }
-            cout << "port L, number of packets= " << ((get < 1 > (j))['L']).size() << endl;
-            for (const auto &k: (get < 1 > (j))['L']) {
-                cout << "port L: pkt_id: " << get < 0 > (k) << " ,wait= " << get < 1 > (k) << endl;
+            cout << "port L, number of packets= " << ((get<1>(j))['L']).size() << endl;
+            for (const auto &k: (get<1>(j))['L']) {
+                cout << "port L: pkt_id: " << get<0>(k) << " ,wait= " << get<1>(k) << endl;
             }
             cout << "-----" << endl;
         }

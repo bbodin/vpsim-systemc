@@ -41,27 +41,23 @@ namespace vpsim {
         LOG_DEBUG(dbg2) << getName() << hex << "read: " << " addr: " << payload.addr << dec << " len: " << payload.len
                 << endl;
 
-        REG("CR", 0x00, 4)
-        {
+        REG("CR", 0x00, 4) {
             SET_BIT(0x00, 0, 0);
             SET_BIT(0x00, 1, 0);
             REG_READ();
         }
 
-        REG("MR", 0x04, 4)
-        {
+        REG("MR", 0x04, 4) {
             REG_READ();
         }
 
-        REG("IMR", 0x10, 4)
-        {
+        REG("IMR", 0x10, 4) {
             *(uint32_t *) &getLocalMem()[0x10] =
                     *(uint32_t *) &getLocalMem()[0x8] & ~*(uint32_t *) &getLocalMem()[0xC];
             REG_READ();
             //cout<<"mask read: "<<hex<<*(uint32_t*)payload.ptr<<dec<<endl;
         }
-        REG("ISR", 0x14, 4)
-        {
+        REG("ISR", 0x14, 4) {
             SET_BIT(0x14, 3, 1);
             SET_BIT(0x14, 2, isFifoFull());
             SET_BIT(0x14, 0, !isFifoEmpty());
@@ -69,12 +65,10 @@ namespace vpsim {
             REG_READ();
             mOutInt = false;
         }
-        REG("FIFO", 0x30, 4)
-        {
+        REG("FIFO", 0x30, 4) {
             *(char *) payload.ptr = readByte();
         }
-        REG("SR", 0x2C, 4)
-        {
+        REG("SR", 0x2C, 4) {
             SET_BIT(0x2C, 3, 1);
             SET_BIT(0x2C, 2, isFifoFull());
             SET_BIT(0x2C, 1, isFifoEmpty());
@@ -82,13 +76,11 @@ namespace vpsim {
             REG_READ();
         }
 
-        REG("BAUDGEN", 0x18, 4)
-        {
+        REG("BAUDGEN", 0x18, 4) {
             REG_READ();
         }
 
-        REG("BAUDDIV", 0x34, 4)
-        {
+        REG("BAUDDIV", 0x34, 4) {
             REG_READ();
         }
 
@@ -102,8 +94,7 @@ namespace vpsim {
         LOG_DEBUG(dbg2) << getName() << hex << "write: " << *(uint32_t *) payload.ptr << " addr: " << payload.addr <<
                 dec << " len: " << payload.len << endl;
 
-        REG("CR", 0x00, 4)
-        {
+        REG("CR", 0x00, 4) {
             REG_WRITE();
             if (GET_BIT(0x00, 4)) {
                 mTxEnable = true;
@@ -121,13 +112,11 @@ namespace vpsim {
             }
         }
 
-        REG("MR", 0x04, 4)
-        {
+        REG("MR", 0x04, 4) {
             REG_WRITE();
         }
 
-        REG("RXTOUT", 0x20, 4)
-        {
+        REG("RXTOUT", 0x20, 4) {
             REG_WRITE();
             mTimeoutCounter = *(uint8_t *) payload.ptr;
             if (mTimeoutCounter == 0)
@@ -136,8 +125,7 @@ namespace vpsim {
                 mHasTimeout = true;
         }
 
-        REG("IER", 0x08, 4)
-        {
+        REG("IER", 0x08, 4) {
             REG_WRITE();
             LOG_DEBUG(dbg1) << hex << "write ier: " << *(uint32_t *) payload.ptr << " addr: " << payload.addr << dec <<
                     " len: " << payload.len << endl;
@@ -165,8 +153,7 @@ namespace vpsim {
         }
 
 
-        REG("IDR", 0x0C, 4)
-        {
+        REG("IDR", 0x0C, 4) {
             REG_WRITE();
             //cout<<hex<<"write idr: "<<*(uint32_t*)payload.ptr<<dec<<endl;
 
@@ -189,22 +176,18 @@ namespace vpsim {
                 //cout<<"disabled timeout."<<endl;
             }
         }
-        REG("RXWM", 0x20, 4)
-        {
+        REG("RXWM", 0x20, 4) {
             REG_WRITE();
             LOG_DEBUG(dbg1) << hex << "in trigger: " << *(uint32_t *) payload.ptr << dec << endl;
         }
-        REG("FIFO", 0x30, 4)
-        {
+        REG("FIFO", 0x30, 4) {
             writeByte(*(char *) payload.ptr);
             mOutInt = true;
         }
-        REG("BAUDGEN", 0x18, 4)
-        {
+        REG("BAUDGEN", 0x18, 4) {
             REG_WRITE();
         }
-        REG("BAUDDIV", 0x34, 4)
-        {
+        REG("BAUDDIV", 0x34, 4) {
             REG_WRITE();
         }
 

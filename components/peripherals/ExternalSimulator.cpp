@@ -78,12 +78,12 @@ namespace vpsim {
     }
 
     void external_simulator_interrupt_cb(void *opaque, uint32_t line, uint32_t value) {
-        ExternalSimulator * sim = (ExternalSimulator *) opaque;
+        ExternalSimulator *sim = (ExternalSimulator *) opaque;
         sim->interrupt(line, value);
     }
 
     void external_simulator_sync_cb(void *opaque, uint64_t executed, bool wait_for_event) {
-        ExternalSimulator * sim = (ExternalSimulator *) opaque;
+        ExternalSimulator *sim = (ExternalSimulator *) opaque;
         sim->sync(executed, wait_for_event);
     }
 } /* namespace vpsim */

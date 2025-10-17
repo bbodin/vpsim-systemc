@@ -95,7 +95,7 @@ namespace vpsim {
     void IssLibWrapper::iss_sstop(void *class_inst_ptr) {
         LOG_GLOBAL_DEBUG(dbg2) << "iss_lib_wrapper::iss_sstop called" << std::endl;
 
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         wrap->iss_stop();
     }
@@ -104,7 +104,7 @@ namespace vpsim {
     void IssLibWrapper::iss_forcesync(void *class_inst_ptr, uint64_t nosyncinstr) {
         LOG_GLOBAL_DEBUG(dbg2) << "iss_lib_wrapper::iss_forcesync called" << std::endl;
 
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         wrap->iss_force_sync(nosyncinstr);
     }
@@ -112,7 +112,7 @@ namespace vpsim {
     void IssLibWrapper::iss_wait_for_interrupt(void *class_inst_ptr) {
         LOG_GLOBAL_DEBUG(dbg2) << "iss_lib_wrapper::iss_wait_for_interrupt called" << std::endl;
 
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         wrap->waitForEvent();
     }
@@ -121,7 +121,7 @@ namespace vpsim {
                                    uint64_t value) {
         LOG_GLOBAL_DEBUG(dbg2) << "iss_lib_wrapper::iss_rwsync rw=" << rw << " with time " << ltime << endl;
 
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
 
         wrap->iss_rw_sync(addr, (ACCESS_TYPE) rw, ltime, num_bytes, value);
@@ -133,45 +133,45 @@ namespace vpsim {
         //Call function in wrapper
         LOG_GLOBAL_DEBUG(dbg2) << "iss_lib_wrapper::iss_fsync with time " << cnt << endl;
 
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         wrap->iss_fetch_sync(addr, cnt, instr_quantum, call);
     }
 
     uint64_t IssLibWrapper::iss_get_time(void *class_inst_ptr, uint64_t nosync) {
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
 
         return wrap->iss_get_time(nosync);
     }
 
     void IssLibWrapper::iss_atomic_set_flag(void *class_inst_ptr) {
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         wrap->iss_update_atomic_flag(true);
     }
 
     void IssLibWrapper::iss_atomic_reset_flag(void *class_inst_ptr) {
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         wrap->iss_update_atomic_flag(false);
     }
 
     void IssLibWrapper::iss_interrupt_me(void *class_inst_ptr, uint32_t val, uint32_t idx) {
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         wrap->iss_interrupt_me(val, idx);
     }
 
     void IssLibWrapper::iss_request_timeout(void *class_inst_ptr, uint64_t ticks, void (*cb)(void *),
                                             void *iss_provider, uint64_t nosync) {
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         wrap->iss_request_timeout(ticks, cb, iss_provider, nosync);
     }
 
     uint64_t *IssLibWrapper::iss_get_dotlm(void *class_inst_ptr, uint64_t base, uint64_t end, bool isFetch) {
-        IssLibWrapper * libw = (IssLibWrapper *) (class_inst_ptr);
+        IssLibWrapper *libw = (IssLibWrapper *) (class_inst_ptr);
         IssWrapper *wrap = (IssWrapper *) (libw->wrapper);
         return wrap->iss_get_dotlm(base, end, isFetch);
     }
