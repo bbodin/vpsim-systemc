@@ -1,36 +1,12 @@
 #ifndef VPSIM_DYNAMIC_DYNAMICCACHE_HPP
 #define VPSIM_DYNAMIC_DYNAMICCACHE_HPP
 #include <sstream>
-#include <signal.h>
+
 #include <atomic>
 #include "VpsimIp.hpp"
-#include "TargetIf.hpp"
-#include "InitiatorIf.hpp"
-#include "components/SmartUart.hpp"
-#include "PL011Uart.hpp"
-#include "gic.hpp"
-#include "VirtioTlm.hpp"
-#include "xuartps.hpp"
-#include "AddressTranslator.hpp"
-#include "SesamController.hpp"
-#include "components/CallbackRegister.hpp"
-#include <vpsimModule/ForwardSimpleSocket.hpp>
-#include "peripherals/ItCtrl.hpp"
-#include "peripherals/uart.hpp"
-#include "memory/memory.hpp"
-#include "connect/interconnect.hpp"
 #include "memory/Cache.hpp"
-#include "compute/arm.hpp"
-#include "compute/arm64.hpp"
-#include "RemoteInitiator.hpp"
-#include "RemoteTarget.hpp"
-#include "ExternalSimulator.hpp"
-#include "SystemCTarget.hpp"
 #include "MainMemCosim.hpp"
-#include "IOAccessCosim.hpp"
-#include "CoherenceInterconnect.hpp"
 
-#define tostr(x) dynamic_cast<std::stringstream&&>(std::stringstream{}<<(x)).str()
 
 namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;
@@ -261,28 +237,28 @@ namespace vpsim {
 
         void setStatsAndDie() override {
             if (mModulePtr) {
-                mStats["misses"] = tostr(mModulePtr->getMisses());
-                mStats["hits"] = tostr(mModulePtr->getHits());
-                //mStats["uncached_forwards"]   = tostr(mModulePtr->getForwards());
-                mStats["reads"] = tostr(mModulePtr->getReads());
-                mStats["writes"] = tostr(mModulePtr->getWrites());
-                mStats["write_backs"] = tostr(mModulePtr->getWriteBacks());
+                mStats["misses"] = std::to_string(mModulePtr->getMisses());
+                mStats["hits"] = std::to_string(mModulePtr->getHits());
+                //mStats["uncached_forwards"]   = std::to_string(mModulePtr->getForwards());
+                mStats["reads"] = std::to_string(mModulePtr->getReads());
+                mStats["writes"] = std::to_string(mModulePtr->getWrites());
+                mStats["write_backs"] = std::to_string(mModulePtr->getWriteBacks());
                 //if (mModulePtr->InclusionOfLower==Inclusive) {
-                mStats["real_invalidations"] = tostr(mModulePtr->getInvals());
-                mStats["total_invalidations"] = tostr(mModulePtr->getTotalInvals());
+                mStats["real_invalidations"] = std::to_string(mModulePtr->getInvals());
+                mStats["total_invalidations"] = std::to_string(mModulePtr->getTotalInvals());
                 //}
                 //if (mModulePtr->InclusionOfHigher==Inclusive)
-                mStats["back_invalidations"] = tostr(mModulePtr->getBackInvals());
+                mStats["back_invalidations"] = std::to_string(mModulePtr->getBackInvals());
                 //if (mModulePtr->InclusionOfLower==Exclusive)
-                mStats["evictions"] = tostr(mModulePtr->getEvictions());
-                mStats["evict_backs"] = tostr(mModulePtr->getEvictBacks());
-                mStats["PutS"] = tostr(mModulePtr->getPutS());
-                mStats["PutM"] = tostr(mModulePtr->getPutM());
-                mStats["PutI"] = tostr(mModulePtr->getPutI());
-                mStats["GetS"] = tostr(mModulePtr->getGetS());
-                mStats["GetM"] = tostr(mModulePtr->getGetM());
-                mStats["FwdGetS"] = tostr(mModulePtr->getFwdGetS());
-                mStats["FwdGetM"] = tostr(mModulePtr->getFwdGetM());
+                mStats["evictions"] = std::to_string(mModulePtr->getEvictions());
+                mStats["evict_backs"] = std::to_string(mModulePtr->getEvictBacks());
+                mStats["PutS"] = std::to_string(mModulePtr->getPutS());
+                mStats["PutM"] = std::to_string(mModulePtr->getPutM());
+                mStats["PutI"] = std::to_string(mModulePtr->getPutI());
+                mStats["GetS"] = std::to_string(mModulePtr->getGetS());
+                mStats["GetM"] = std::to_string(mModulePtr->getGetM());
+                mStats["FwdGetS"] = std::to_string(mModulePtr->getFwdGetS());
+                mStats["FwdGetM"] = std::to_string(mModulePtr->getFwdGetM());
                 delete mModulePtr;
             }
         }

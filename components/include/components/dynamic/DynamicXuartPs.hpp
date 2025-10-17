@@ -1,14 +1,13 @@
 #ifndef VPSIM_DYNAMIC_DYNAMICXUARTPS_HPP
 #define VPSIM_DYNAMIC_DYNAMICXUARTPS_HPP
 #include <sstream>
-#include <signal.h>
+
 #include <atomic>
 #include "VpsimIp.hpp"
 #include "TargetIf.hpp"
 #include "components/SmartUart.hpp"
 #include "xuartps.hpp"
 
-#define tostr(x) dynamic_cast<std::stringstream&&>(std::stringstream{}<<(x)).str()
 
 namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;

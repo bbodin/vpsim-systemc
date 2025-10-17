@@ -1,36 +1,12 @@
 #ifndef VPSIM_DYNAMIC_DYNAMICINTERCONNECT_HPP
 #define VPSIM_DYNAMIC_DYNAMICINTERCONNECT_HPP
 #include <sstream>
-#include <signal.h>
+
 #include <atomic>
 #include "VpsimIp.hpp"
-#include "TargetIf.hpp"
-#include "InitiatorIf.hpp"
-#include "components/SmartUart.hpp"
-#include "PL011Uart.hpp"
-#include "gic.hpp"
-#include "VirtioTlm.hpp"
-#include "xuartps.hpp"
-#include "AddressTranslator.hpp"
-#include "SesamController.hpp"
-#include "components/CallbackRegister.hpp"
-#include <vpsimModule/ForwardSimpleSocket.hpp>
-#include "peripherals/ItCtrl.hpp"
-#include "peripherals/uart.hpp"
-#include "memory/memory.hpp"
 #include "connect/interconnect.hpp"
-#include "memory/Cache.hpp"
-#include "compute/arm.hpp"
-#include "compute/arm64.hpp"
-#include "RemoteInitiator.hpp"
-#include "RemoteTarget.hpp"
-#include "ExternalSimulator.hpp"
-#include "SystemCTarget.hpp"
-#include "MainMemCosim.hpp"
-#include "IOAccessCosim.hpp"
-#include "CoherenceInterconnect.hpp"
 
-#define tostr(x) dynamic_cast<std::stringstream&&>(std::stringstream{}<<(x)).str()
+
 
 namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;
@@ -59,8 +35,8 @@ namespace vpsim {
                 auto &back = mSegmentedStats.back();
 
                 for (size_t i = 0; i < getMaxOutPortCount(); ++i) {
-                    auto readsKey = string("reads") + tostr(i);
-                    auto writesKey = string("writes") + tostr(i);
+                    auto readsKey = string("reads") + std::to_string(i);
+                    auto writesKey = string("writes") + std::to_string(i);
                     back[readsKey] = "0";
                     back[writesKey] = "0";
                 }
@@ -70,8 +46,8 @@ namespace vpsim {
             decltype(mSegmentedStats)::value_type newMap;
 
             for (size_t i = 0; i < getMaxOutPortCount(); ++i) {
-                auto readsKey = string("reads") + tostr(i);
-                auto writesKey = string("writes") + tostr(i);
+                auto readsKey = string("reads") + std::to_string(i);
+                auto writesKey = string("writes") + std::to_string(i);
 
                 auto reads = to_string(mModulePtr->getReadCount(i) - stoull(back.at(readsKey)));
                 auto writes = to_string(mModulePtr->getWriteCount(i) - stoull(back.at(writesKey)));
@@ -86,8 +62,8 @@ namespace vpsim {
         void setStatsAndDie() override {
             if (mModulePtr) {
                 for (unsigned i = 0; i < getMaxOutPortCount(); i++) {
-                    mStats[string("written_bytes[") + tostr(i) + "]"] = tostr(mModulePtr->getWriteCount(i));
-                    mStats[string("read_bytes[") + tostr(i) + "]"] = tostr(mModulePtr->getReadCount(i));
+                    mStats[string("written_bytes[") + std::to_string(i) + "]"] = std::to_string(mModulePtr->getWriteCount(i));
+                    mStats[string("read_bytes[") + std::to_string(i) + "]"] = std::to_string(mModulePtr->getReadCount(i));
                 }
                 delete mModulePtr;
             }

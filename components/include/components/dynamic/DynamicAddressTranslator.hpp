@@ -2,12 +2,11 @@
 #define VPSIM_DYNAMIC_ADDRESS_TRANSLATOR_HPP
 
 #include <sstream>
-#include <signal.h>
+
 #include <atomic>
 #include "VpsimIp.hpp"
 #include "AddressTranslator.hpp"
 
-#define tostr(x) dynamic_cast<std::stringstream&&>(std::stringstream{}<<(x)).str()
 
 namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;
@@ -59,11 +58,6 @@ public:
     unsigned char *getActualAddress() override {
         return (unsigned char *) nullptr;
     }
-
-    /*
-        VpsimModule *asModule() override {
-            return nullptr;
-        }*/
 
     void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
                          std::string inPortAlias) override {

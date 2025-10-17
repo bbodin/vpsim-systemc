@@ -1,36 +1,12 @@
 #ifndef VPSIM_DYNAMIC_DYNAMICCOHERENCEINTERCONNECT_HPP
 #define VPSIM_DYNAMIC_DYNAMICCOHERENCEINTERCONNECT_HPP
 #include <sstream>
-#include <signal.h>
+
 #include <atomic>
 #include "VpsimIp.hpp"
-#include "TargetIf.hpp"
-#include "InitiatorIf.hpp"
-#include "components/SmartUart.hpp"
-#include "PL011Uart.hpp"
-#include "gic.hpp"
-#include "VirtioTlm.hpp"
-#include "xuartps.hpp"
-#include "AddressTranslator.hpp"
-#include "SesamController.hpp"
-#include "components/CallbackRegister.hpp"
-#include <vpsimModule/ForwardSimpleSocket.hpp>
-#include "peripherals/ItCtrl.hpp"
-#include "peripherals/uart.hpp"
-#include "memory/memory.hpp"
-#include "connect/interconnect.hpp"
-#include "memory/Cache.hpp"
-#include "compute/arm.hpp"
-#include "compute/arm64.hpp"
-#include "RemoteInitiator.hpp"
-#include "RemoteTarget.hpp"
-#include "ExternalSimulator.hpp"
-#include "SystemCTarget.hpp"
-#include "MainMemCosim.hpp"
-#include "IOAccessCosim.hpp"
 #include "CoherenceInterconnect.hpp"
 
-#define tostr(x) dynamic_cast<std::stringstream&&>(std::stringstream{}<<(x)).str()
+
 
 namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;
@@ -101,9 +77,9 @@ namespace vpsim {
                     back[totallatencyKey] = "0";
                     for (size_t j = 0; j < getAttrAsUInt64("mesh_y"); j++) {
                         for (size_t i = 0; i < getAttrAsUInt64("mesh_x"); i++) {
-                            back[string("Router(") + tostr(i) + string(",") + tostr(j) + string(")_") + string(
+                            back[string("Router(") + std::to_string(i) + string(",") + std::to_string(j) + string(")_") + string(
                                      "Packets")] = "0";
-                            back[string("Router(") + tostr(i) + string(",") + tostr(j) + string(")_") + string(
+                            back[string("Router(") + std::to_string(i) + string(",") + std::to_string(j) + string(")_") + string(
                                      "Contention")] = "0";
                         }
                     }
@@ -113,16 +89,16 @@ namespace vpsim {
                 //NoC stats per initiator
                 if (getAttrAsUInt64("noc_stats_per_initiator_on")) {
                     for (const auto &itr: mModulePtr->initTotalStats) {
-                        back[string("Initiator_") + tostr(get<0>(itr)) + string("(Packets_Sent)")] = "0";
-                        back[string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Distance)")] = "0";
-                        back[string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Network_Latency)")] = "0";
+                        back[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Packets_Sent)")] = "0";
+                        back[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Distance)")] = "0";
+                        back[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Network_Latency)")] = "0";
                     }
                 }
                 for (size_t i = 0; i < mModulePtr->getMMappedSize(); ++i) {
                     std::pair<size_t, size_t> pos = mModulePtr->getMMappedPos(i);
-                    back[string("Memory(") + tostr(pos.first) + string(",") + tostr(pos.second) + string(")_") +
+                    back[string("Memory(") + std::to_string(pos.first) + string(",") + std::to_string(pos.second) + string(")_") +
                          string("Reads")] = "0";
-                    back[string("Memory(") + tostr(pos.first) + string(",") + tostr(pos.second) + string(")_") +
+                    back[string("Memory(") + std::to_string(pos.first) + string(",") + std::to_string(pos.second) + string(")_") +
                          string("Writes")] = "0";
                 }
             }
@@ -164,26 +140,26 @@ namespace vpsim {
                 //NoC stats per Router
                 for (size_t j = 0; j < getAttrAsUInt64("mesh_y"); j++) {
                     for (size_t i = 0; i < getAttrAsUInt64("mesh_x"); i++) {
-                        newMap[string("Router(") + tostr(i) + string(",") + tostr(j) + string(")_") + string("Packets")]
-                                = tostr(
-                                    mModulePtr->getRouterPacketsCount(i,j) - stoull(back.at(string("Router(")+tostr(i)+
-                                        string(",")+tostr(j)+string(")_")+string("Packets"))));
-                        newMap[string("Router(") + tostr(i) + string(",") + tostr(j) + string(")_") +
-                               string("Contention")] = tostr(
+                        newMap[string("Router(") + std::to_string(i) + string(",") + std::to_string(j) + string(")_") + string("Packets")]
+                                = std::to_string(
+                                    mModulePtr->getRouterPacketsCount(i,j) - stoull(back.at(string("Router(")+std::to_string(i)+
+                                        string(",")+std::to_string(j)+string(")_")+string("Packets"))));
+                        newMap[string("Router(") + std::to_string(i) + string(",") + std::to_string(j) + string(")_") +
+                               string("Contention")] = std::to_string(
                             (mModulePtr->getRouterTotalLatency(i,j)).to_seconds()*ns_per_sec - stod(back.at(string(
-                                "Router(")+tostr(i)+string(",")+tostr(j)+string(")_")+string("Contention"))));
+                                "Router(")+std::to_string(i)+string(",")+std::to_string(j)+string(")_")+string("Contention"))));
                     }
                 }
             }
             for (size_t i = 0; i < mModulePtr->getMMappedSize(); ++i) {
                 std::pair<size_t, size_t> pos = mModulePtr->getMMappedPos(i);
-                newMap[string("Memory(") + tostr(pos.first) + string(",") + tostr(pos.second) + string(")_") +
-                       string("Reads")] = tostr(
-                    mModulePtr->getReadCount(i) - stoull(back.at(string("Memory(")+tostr(pos.first)+string(",")+tostr(
+                newMap[string("Memory(") + std::to_string(pos.first) + string(",") + std::to_string(pos.second) + string(")_") +
+                       string("Reads")] = std::to_string(
+                    mModulePtr->getReadCount(i) - stoull(back.at(string("Memory(")+std::to_string(pos.first)+string(",")+std::to_string(
                         pos.second)+string(")_")+string("Reads"))));
-                newMap[string("Memory(") + tostr(pos.first) + string(",") + tostr(pos.second) + string(")_") +
-                       string("Writes")] = tostr(
-                    mModulePtr->getWriteCount(i) - stoull(back.at(string("Memory(")+tostr(pos.first)+string(",")+tostr(
+                newMap[string("Memory(") + std::to_string(pos.first) + string(",") + std::to_string(pos.second) + string(")_") +
+                       string("Writes")] = std::to_string(
+                    mModulePtr->getWriteCount(i) - stoull(back.at(string("Memory(")+std::to_string(pos.first)+string(",")+std::to_string(
                         pos.second)+string(")_")+string("Writes"))));
             }
             //NoC stats per initiator
@@ -191,46 +167,46 @@ namespace vpsim {
                 double avg_latency = 0.0;
                 for (const auto &itr: mModulePtr->initTotalStats) {
                     //printf("initiator_id %d\n", get<0>(itr));
-                    newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Mesh_Position)")] = get<0>(get<1>(itr));
-                    //newMap[string("Initiator_")+ tostr(get<0>(itr))+string("(Mesh_Position)")] = tostr(get<0>(get<1>(itr)));
-                    //newMap[string("Initiator_")+ tostr(get<0>(itr))+string("(Packets_Sent)")] = to_string(get<1>(get<1>(itr))-stoull(back.at(string("Initiator_")+ tostr(get<0>(itr))+string("(Packets_Sent)"))));
-                    if (back[(string("Initiator_") + tostr(get<0>(itr)) + string("(Packets_Sent)"))] == "")
-                        newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Packets_Sent)")] = to_string(
+                    newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Mesh_Position)")] = get<0>(get<1>(itr));
+                    //newMap[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Mesh_Position)")] = std::to_string(get<0>(get<1>(itr)));
+                    //newMap[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Packets_Sent)")] = to_string(get<1>(get<1>(itr))-stoull(back.at(string("Initiator_")+ std::to_string(get<0>(itr))+string("(Packets_Sent)"))));
+                    if (back[(string("Initiator_") + std::to_string(get<0>(itr)) + string("(Packets_Sent)"))] == "")
+                        newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Packets_Sent)")] = to_string(
                             get<1>(get<1>(itr)));
                     else
-                        newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Packets_Sent)")] = to_string(
+                        newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Packets_Sent)")] = to_string(
                             get<1>(get<1>(itr)) - stoull(
-                                back[(string("Initiator_") + tostr(get<0>(itr)) + string("(Packets_Sent)"))]));
-                    //printf("nbr pckts sent is %d\n", stoull(newMap[string("Initiator_")+ tostr(get<0>(itr))+string("(Packets_Sent)")]));
-                    //newMap[string("Initiator_")+ tostr(get<0>(itr))+string("(Total_Distance)")] = to_string(get<2>(get<1>(itr))-stoull(back.at(string("Initiator_")+ tostr(get<0>(itr))+string("(Total_Distance)"))));
-                    if (back[(string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Distance)"))] == "")
-                        newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Distance)")] = to_string(
+                                back[(string("Initiator_") + std::to_string(get<0>(itr)) + string("(Packets_Sent)"))]));
+                    //printf("nbr pckts sent is %d\n", stoull(newMap[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Packets_Sent)")]));
+                    //newMap[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Total_Distance)")] = to_string(get<2>(get<1>(itr))-stoull(back.at(string("Initiator_")+ std::to_string(get<0>(itr))+string("(Total_Distance)"))));
+                    if (back[(string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Distance)"))] == "")
+                        newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Distance)")] = to_string(
                             get<2>(get<1>(itr)));
                     else
-                        newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Distance)")] = to_string(
+                        newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Distance)")] = to_string(
                             get<2>(get<1>(itr)) - stoull(
-                                back[(string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Distance)"))]));
-                    //newMap[string("Initiator_")+ tostr(get<0>(itr))+string("(Total_Network_Latency)")] = to_string((get<3>(get<1>(itr)).to_seconds())*ns_per_sec -stoull(back.at(string("Initiator_")+ tostr(get<0>(itr))+string("(Total_Network_Latency)"))));
-                    if (back[(string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Network_Latency)"))] == "")
-                        newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Network_Latency)")] =
+                                back[(string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Distance)"))]));
+                    //newMap[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Total_Network_Latency)")] = to_string((get<3>(get<1>(itr)).to_seconds())*ns_per_sec -stoull(back.at(string("Initiator_")+ std::to_string(get<0>(itr))+string("(Total_Network_Latency)"))));
+                    if (back[(string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Network_Latency)"))] == "")
+                        newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Network_Latency)")] =
                                 to_string((get<3>(get<1>(itr)).to_seconds()) * ns_per_sec);
                     else
-                        newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Network_Latency)")] =
+                        newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Network_Latency)")] =
                                 to_string((get<3>(get<1>(itr)).to_seconds()) * ns_per_sec - stoull(
-                                              back[(string("Initiator_") + tostr(get<0>(itr)) + string(
+                                              back[(string("Initiator_") + std::to_string(get<0>(itr)) + string(
                                                         "(Total_Network_Latency)"))]));
-                    //printf("total latency is %d\n", stoull(newMap[string("Initiator_")+ tostr(get<0>(itr))+string("(Total_Network_Latency)")]));
-                    if (stoull(newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Packets_Sent)")]) != 0) {
+                    //printf("total latency is %d\n", stoull(newMap[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Total_Network_Latency)")]));
+                    if (stoull(newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Packets_Sent)")]) != 0) {
                         avg_latency = (double) stoull(
-                                          newMap[string("Initiator_") + tostr(get<0>(itr)) +
+                                          newMap[string("Initiator_") + std::to_string(get<0>(itr)) +
                                                  string("(Total_Network_Latency)")]) / (double) stoull(
-                                          newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Packets_Sent)")]);
-                        newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Avg_Packet_Latency)")] = to_string(
+                                          newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Packets_Sent)")]);
+                        newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Avg_Packet_Latency)")] = to_string(
                             avg_latency);
                     } else
-                        newMap[string("Initiator_") + tostr(get<0>(itr)) + string("(Avg_Packet_Latency)")] = "0";
+                        newMap[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Avg_Packet_Latency)")] = "0";
 
-                    //printf("average latency is %f\n", stoull(newMap[string("Initiator_")+ tostr(get<0>(itr))+string("(Avg_Packet_Latency)")]));
+                    //printf("average latency is %f\n", stoull(newMap[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Avg_Packet_Latency)")]));
                     //printf("average latency is %f\n", avg_latency);
                 }
             }
@@ -243,54 +219,54 @@ namespace vpsim {
             if (mModulePtr) {
                 if (getAttrAsUInt64("is_mesh")) {
                     /*for (unsigned i = 0; i<mModulePtr->getMMappedCount(); i++) {
-                   mStats[string("read_bytes[") + tostr(i) + "]"]    = tostr(mModulePtr->getReadMemoryCount(i));
-                      mStats[string("written_bytes[") + tostr(i) + "]"] = tostr(mModulePtr->getWriteMemoryCount(i));
+                   mStats[string("read_bytes[") + std::to_string(i) + "]"]    = std::to_string(mModulePtr->getReadMemoryCount(i));
+                      mStats[string("written_bytes[") + std::to_string(i) + "]"] = std::to_string(mModulePtr->getWriteMemoryCount(i));
                      }*/
-                    mStats[string("Total_Distance")] = tostr(mModulePtr->getTotalDistance());
-                    mStats[string("Packets")] = tostr(mModulePtr->getPacketsCount());
+                    mStats[string("Total_Distance")] = std::to_string(mModulePtr->getTotalDistance());
+                    mStats[string("Packets")] = std::to_string(mModulePtr->getPacketsCount());
                     if (getAttrAsUInt64("with_contention")) {
                         double totlat = (mModulePtr->getTotalLatencyWithContention()).to_seconds() * ns_per_sec;
-                        mStats[string("Total_Latency")] = tostr(totlat) + " ns";
+                        mStats[string("Total_Latency")] = std::to_string(totlat) + " ns";
                         double avgLat = 0.0;
                         if (mModulePtr->getPacketsCount()) avgLat = totlat / (mModulePtr->getPacketsCount());
-                        //mStats[string("Total_Latency")]  = tostr((mModulePtr->getTotalLatencyWithContention()).to_seconds()*ns_per_sec) + " ns";
+                        //mStats[string("Total_Latency")]  = std::to_string((mModulePtr->getTotalLatencyWithContention()).to_seconds()*ns_per_sec) + " ns";
                         //double avgLat= ((mModulePtr->getTotalLatencyWithContention().to_seconds())*ns_per_sec)/(mModulePtr->getPacketsCount());
-                        mStats[string("Average_Latency")] = tostr(avgLat) + " ns";
+                        mStats[string("Average_Latency")] = std::to_string(avgLat) + " ns";
                         //NoC stats per Router
                         for (size_t j = 0; j < getAttrAsUInt64("mesh_y"); j++) {
                             for (size_t i = 0; i < getAttrAsUInt64("mesh_x"); i++) {
-                                mStats[string("Router(") + tostr(i) + string(",") + tostr(j) + string(")_") +
-                                       string("Packets")] = tostr(mModulePtr->getRouterPacketsCount(i,j));
-                                mStats[string("Router(") + tostr(i) + string(",") + tostr(j) + string(")_") +
-                                       string("Contention")] = tostr(
+                                mStats[string("Router(") + std::to_string(i) + string(",") + std::to_string(j) + string(")_") +
+                                       string("Packets")] = std::to_string(mModulePtr->getRouterPacketsCount(i,j));
+                                mStats[string("Router(") + std::to_string(i) + string(",") + std::to_string(j) + string(")_") +
+                                       string("Contention")] = std::to_string(
                                     (mModulePtr->getRouterTotalLatency(i,j)).to_seconds()*ns_per_sec) + " ns";
                             }
                         }
                     } else
                         mStats[string("Total_Latency")] =
-                                tostr((mModulePtr->getTotalLatency()).to_seconds()*ns_per_sec) + " ns";
+                                std::to_string((mModulePtr->getTotalLatency()).to_seconds()*ns_per_sec) + " ns";
                     for (size_t i = 0; i < mModulePtr->getMMappedSize(); ++i) {
                         std::pair<size_t, size_t> pos = mModulePtr->getMMappedPos(i);
-                        mStats[string("Memory(") + tostr(pos.first) + string(",") + tostr(pos.second) + string(")_") +
-                               string("Reads")] = tostr(mModulePtr->getReadCount(i));
-                        mStats[string("Memory(") + tostr(pos.first) + string(",") + tostr(pos.second) + string(")_") +
-                               string("Writes")] = tostr(mModulePtr->getWriteCount(i));
+                        mStats[string("Memory(") + std::to_string(pos.first) + string(",") + std::to_string(pos.second) + string(")_") +
+                               string("Reads")] = std::to_string(mModulePtr->getReadCount(i));
+                        mStats[string("Memory(") + std::to_string(pos.first) + string(",") + std::to_string(pos.second) + string(")_") +
+                               string("Writes")] = std::to_string(mModulePtr->getWriteCount(i));
                     }
                     //NoC stats per initiator
                     if (getAttrAsUInt64("noc_stats_per_initiator_on")) {
                         for (const auto &itr: mModulePtr->initTotalStats) {
-                            //mStats[string("Initiator_")+ tostr(get<0>(itr))+string("(Mesh_Position)")] = get<0>(get<1>(itr));
-                            //mStats[string("Initiator_")+ tostr(get<0>(itr))+string("(Mesh_Position)")] = tostr(get<0>(get<1>(itr)));
-                            mStats[string("Initiator_") + tostr(get<0>(itr)) + string("(Packets_Sent)")] = tostr(
+                            //mStats[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Mesh_Position)")] = get<0>(get<1>(itr));
+                            //mStats[string("Initiator_")+ std::to_string(get<0>(itr))+string("(Mesh_Position)")] = std::to_string(get<0>(get<1>(itr)));
+                            mStats[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Packets_Sent)")] = std::to_string(
                                 get<1>(get<1>(itr)));
-                            mStats[string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Distance)")] = tostr(
+                            mStats[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Distance)")] = std::to_string(
                                 get<2>(get<1>(itr))) + " hops";
-                            mStats[string("Initiator_") + tostr(get<0>(itr)) + string("(Total_Network_Latency)")] =
-                                    tostr((get<3>(get<1>(itr)).to_seconds())*ns_per_sec) + " ns";
+                            mStats[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Total_Network_Latency)")] =
+                                    std::to_string((get<3>(get<1>(itr)).to_seconds())*ns_per_sec) + " ns";
                             sc_time avg_lat = SC_ZERO_TIME;
                             if ((get<1>(get<1>(itr))) != 0)
                                 avg_lat = ((get<3>(get<1>(itr)))) / ((get<1>(get<1>(itr))));
-                            mStats[string("Initiator_") + tostr(get<0>(itr)) + string("(Avg_Packet_Latency)")] = tostr(
+                            mStats[string("Initiator_") + std::to_string(get<0>(itr)) + string("(Avg_Packet_Latency)")] = std::to_string(
                                 avg_lat.to_seconds()*ns_per_sec) + " ns";
                         }
 

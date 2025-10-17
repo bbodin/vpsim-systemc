@@ -6,8 +6,6 @@
 #include "VpsimIp.hpp"
 #include "RemoteTarget.hpp"
 
-#define tostr(x) dynamic_cast<std::stringstream&&>(std::stringstream{}<<(x)).str()
-
 namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;
     typedef tlm::tlm_initiator_socket<> OutPortType;

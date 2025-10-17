@@ -1,14 +1,12 @@
 #ifndef VPSIM_DYNAMIC_DYNAMICARM_HPP
 #define VPSIM_DYNAMIC_DYNAMICARM_HPP
 #include <sstream>
-#include <signal.h>
+
 #include <atomic>
 #include "VpsimIp.hpp"
 #include "InitiatorIf.hpp"
 #include "components/SmartUart.hpp"
 #include "compute/arm.hpp"
-
-#define tostr(x) dynamic_cast<std::stringstream&&>(std::stringstream{}<<(x)).str()
 
 namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;
@@ -150,8 +148,8 @@ namespace vpsim {
 
         void setStatsAndDie() override {
             if (mModulePtr) {
-                mStats["instructions"] = tostr(mModulePtr->getInstructionCount());
-                mStats["data_access"] = tostr(mModulePtr->getDataAccessCount());
+                mStats["instructions"] = std::to_string(mModulePtr->getInstructionCount());
+                mStats["data_access"] = std::to_string(mModulePtr->getDataAccessCount());
 
                 delete mModulePtr;
             }
