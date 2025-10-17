@@ -64,11 +64,11 @@ namespace vpsim {
         //! @return True if the appointment is now, false otherwise
         bool isNow() const;
 
-        //! @brief Tells how much time remains before the appointemnt
+        //! @brief Tells how much time remains before the appointment
         //! @return Time before the appointment is passed
         sc_core::sc_time timeTo() const;
 
-        //! @brief Set the debug level of the logger in the appointement to the planned debug level
+        //! @brief Set the debug level of the logger in the appointment to the planned debug level
         //!
         //! Works wether the appointment is passed or not.
         void apply();

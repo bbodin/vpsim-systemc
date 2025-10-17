@@ -29,13 +29,13 @@ namespace vpsim {
     //! @brief Singleton class responsible for managing the logging system
     class LoggerCore {
     private:
-        //! @brief Map associating a name to the correponding registered Logger object
+        //! @brief Map associating a name to the corresponding registered Logger object
         std::unordered_map<std::string, Logger &> mLoggers;
 
         //! @brief SystemC module responsible for dynamically changing the debug lvl during the simulation
         LoggerScheduler mLoggerScheduler;
 
-        //! @brief Tells wether or not the logging is globaly enabled
+        //! @brief Tells wether or not the logging is globally enabled
         bool mLoggingEnabled;
 
         //! @brief Tells wether or not the logging has been made impossible (e.g. by an error)
@@ -79,12 +79,12 @@ namespace vpsim {
                             const sc_core::sc_time& date,
                             DebugLvl debugLvl);
 
-        //! @brief Globaly enable or disable the logging
+        //! @brief Globally enable or disable the logging
         //! @param[in] enable Set to true to enable the logging, false to disable it
         void enableLogging(const bool enable);
 
-        //! @brief Tells if the logging is globaly enabled
-        //! @return True if the logging is globaly enabled, false otherwise
+        //! @brief Tells if the logging is globally enabled
+        //! @return True if the logging is globally enabled, false otherwise
         bool loggingEnabled() const;
 
         //! @brief Print the current schedule of the LoggerScheduler module
@@ -104,7 +104,7 @@ namespace vpsim {
         bool isRegistered(const Logger &logger) const;
 
     private:
-        //! @brief Default constructor made private to prevent from additional instanciations
+        //! @brief Default constructor made private to prevent from additional instantiations
         LoggerCore();
 
         //!@brief Copy constructor deleted to prevent from singleton copy

@@ -36,7 +36,7 @@ namespace vpsim {
         } catch (const std::exception &e) {
             LOG_GLOBAL_ERROR << e.what() << std::endl;
             std::cerr << e.what() << std::endl;
-            throw e;
+            throw;
         }
         return true;
     }
