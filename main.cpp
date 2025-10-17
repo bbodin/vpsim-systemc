@@ -214,8 +214,8 @@ int sc_main(int argc, char *argv[]) {
 
         setvbuf(stdout, NULL, _IONBF, 0); //char buffered
 
-        VpsimIp<InPortType, OutPortType>::WriteStat("global", "real_execution_time", tostr(PhysicalTimeSec), "ms");
-        VpsimIp<InPortType, OutPortType>::WriteStat("global", "sc_simulation_time", tostr(sc_time_stamp()), "");
+        VpsimIp<InPortType, OutPortType>::WriteStat("global", "real_execution_time", std::to_string(PhysicalTimeSec), "ms");
+        VpsimIp<InPortType, OutPortType>::WriteStat("global", "sc_simulation_time", sc_time_stamp().to_string(), "");
 
         return 0;
     }
