@@ -57,7 +57,7 @@ string IssFinder::getIssLibPath(const string &targetArch) const {
     string libFile{ISS_LIB_PREFIX + targetArch + ISS_LIB_SUFFIX};
     string path;
 
-    for (auto iss: mIssSubDirs) {
+    for (const auto& iss: mIssSubDirs) {
         path = mIssBaseDir + iss + '/' + libFile;
         if (ifstream(path)) //fast test for existence through ifstream opening and close (upon destruction)
             return path;
@@ -68,7 +68,7 @@ string IssFinder::getIssLibPath(const string &targetArch) const {
     cerr << "failed to find ISS library " << libFile << endl;
     if (mIssSubDirs.size() > 0) {
         cerr << "within any of the following folders" << endl;
-        for (auto iss: mIssSubDirs) {
+        for (const auto& iss: mIssSubDirs) {
             path = mIssBaseDir + iss;
             cerr << path << endl;
         }

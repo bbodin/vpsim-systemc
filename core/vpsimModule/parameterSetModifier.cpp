@@ -115,7 +115,7 @@ set<AddrSpace> ParameterSetAddressTranslator::applyNonRecursive(const set<AddrSp
     set<AddrSpace> newAsSet;
 
     //Fill the new map
-    for (auto p: asSet) {
+    for (const auto& p: asSet) {
         uint64_t newBase{mPositiveOffset ? p.getBaseAddress() - mOffset : p.getBaseAddress() + mOffset};
         uint64_t newEnd{mPositiveOffset ? p.getEndAddress() - mOffset : p.getEndAddress() + mOffset};
         //Unsigned capacity overflow is a well defined behaviour.

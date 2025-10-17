@@ -52,7 +52,7 @@ namespace vpsim {
         //It is assumed that this function has been called with a non empty watchdogs map
         IrqWatchdog nextWatchdog(mWatchdogs.begin()->second);
 
-        for (auto p: mWatchdogs) {
+        for (const auto& p: mWatchdogs) {
             if (nextWatchdog.deadline > p.second.deadline)
                 nextWatchdog = p.second;
         }
@@ -113,7 +113,7 @@ namespace vpsim {
         os << "Counter register = " << hex << getCounter() << dec << endl;
 
         os << "Active Watchdogs :" << endl;
-        for (auto p: mWatchdogs) {
+        for (const auto& p: mWatchdogs) {
             os << "\t" << p.first << "\t=> "
                     << "deadline: " << p.second.deadline
                     << "irq line: " << p.second.irqIdx
