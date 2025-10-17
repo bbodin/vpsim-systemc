@@ -27,7 +27,7 @@ namespace vpsim {
     class RemoteTarget : public sc_module, public TargetIf<uint8_t>, public GenericRemoteTarget,
                          public InterruptSource {
     public:
-        RemoteTarget(sc_module_name name, size_t size);
+        RemoteTarget(const sc_module_name& name, size_t size);
 
         ~RemoteTarget() override;
 

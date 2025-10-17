@@ -27,7 +27,7 @@ namespace vpsim {
 
     class SesamController : public sc_module, public TargetIf<uint8_t> {
     public:
-        SesamController(sc_module_name name);
+        SesamController(const sc_module_name& name);
 
         ~SesamController() override;
 

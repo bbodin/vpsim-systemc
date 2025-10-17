@@ -102,7 +102,7 @@ void ForwardSimpleSocket::invalidate_direct_mem_ptr(sc_dt::uint64 start, sc_dt::
     mSocketIn->invalidate_direct_mem_ptr(start, end);
 }
 
-ForwardSimpleSocket::ForwardSimpleSocket(sc_module_name name, const shared_ptr<VpsimModule> &vpsimModule,
+ForwardSimpleSocket::ForwardSimpleSocket(const sc_module_name& name, const shared_ptr<VpsimModule> &vpsimModule,
                                          size_t portNum)
     : sc_module(name),
       mSocketIn((string(name) + "_ForwardIn").c_str()),

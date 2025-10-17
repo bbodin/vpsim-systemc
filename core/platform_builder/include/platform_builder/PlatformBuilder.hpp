@@ -34,8 +34,8 @@ namespace vpsim {
         ~PlatformBuilder();
 
 
-        VpsimIp<InPortType, OutPortType> &beginBuild(std::string ipType,
-                                                     std::string ipName);
+        VpsimIp<InPortType, OutPortType> &beginBuild(const std::string& ipType,
+                                                     const std::string& ipName);
 
         VpsimIp<InPortType, OutPortType> &endBuild(
             VpsimIp<InPortType, OutPortType> **newIp = nullptr);

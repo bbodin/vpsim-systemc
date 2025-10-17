@@ -29,7 +29,7 @@
 namespace vpsim {
     class AddressTranslator : public sc_module {
     public:
-        AddressTranslator(sc_module_name name);
+        AddressTranslator(const sc_module_name& name);
 
         void setShift(uint64_t translate) { mTranslate = translate; }
 

@@ -49,12 +49,12 @@ namespace vpsim {
         //! @param[in] module	Name of the module
         //! @param[in] as		Address space where the new parameter is valid
         //! @param[in] param 	New parameter value
-        void setParameter(std::string module, AddrSpace as, const ModuleParameter &param);
+        void setParameter(const std::string& module, const AddrSpace& as, const ModuleParameter &param);
 
         //! @brief Set a new parameter value to a module
         //! @param[in] module	Name of the module
         //! @param[in] param 	New parameter value
-        void setParameter(std::string module, const ModuleParameter &param);
+        void setParameter(const std::string& module, const ModuleParameter &param);
 
         //! @brief Schedule an Appointment to change the value of a parameter during the simulation
         //! @param[in] module   Name of the module
@@ -62,8 +62,8 @@ namespace vpsim {
         //! @param[in] date     Date of the Appointment
         //! @param[in] param	  New parameter
         void addAppointment(std::string module,
-                            AddrSpace as,
-                            sc_core::sc_time date,
+                            const AddrSpace& as,
+                            const sc_core::sc_time& date,
                             const ModuleParameter &param);
 
         //! @brief Schedule an Appointment to change the value of a parameter during the simulation
@@ -71,7 +71,7 @@ namespace vpsim {
         //! @param[in] date     Date of the Appointment
         //! @param[in] param	  New parameter
         void addAppointment(std::string module,
-                            sc_core::sc_time date,
+                            const sc_core::sc_time& date,
                             const ModuleParameter &param);
 
         //! @brief Register a VpsimModule to access it with its name later
@@ -80,7 +80,7 @@ namespace vpsim {
 
         //! @param[in] name Name of the module to be unregistered
         //! @brief Unregister a VpsimModule
-        void unregisterModule(std::string name);
+        void unregisterModule(const std::string& name);
 
         //! Register a new handler to call when a parameter is updated
         //! If a handler was registered for the module, it is replacer

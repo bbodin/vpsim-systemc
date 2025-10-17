@@ -15,6 +15,10 @@
 */
 
 #include "InitiatorIf.hpp"
+
+#include <utility>
+
+#include <utility>
 #include "log.hpp"
 
 namespace vpsim {
@@ -25,16 +29,16 @@ namespace vpsim {
     InitiatorIf::InitiatorIf(string Name, uint32_t NbPort) :
         //quantum actually seems to be useless now.
         //duplicating the constructor to prevent from breaking the use of the other one
-        InitiatorIf(Name, 0, NbPort) {
+        InitiatorIf(std::move(Name), 0, NbPort) {
     }
 
 
     InitiatorIf::InitiatorIf(string Name, unsigned int Quantum, uint32_t NbPort) : InitiatorIf(
-        Name, Quantum, true, NbPort) {
+        std::move(Name), Quantum, true, NbPort) {
     }
 
 
-    InitiatorIf::InitiatorIf(string Name, unsigned int Quantum, bool Active, uint32_t NbPort) :
+    InitiatorIf::InitiatorIf(const string& Name, unsigned int Quantum, bool Active, uint32_t NbPort) :
         //	initiator_socket("InitiatorIf_socket"),
         Logger(Name),
         mDmiEnable(false),

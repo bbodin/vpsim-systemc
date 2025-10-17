@@ -52,7 +52,7 @@ namespace vpsim {
         //! @brief Set the level of debug allowed to a given Logger
         //! @param[in] logger   Name of the Logger
         //! @param[in] debugLvl New level of debug allowed
-        void setDebugLvl(std::string logger, DebugLvl debugLvl);
+        void setDebugLvl(const std::string& logger, DebugLvl debugLvl);
 
         //! @brief Set the level of debug allowed to a given Logger
         //! @param[in, out] logger  Reference to the Logger
@@ -67,8 +67,8 @@ namespace vpsim {
         //! @param[in] logger   Name of the Logger
         //! @param[in] date     Date of the Appointment
         //! @param[in] debugLvl New level of debug
-        void addAppointment(std::string logger,
-                            sc_core::sc_time date,
+        void addAppointment(const std::string& logger,
+                            const sc_core::sc_time& date,
                             DebugLvl debugLvl);
 
         //! @brief Schedule an Appointment to change the debug level of a Logger during the simulation
@@ -76,7 +76,7 @@ namespace vpsim {
         //! @param[in] date     Date of the Appointment
         //! @param[in] debugLvl New level of debug
         void addAppointment(const Logger &logger,
-                            sc_core::sc_time date,
+                            const sc_core::sc_time& date,
                             DebugLvl debugLvl);
 
         //! @brief Globaly enable or disable the logging

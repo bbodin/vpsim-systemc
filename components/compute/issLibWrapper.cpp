@@ -24,7 +24,7 @@
 
 namespace vpsim {
     //TODO rename m_lib_hdl
-    IssLibWrapper::IssLibWrapper(string name, std::string lib_path, void *w, uint32_t cpu_id, bool is_gdb) : wrapper(w),
+    IssLibWrapper::IssLibWrapper(const string& name, const std::string& lib_path, void *w, uint32_t cpu_id, bool is_gdb) : wrapper(w),
         NAME(name), CPU_ID(cpu_id), is_gdb(is_gdb), mBuffer(nullptr) {
         int status;
 
@@ -176,7 +176,7 @@ namespace vpsim {
         return wrap->iss_get_dotlm(base, end, isFetch);
     }
 
-    void IssLibWrapper::init(int cpu_id, std::string cpu_model, uint32_t instr_quantum, uint64_t init_pc) {
+    void IssLibWrapper::init(int cpu_id, const std::string& cpu_model, uint32_t instr_quantum, uint64_t init_pc) {
         LOG_GLOBAL_DEBUG(dbg2) << NAME << ": iss_lib_wrapper::init." << std::endl;
 
         //---------------------------------------------------------------------------------
@@ -246,11 +246,11 @@ namespace vpsim {
     }
 
 
-    void IssLibWrapper::map_dmi(string name, uint64_t base, uint32_t size, void *data) {
+    void IssLibWrapper::map_dmi(const string& name, uint64_t base, uint32_t size, void *data) {
         ctx.iss_plugin.map_dmi(name.c_str(), base, size, data);
     }
 
-    void IssLibWrapper::create_rom(string name, uint64_t base, uint32_t size, void *data) {
+    void IssLibWrapper::create_rom(const string& name, uint64_t base, uint32_t size, void *data) {
         ctx.iss_plugin.create_rom(name.c_str(), base, size, data);
     }
 

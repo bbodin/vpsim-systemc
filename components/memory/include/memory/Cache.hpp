@@ -43,7 +43,7 @@ namespace vpsim {
             public DmiKeeper {
     public:
         Cache(sc_module_name name,
-              sc_time latency,
+              const sc_time& latency,
               unsigned CacheSize,
               unsigned CacheLineSize,
               unsigned Associativity,
@@ -258,7 +258,7 @@ namespace vpsim {
 
         tlm::tlm_response_status send_transaction(unsigned char *lineDataPtr, AddressType addr, size_t size,
                                                   idx_t requesterId, const tlm::tlm_command command, sc_time &delay,
-                                                  sc_time timestamp) {
+                                                  const sc_time& timestamp) {
             size_t nb_bytes = size;
             tlm::tlm_generic_payload trans;
             trans.set_command(command);
@@ -286,9 +286,9 @@ namespace vpsim {
         }
 
         tlm::tlm_response_status send_coherence_transaction(unsigned char *lineDataPtr, AddressType addr, size_t size,
-                                                            idx_t requesterId, idx_t initiatorId, set<idx_t> targetIds,
+                                                            idx_t requesterId, idx_t initiatorId, const set<idx_t>& targetIds,
                                                             const CoherenceCommand command, sc_time &delay,
-                                                            sc_time timestamp) {
+                                                            const sc_time& timestamp) {
             size_t nb_bytes = size;
             tlm::tlm_generic_payload trans;
             trans.set_command(tlm::TLM_IGNORE_COMMAND);
@@ -345,8 +345,8 @@ namespace vpsim {
             return (trans.get_response_status());
         }
 
-        tlm::tlm_response_status send_invalidate_transaction(AddressType addr, set<idx_t> targetIds, sc_time &delay,
-                                                             sc_time timestamp) {
+        tlm::tlm_response_status send_invalidate_transaction(AddressType addr, const set<idx_t>& targetIds, sc_time &delay,
+                                                             const sc_time& timestamp) {
             tlm::tlm_generic_payload trans;
             trans.set_command(tlm::TLM_IGNORE_COMMAND);
             trans.set_address(addr);
@@ -376,7 +376,7 @@ namespace vpsim {
         }
 
         tlm::tlm_response_status send_evict_transaction(unsigned char *lineDataPtr, AddressType addr, size_t size,
-                                                        idx_t requesterID, sc_time &delay, sc_time timestamp) {
+                                                        idx_t requesterID, sc_time &delay, const sc_time& timestamp) {
             size_t nb_bytes = size;
             tlm::tlm_generic_payload trans;
             trans.set_command(tlm::TLM_IGNORE_COMMAND);
@@ -403,8 +403,8 @@ namespace vpsim {
         }
 
         tlm::tlm_response_status send_readback_transaction(unsigned char *lineDataPtr, AddressType addr, size_t size,
-                                                           idx_t requesterId, set<idx_t> targetIds, sc_time &delay,
-                                                           sc_time timestamp) {
+                                                           idx_t requesterId, const set<idx_t>& targetIds, sc_time &delay,
+                                                           const sc_time& timestamp) {
             size_t nb_bytes = size;
             tlm::tlm_generic_payload trans;
             trans.set_command(tlm::TLM_IGNORE_COMMAND);

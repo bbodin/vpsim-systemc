@@ -20,7 +20,7 @@
 #include "log.hpp"
 
 namespace vpsim {
-    ItCtrl::ItCtrl(sc_module_name Name, uint32_t LineCount, uint32_t LineSize) : sc_module(Name),
+    ItCtrl::ItCtrl(const sc_module_name& Name, uint32_t LineCount, uint32_t LineSize) : sc_module(Name),
         TargetIf(string(Name), LineCount * LineSize),
         mLineCount(LineCount),
         mLineSize(LineSize),

@@ -77,7 +77,7 @@ namespace vpsim {
     extern ofstream StatStream;
     extern ofstream DebugStream;
 
-    void OpenVpsimStreams(string RefPath);
+    void OpenVpsimStreams(const string& RefPath);
 
     void CloseVpsimStreams();
 } //end namespace vpsim

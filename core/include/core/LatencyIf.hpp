@@ -42,7 +42,7 @@ namespace vpsim {
 
         void setInitialCyclesPerAccess(int InitialCyclesPerAccess);
 
-        void setCycleDuration(sc_time mCycleDuration);
+        void setCycleDuration(const sc_time& mCycleDuration);
 
         bool getEnableLatency();
 

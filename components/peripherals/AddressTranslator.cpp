@@ -18,7 +18,7 @@
 #include "log.hpp"
 
 namespace vpsim {
-    AddressTranslator::AddressTranslator(sc_module_name name) : sc_module(name), mTranslate(0) {
+    AddressTranslator::AddressTranslator(const sc_module_name& name) : sc_module(name), mTranslate(0) {
         mSockIn.register_b_transport(this, &AddressTranslator::b_transport);
     }
 

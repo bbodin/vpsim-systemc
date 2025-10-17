@@ -23,6 +23,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
 #include <string.h>
 
 #include <stdint.h>
@@ -71,15 +77,15 @@ public:
         free(buf);
     }
 
-    void setChannel(string name) { mChannel = ChannelManager::get().allocOutgoingChannel(name, mIp, mPort); }
+    void setChannel(string name) { mChannel = ChannelManager::get().allocOutgoingChannel(std::move(name), mIp, mPort); }
 
     void setIrqChannel(string name) {
-        mIrqChannel = ChannelManager::get().allocOutgoingChannel(name, mIrqIp, mIrqPort);
+        mIrqChannel = ChannelManager::get().allocOutgoingChannel(std::move(name), mIrqIp, mIrqPort);
     }
 
-    void setIp(string ip) { mIp = ip; }
+    void setIp(string ip) { mIp = std::move(ip); }
     void setPort(uint16_t port) { mPort = port; }
-    void setIrqIp(string ip) { mIrqIp = ip; }
+    void setIrqIp(string ip) { mIrqIp = std::move(ip); }
     void setIrqPort(uint16_t port) { mIrqPort = port; }
 
     void setPollPeriod(uint64_t poll_period) { mPollPeriod = poll_period; }
@@ -204,8 +210,8 @@ public:
     virtual ~GenericRemoteTarget() {
     }
 
-    void setChannel(string name) { mChannel = ChannelManager::get().allocChannel(name, false); }
-    void setIrqChannel(string name) { mIrqChannel = ChannelManager::get().allocChannel(name, false); }
+    void setChannel(string name) { mChannel = ChannelManager::get().allocChannel(std::move(name), false); }
+    void setIrqChannel(string name) { mIrqChannel = ChannelManager::get().allocChannel(std::move(name), false); }
     void setPollPeriod(uint64_t cycles) { mPollPeriod = cycles; }
 
     //virtual void delay(uint64_t cycles) = 0;

@@ -25,7 +25,7 @@ namespace vpsim {
     ofstream StatStream;
     ofstream DebugStream;
 
-    void OpenVpsimStreams(string RefPath) {
+    void OpenVpsimStreams(const string& RefPath) {
         StatStream.open((RefPath + "/Vpsim-Stat.log").c_str(), ios::out);
         DebugStream.open((RefPath + "/Vpsim-Debug.log").c_str(), ios::out);
     }

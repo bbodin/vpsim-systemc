@@ -28,7 +28,7 @@ namespace vpsim {
     class CommonUartInterface : public sc_module,
                                 public InterruptSource {
     public:
-        CommonUartInterface(sc_module_name name);
+        CommonUartInterface(const sc_module_name& name);
 
         ~CommonUartInterface() override;
 

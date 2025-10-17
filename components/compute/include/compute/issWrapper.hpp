@@ -123,12 +123,12 @@ namespace vpsim {
         void setIoOnly(bool io_only) { this->io_only = io_only; }
 
         sc_time delay_before_boot;
-        void setDelayBeforeBoot(sc_time delay) { delay_before_boot = delay; }
+        void setDelayBeforeBoot(const sc_time& delay) { delay_before_boot = delay; }
 
         string log_file;
         bool log;
 
-        void setLog(bool log, string logfile) {
+        void setLog(bool log, const string& logfile) {
             this->log = log;
             this->log_file = logfile;
             using set_log_t = void(*)(int, const char *);
@@ -255,7 +255,7 @@ namespace vpsim {
 
     public:
         //Constructor
-        IssWrapper(sc_module_name Name, int id_cpu, string lib,
+        IssWrapper(const sc_module_name& Name, int id_cpu, string lib,
                    const char *cpu_model, unsigned int QuantumKeeper, bool is_gdb, ARCHI_TYPE type, bool simflag,
                    uint64_t init_pc = 0,
                    bool use_log = false, const char *logfile = nullptr);

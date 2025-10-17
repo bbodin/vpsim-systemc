@@ -34,7 +34,7 @@ namespace vpsim {
     public:
         //! @brief SystemC standard constructor
         //! @param[in] name Name of the ParamScheduler as a systemC module
-        ParamScheduler(sc_core::sc_module_name name);
+        ParamScheduler(const sc_core::sc_module_name& name);
 
         //! @cond
         // Ignore this systemc specificity for the documentation

@@ -20,7 +20,7 @@
 #include "appointment.hpp"
 
 namespace vpsim {
-    LoggerScheduler::LoggerScheduler(sc_core::sc_module_name name) : sc_module(name) {
+    LoggerScheduler::LoggerScheduler(const sc_core::sc_module_name& name) : sc_module(name) {
         SC_THREAD(schedule);
         sensitive << mNewAppointmentEvent;
     }
@@ -46,7 +46,7 @@ namespace vpsim {
         }
     }
 
-    void LoggerScheduler::addAppointment(Appointment appointment) {
+    void LoggerScheduler::addAppointment(const Appointment& appointment) {
         if (appointment.isPassed()) {
             std::cout << "[WARNING] Tried to add a passed appointment" << std::endl;
             return;

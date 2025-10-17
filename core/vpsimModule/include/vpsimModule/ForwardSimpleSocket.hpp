@@ -47,7 +47,7 @@ namespace vpsim {
         const size_t mPortNum;
 
     public:
-        ForwardSimpleSocket(sc_module_name name, const shared_ptr<VpsimModule> &vpsimModule, size_t portNum);
+        ForwardSimpleSocket(const sc_module_name& name, const shared_ptr<VpsimModule> &vpsimModule, size_t portNum);
 
         SC_HAS_PROCESS(ForwardSimpleSocket);
 

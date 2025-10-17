@@ -16,6 +16,7 @@
 
 #include <ChannelManager.hpp>
 #include <iostream>
+#include <utility>
 #include <poll.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -48,7 +49,7 @@ ChannelManager::~ChannelManager() {
     }
 }
 
-std::pair<int, int> ChannelManager::allocChannel(string channel, bool terminal) {
+std::pair<int, int> ChannelManager::allocChannel(const string& channel, bool terminal) {
     if (ChanNumbers.find(channel) == ChanNumbers.end()) {
         // Allocate a new channel
         ChanNumbers[channel] = ChanCounter++;
@@ -111,7 +112,7 @@ std::pair<int, int> ChannelManager::allocChannel(int channel, bool terminal) {
     return Channels[channel];
 }
 
-std::pair<int, int> ChannelManager::allocOutgoingChannel(int channel, string ip, uint16_t port) {
+std::pair<int, int> ChannelManager::allocOutgoingChannel(int channel, const string& ip, uint16_t port) {
     if (Channels.empty())
         Channels.insert(make_pair(0, make_pair(0, 1)));
     if (channel > 0) {
@@ -141,7 +142,7 @@ std::pair<int, int> ChannelManager::allocOutgoingChannel(int channel, string ip,
     return Channels[channel];
 }
 
-std::pair<int, int> ChannelManager::allocOutgoingChannel(string channel, string ip, uint16_t port) {
+std::pair<int, int> ChannelManager::allocOutgoingChannel(const string& channel, string ip, uint16_t port) {
     if (ChanNumbers.find(channel) == ChanNumbers.end()) {
         // Allocate a new channel
         ChanNumbers[channel] = ChanCounter++;
@@ -150,7 +151,7 @@ std::pair<int, int> ChannelManager::allocOutgoingChannel(string channel, string 
         cout << "Creating channel " << channel << endl;
     }
 
-    return allocOutgoingChannel(ChanNumbers[channel], ip, port);
+    return allocOutgoingChannel(ChanNumbers[channel], std::move(ip), port);
 }
 
 

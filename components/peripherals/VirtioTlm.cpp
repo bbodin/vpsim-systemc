@@ -18,7 +18,7 @@
 #include <core/TlmCallbackPrivate.hpp>
 
 namespace vpsim {
-    VirtioTlm::VirtioTlm(sc_module_name name) : sc_module(name), TargetIf(string(name), 0x10000), mRdFct(nullptr),
+    VirtioTlm::VirtioTlm(const sc_module_name& name) : sc_module(name), TargetIf(string(name), 0x10000), mRdFct(nullptr),
                                                 mWrFct(nullptr), mProxyPtr(nullptr) {
         TargetIf<REG_T>::RegisterReadAccess(REGISTER(VirtioTlm, read));
         TargetIf<REG_T>::RegisterWriteAccess(REGISTER(VirtioTlm, write));

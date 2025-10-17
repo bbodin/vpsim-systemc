@@ -24,7 +24,7 @@
 namespace vpsim {
     class RemoteInitiator : public sc_module, public InitiatorIf, public GenericRemoteInitiator, public InterruptIf {
     public:
-        RemoteInitiator(sc_module_name name) : sc_module(name), InitiatorIf(string(name), 0, true, 1) {
+        RemoteInitiator(const sc_module_name& name) : sc_module(name), InitiatorIf(string(name), 0, true, 1) {
             SC_THREAD(riPoll);
         }
 

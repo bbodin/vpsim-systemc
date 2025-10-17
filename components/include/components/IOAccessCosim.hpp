@@ -72,7 +72,7 @@ namespace vpsim {
 
     class IOAccessCosimulator : public sc_module, public IOAccessCosim {
     public:
-        IOAccessCosimulator(sc_module_name name, uint32_t outPorts) : sc_module(name) {
+        IOAccessCosimulator(const sc_module_name& name, uint32_t outPorts) : sc_module(name) {
             mOutPorts.resize(outPorts);
             for (uint32_t i = 0; i < outPorts; i++) {
                 mOutPorts[i] = new tlm_utils::simple_initiator_socket<IOAccessCosimulator>(

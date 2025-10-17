@@ -40,19 +40,19 @@ namespace vpsim {
         uint64_t *mBuffer;
 
     public:
-        IssLibWrapper(std::string name, std::string lib_path, void *w, uint32_t cpu_id, bool is_gdb);
+        IssLibWrapper(const std::string& name, const std::string& lib_path, void *w, uint32_t cpu_id, bool is_gdb);
 
         ~IssLibWrapper();
 
-        void init(int num_cpu, std::string cpu_model, uint32_t instr_quantum, uint64_t init_pc);
+        void init(int num_cpu, const std::string& cpu_model, uint32_t instr_quantum, uint64_t init_pc);
 
         void *get_symbol(const char *sym);
 
         void run();
 
-        void map_dmi(string name, uint64_t base, uint32_t size, void *data);
+        void map_dmi(const string& name, uint64_t base, uint32_t size, void *data);
 
-        void create_rom(string name, uint64_t base, uint32_t size, void *data);
+        void create_rom(const string& name, uint64_t base, uint32_t size, void *data);
 
         void linux_mem_init(uint32_t ncores, uint32_t size);
 

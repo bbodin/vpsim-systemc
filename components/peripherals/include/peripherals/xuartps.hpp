@@ -35,7 +35,7 @@ namespace vpsim {
     class xuartps : public CommonUartInterface,
                     public TargetIf<uint8_t> {
     public:
-        xuartps(sc_module_name name);
+        xuartps(const sc_module_name& name);
 
         tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 

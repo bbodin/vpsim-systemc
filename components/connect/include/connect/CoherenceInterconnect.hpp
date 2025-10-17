@@ -222,7 +222,7 @@ namespace vpsim {
         inline uint64_t getReadCount(size_t index) { return mReadCount[index]; }
         inline uint64_t getWriteCount(size_t index) { return mWriteCount[index]; }
 
-        CoherenceInterconnect(sc_module_name name, uint32_t nb_cache_in, uint32_t nb_cache_out, uint32_t nb_home_in,
+        CoherenceInterconnect(const sc_module_name& name, uint32_t nb_cache_in, uint32_t nb_cache_out, uint32_t nb_home_in,
                               uint32_t nb_home_out, uint32_t nb_mmapped, uint32_t num_device, uint32_t flitSize,
                               uint32_t wordLengthInByte, bool isCoherent, uint32_t memoryInterleaveLength,
                               uint32_t slcInterleaveLength);
@@ -240,11 +240,11 @@ namespace vpsim {
 
         void set_home_output(uint32_t num_port, idx_t id, uint64_t base_addr, uint64_t offset);
 
-        void set_latency(sc_time val);
+        void set_latency(const sc_time& val);
 
         void set_enable_latency(bool val);
 
-        void set_cache_id(uint32_t num_port, idx_t id, string name);
+        void set_cache_id(uint32_t num_port, idx_t id, const string& name);
 
         void set_cache_pos(string name, uint32_t pos);
 
@@ -311,11 +311,11 @@ namespace vpsim {
 
         mesh_pos get_home_pos_by_address_with_interleave(uint64_t addr);
 
-        uint64_t computeNoCLatency(bool isHome, bool isIdMapped, uint64_t addr, idx_t src_id, set<idx_t> dst_ids);
+        uint64_t computeNoCLatency(bool isHome, bool isIdMapped, uint64_t addr, idx_t src_id, const set<idx_t>& dst_ids);
 
-        void computeNoCPerformance(uint64_t distance, sc_time latency);
+        void computeNoCPerformance(uint64_t distance, const sc_time& latency);
 
-        void FillInitTotalStats(idx_t id, mesh_pos src_pos, uint64_t dist, sc_time lat);
+        void FillInitTotalStats(idx_t id, mesh_pos src_pos, uint64_t dist, const sc_time& lat);
 
         /**
     * NoC Contention model
@@ -328,27 +328,27 @@ namespace vpsim {
 
         void set_virtual_channels(uint32_t virtual_channels);
 
-        void SavePacket(idx_t id, route path, uint32_t nbFlits = 1);
+        void SavePacket(idx_t id, const route& path, uint32_t nbFlits = 1);
 
         void Create_Noc(idx_t noc_x, idx_t noc_y);
 
         route ComputeRouteAndUpdateRouters(mesh_pos src_pos, mesh_pos dst_pos, idx_t id, uint32_t nbFlits = 1);
 
-        sc_time QueueWaitingTime(sc_time wait, sc_time router_latency, sc_time link_latency, sc_time time_interval,
+        sc_time QueueWaitingTime(const sc_time& wait, const sc_time& router_latency, const sc_time& link_latency, const sc_time& time_interval,
                                  uint64_t queue_nbr_packets);
 
-        sc_time PacketLatency(sc_time total_wait, sc_time router_latency, sc_time link_latency, uint64_t nbr_hops);
+        sc_time PacketLatency(const sc_time& total_wait, const sc_time& router_latency, const sc_time& link_latency, uint64_t nbr_hops);
 
         sc_time ComputePacketLatency();
 
         vector<mesh_pos> GetDestinations(tlm::tlm_generic_payload &trans, bool isHome, bool isIdMapped,
-                                         set<idx_t> dst_ids);
+                                         const set<idx_t>& dst_ids);
 
-        void NetworkTimingModel(tlm::tlm_generic_payload &trans, sc_time trans_time_stamp, sc_time time_interval,
+        void NetworkTimingModel(tlm::tlm_generic_payload &trans, const sc_time& trans_time_stamp, const sc_time& time_interval,
                                 bool isHome, bool isIdMapped, uint32_t nbFlits, mesh_pos src_pos, set<idx_t> dst_ids,
                                 bool device = false);
 
-        void PrintPath(route path);
+        void PrintPath(const route& path);
 
         void PrintPacketBuffer();
 
@@ -359,7 +359,7 @@ namespace vpsim {
     */
         void sendTransactionToHome(tlm::tlm_generic_payload &trans, sc_time &delay);
 
-        void sendTransactionToCache(tlm::tlm_generic_payload &trans, set<idx_t> targetIds, sc_time &delay);
+        void sendTransactionToCache(tlm::tlm_generic_payload &trans, const set<idx_t>& targetIds, sc_time &delay);
 
         void sendTransactionToMMapped(tlm::tlm_generic_payload &trans, sc_time &delay);
 

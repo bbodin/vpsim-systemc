@@ -20,7 +20,7 @@
 namespace vpsim {
     //-----------------------------------------------------------------------------
     //Constructor (synchronous)
-    timer::timer(sc_module_name Name, uint32_t Quantum) : sc_module(Name),
+    timer::timer(const sc_module_name& Name, uint32_t Quantum) : sc_module(Name),
                                                           TargetIf<uint32_t>(string(Name), 0x4),
                                                           mCurrentTime(SC_ZERO_TIME),
                                                           mNbWatchdogs(1),
@@ -42,7 +42,7 @@ namespace vpsim {
 
 
     //Constructor (synchronous)
-    timer::timer(sc_module_name Name, uint32_t nb_watchdogs, uint32_t Quantum) : sc_module(Name),
+    timer::timer(const sc_module_name& Name, uint32_t nb_watchdogs, uint32_t Quantum) : sc_module(Name),
         TargetIf<uint32_t>(string(Name), 0x4),
         mCurrentTime(SC_ZERO_TIME),
         mNbWatchdogs(nb_watchdogs),

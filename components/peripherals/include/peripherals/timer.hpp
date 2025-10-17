@@ -35,9 +35,9 @@ namespace vpsim {
         uint32_t mTimerSize;
 
     public:
-        timer(sc_module_name Name, uint32_t Quantum);
+        timer(const sc_module_name& Name, uint32_t Quantum);
 
-        timer(sc_module_name Name, uint32_t NbWatchdogs, uint32_t Quantum);
+        timer(const sc_module_name& Name, uint32_t NbWatchdogs, uint32_t Quantum);
 
         SC_HAS_PROCESS(timer);
 

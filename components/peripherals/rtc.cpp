@@ -21,7 +21,7 @@ using namespace sc_core;
 
 namespace vpsim {
     template<typename reg_T>
-    Rtc<reg_T>::Rtc(sc_module_name name, uint64_t frequency) : sc_module(name),
+    Rtc<reg_T>::Rtc(const sc_module_name &name, uint64_t frequency) : sc_module(name),
                                                                mFrequency(frequency) {
         SC_THREAD(watchThread);
         sensitive << mNewWatchdogEvent;

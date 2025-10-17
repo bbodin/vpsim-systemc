@@ -44,11 +44,11 @@ public:
 
     std::pair<int, int> allocChannel(int channel, bool terminal);
 
-    std::pair<int, int> allocChannel(string channel, bool terminal = false);
+    std::pair<int, int> allocChannel(const string& channel, bool terminal = false);
 
-    std::pair<int, int> allocOutgoingChannel(int channel, string ip, uint16_t port);
+    std::pair<int, int> allocOutgoingChannel(int channel, const string& ip, uint16_t port);
 
-    std::pair<int, int> allocOutgoingChannel(string channel, string ip, uint16_t port);
+    std::pair<int, int> allocOutgoingChannel(const string& channel, string ip, uint16_t port);
 
     static bool fdCheckReady(int fd);
 

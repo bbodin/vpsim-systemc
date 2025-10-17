@@ -20,13 +20,13 @@
 namespace vpsim {
     //---------------------------------------------------
     //Constructor
-    memory::memory(sc_module_name Name, uint64_t Size) : sc_module(Name),
+    memory::memory(const sc_module_name& Name, uint64_t Size) : sc_module(Name),
                                                          TargetIf<unsigned char>(string(Name), Size),
                                                          mWordLengthInByte(4) {
         Init();
     }
 
-    memory::memory(sc_module_name Name, uint64_t Size, bool ByteEnable, bool DmiEnable) : sc_module(Name),
+    memory::memory(const sc_module_name& Name, uint64_t Size, bool ByteEnable, bool DmiEnable) : sc_module(Name),
         TargetIf<unsigned char>(string(Name), Size, ByteEnable, DmiEnable),
         mWordLengthInByte(4) {
         Init();
@@ -72,7 +72,7 @@ namespace vpsim {
         }
     }
 
-    void memory::loadBlob(const string filename, const uint64_t init_off) {
+    void memory::loadBlob(const string& filename, const uint64_t init_off) {
         FILE *inFile = fopen(filename.c_str(), "rb");
         if (!inFile)
             throw runtime_error(string("Unable to open blob file: ") + filename);

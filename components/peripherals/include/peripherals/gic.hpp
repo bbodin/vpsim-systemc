@@ -42,7 +42,7 @@ namespace vpsim {
                 public TargetIf<uint32_t>,
                 public InterruptIf {
     public:
-        gic(sc_module_name name);
+        gic(const sc_module_name& name);
 
         void setDistBase(uint64_t dist_base) { mDistBase = dist_base; }
         void setCPUBase(uint64_t cpu_base) { mCpuBase = cpu_base; }

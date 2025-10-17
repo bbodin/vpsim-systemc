@@ -30,7 +30,7 @@
 namespace vpsim {
     class SystemCTarget : public sc_module, public TargetIf<uint8_t>, public InterruptSource {
     public:
-        SystemCTarget(sc_module_name name, uint64_t size) : sc_module(name), TargetIf(string(name), size) {
+        SystemCTarget(const sc_module_name& name, uint64_t size) : sc_module(name), TargetIf(string(name), size) {
             TargetIf<uint8_t>::RegisterReadAccess(REGISTER(SystemCTarget, read));
             TargetIf<uint8_t>::RegisterWriteAccess(REGISTER(SystemCTarget, write));
 

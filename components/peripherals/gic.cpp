@@ -26,7 +26,7 @@ using namespace std;
 using namespace tlm;
 
 namespace vpsim {
-    gic::gic(sc_module_name name) : sc_module(name), TargetIf(string(name), 0x100000) {
+    gic::gic(const sc_module_name& name) : sc_module(name), TargetIf(string(name), 0x100000) {
         RegisterReadAccess(REGISTER(gic, read));
         RegisterWriteAccess(REGISTER(gic, write));
 

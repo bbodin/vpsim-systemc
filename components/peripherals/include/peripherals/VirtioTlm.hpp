@@ -39,7 +39,7 @@ void (*virtio_mmio_write_type)(void *opaque, uint64_t offset, uint64_t value,
 namespace vpsim {
     class VirtioTlm : public sc_module, public TargetIf<uint8_t> {
     public:
-        VirtioTlm(sc_module_name name);
+        VirtioTlm(const sc_module_name& name);
 
         tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 

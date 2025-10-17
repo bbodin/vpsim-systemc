@@ -25,13 +25,13 @@
 namespace vpsim {
     //-----------------------------------------------------------------------------
     //Constructor
-    uart::uart(sc_module_name Name) : sc_module(Name),
+    uart::uart(const sc_module_name& Name) : sc_module(Name),
                                       TargetIf<uint8_t>(string(Name), 0xfff),
                                       mWordLengthInByte(1) {
         init();
     }
 
-    uart::uart(sc_module_name Name, bool ByteEnable, bool DmiEnable) : sc_module(Name),
+    uart::uart(const sc_module_name& Name, bool ByteEnable, bool DmiEnable) : sc_module(Name),
                                                                        TargetIf<uint8_t>(
                                                                            string(Name), 0xfff, ByteEnable, DmiEnable),
                                                                        mWordLengthInByte(1) {

@@ -22,7 +22,7 @@ namespace vpsim {
     //-----------------------------------------------------------------------------
     //Constructor
     template<typename TYPE>
-    TargetIf<TYPE>::TargetIf(string Name, uint64_t Size) : LatencyIf(),
+    TargetIf<TYPE>::TargetIf(const string &Name, uint64_t Size) : LatencyIf(),
                                                            AddrSpace(Size),
                                                            Logger(Name),
                                                            mName(Name),
@@ -43,7 +43,7 @@ namespace vpsim {
     }
 
     template<typename TYPE>
-    TargetIf<TYPE>::TargetIf(string Name, uint64_t Size, bool ByteEnable, bool DmiEnable) : LatencyIf(),
+    TargetIf<TYPE>::TargetIf(const string &Name, uint64_t Size, bool ByteEnable, bool DmiEnable) : LatencyIf(),
         AddrSpace(Size),
         Logger(Name),
         mName(Name),

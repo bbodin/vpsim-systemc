@@ -20,6 +20,9 @@
 #include <iostream>
 #include <unordered_map>
 #include <functional>
+#include <utility>
+#include <utility>
+#include <utility>
 #include <vector>
 #include <chrono>
 #include <sstream>
@@ -48,7 +51,7 @@ namespace vpsim {
 
     public:
         VpsimIp(std::string name)
-            : mName(name),
+            : mName(std::move(name)),
               mInPortCounter(0),
               mOutPortCounter(0),
               delayStatCapture(false) {
@@ -61,7 +64,7 @@ namespace vpsim {
         virtual std::string getName() { return mName; }
 
         virtual void setAttribute(std::string key, std::string value) {
-            mAttributes[key] = value;
+            mAttributes[key] = std::move(value);
         }
 
         virtual void registerRequiredAttribute(std::string attrName) {
@@ -69,7 +72,7 @@ namespace vpsim {
         }
 
         virtual void registerOptionalAttribute(std::string attrName, std::string defaultValue) {
-            mOptionalAttrs[attrName] = defaultValue;
+            mOptionalAttrs[attrName] = std::move(defaultValue);
         }
 
         virtual void checkAttributes() {
@@ -510,8 +513,8 @@ namespace vpsim {
             });
         }
 
-        static void WriteStat(std::string sourceName, std::string statName, std::string statValue,
-                              std::string statUnit = "") {
+        static void WriteStat(const std::string& sourceName, const std::string& statName, const std::string& statValue,
+                              const std::string& statUnit = "") {
             // for now write to global log.
             LOG_GLOBAL_STATS << "(" << sourceName << ") " << statName << " " << statValue << " " << statUnit << "" <<
  endl;
@@ -686,11 +689,11 @@ namespace vpsim {
             return this->mOutPorts[portAlias];
         }
 
-        std::string addInPort(std::string portAlias) {
+        std::string addInPort(const std::string& portAlias) {
             throw runtime_error(this->getName() + " : Automatically adding ports is not supported for containers.");
         }
 
-        std::string addOutPort(std::string portAlias) {
+        std::string addOutPort(const std::string& portAlias) {
             throw runtime_error(this->getName() + " : Automatically adding ports is not supported for containers.");
         }
 

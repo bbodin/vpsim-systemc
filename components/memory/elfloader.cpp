@@ -37,7 +37,7 @@ namespace vpsim {
     }
 
     void
-    elfloader::load_elf_file(const string name, uint64_t base_addr, uint64_t size, bool debug) {
+    elfloader::load_elf_file(const string& name, uint64_t base_addr, uint64_t size, bool debug) {
         //------------------------------------------------------------------------------
         //Read the ELF file
         std::ifstream stream;

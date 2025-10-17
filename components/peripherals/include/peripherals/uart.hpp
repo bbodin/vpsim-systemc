@@ -31,9 +31,9 @@ namespace vpsim {
     public:
         //---------------------------------------------------
         //Constructor
-        uart(sc_module_name Name);
+        uart(const sc_module_name& Name);
 
-        uart(sc_module_name Name, bool ByteEnable, bool DmiEnable);
+        uart(const sc_module_name& Name, bool ByteEnable, bool DmiEnable);
 
         void init();
 

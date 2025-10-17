@@ -15,15 +15,17 @@
 */
 
 #include <systemc>
+#include <utility>
+#include <utility>
 #include "paramManager.hpp"
 
 using namespace std;
 
 namespace vpsim {
     ParamAppointment::ParamAppointment(string module,
-                                       AddrSpace as,
-                                       sc_core::sc_time date,
-                                       const ModuleParameter &param) : mModule(module),
+                                       const AddrSpace& as,
+                                       const sc_core::sc_time& date,
+                                       const ModuleParameter &param) : mModule(std::move(module)),
                                                                        mAddrSpace(as),
                                                                        mParam(param.clone()),
                                                                        mDate(date),
@@ -31,8 +33,8 @@ namespace vpsim {
     }
 
     ParamAppointment::ParamAppointment(string module,
-                                       sc_core::sc_time date,
-                                       const ModuleParameter &param) : mModule(module),
+                                       const sc_core::sc_time& date,
+                                       const ModuleParameter &param) : mModule(std::move(module)),
                                                                        mParam(param.clone()),
                                                                        mDate(date),
                                                                        mUseDefaultAs(true) {

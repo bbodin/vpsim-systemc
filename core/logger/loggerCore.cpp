@@ -95,8 +95,8 @@ namespace vpsim {
         return mLoggingEnabled && !mLoggingImpossible;
     }
 
-    void LoggerCore::addAppointment(std::string logger,
-                                    sc_core::sc_time date,
+    void LoggerCore::addAppointment(const std::string& logger,
+                                    const sc_core::sc_time& date,
                                     DebugLvl debugLvl) {
         bool exists = mLoggers.count(logger) == 1;
         if (!exists) {
@@ -107,14 +107,14 @@ namespace vpsim {
     }
 
     void LoggerCore::addAppointment(const Logger &logger,
-                                    sc_core::sc_time date,
+                                    const sc_core::sc_time& date,
                                     DebugLvl debugLvl) {
         if (isRegistered(logger)) {
             addAppointment(logger.name(), date, debugLvl);
         }
     }
 
-    void LoggerCore::setDebugLvl(std::string logger, DebugLvl debugLvl) {
+    void LoggerCore::setDebugLvl(const std::string& logger, DebugLvl debugLvl) {
         bool exists = mLoggers.count(logger) == 1;
         if (!exists) {
             std::cerr << "[WARNING] The logger " << logger << " does not exist." << std::endl;

@@ -16,6 +16,7 @@
 
 #include "CommonUartInterface.hpp"
 #include <core/TlmCallbackPrivate.hpp>
+#include <utility>
 #include <poll.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -29,7 +30,7 @@ namespace vpsim {
     using namespace tlm;
 
 
-    CommonUartInterface::CommonUartInterface(sc_module_name name) : sc_module(name) {
+    CommonUartInterface::CommonUartInterface(const sc_module_name& name) : sc_module(name) {
         SC_THREAD(interruptLoop);
 
         mIntEnable = false;
@@ -47,7 +48,7 @@ namespace vpsim {
     }
 
     void CommonUartInterface::selectChannel(string channel) {
-        mChannel = ChannelManager::get().allocChannel(channel);
+        mChannel = ChannelManager::get().allocChannel(std::move(channel));
     }
 
     void CommonUartInterface::writeByte(char c) {

@@ -33,9 +33,9 @@ namespace vpsim {
         sc_time ReadLatency;
         sc_time WriteLatency;
 
-        memory(sc_module_name Name, uint64_t Size);
+        memory(const sc_module_name& Name, uint64_t Size);
 
-        memory(sc_module_name Name, uint64_t Size, bool ByteEnable, bool DmiEnable);
+        memory(const sc_module_name& Name, uint64_t Size, bool ByteEnable, bool DmiEnable);
 
         void Init();
 
@@ -54,11 +54,11 @@ namespace vpsim {
         void Dump(uint64_t StartAddress, uint64_t EndAddress);
 
         void
-        loadElfFile(const string name, bool debug = false) {
+        loadElfFile(const string& name, bool debug = false) {
             load_elf_file(name, getBaseAddress(), getSize(), debug);
         }
 
-        void loadBlob(const string filename, const uint64_t off);
+        void loadBlob(const string& filename, const uint64_t off);
 
         void setChannelWidth(uint32_t bytes) { mWordLengthInByte = bytes; }
     };

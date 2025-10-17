@@ -26,7 +26,7 @@ namespace vpsim {
     class PL011Uart : public CommonUartInterface,
                       public TargetIf<uint32_t> {
     public:
-        PL011Uart(sc_module_name name);
+        PL011Uart(const sc_module_name& name);
 
         tlm::tlm_response_status read(payload_t &payload, sc_time &delay);
 

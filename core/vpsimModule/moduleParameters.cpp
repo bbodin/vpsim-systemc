@@ -98,7 +98,7 @@ unique_ptr<ModuleParameter> BlockingTLMEnabledParameter::operator+(const ModuleP
 //ApproximateDelayParameter
 
 
-ApproximateDelayParameter::ApproximateDelayParameter(sc_time delay) : mDelay(delay) {
+ApproximateDelayParameter::ApproximateDelayParameter(const sc_time& delay) : mDelay(delay) {
 }
 
 
@@ -115,7 +115,7 @@ ApproximateDelayParameter::operator sc_core::sc_time() const {
 }
 
 
-void ApproximateDelayParameter::setDefault(sc_time delay) {
+void ApproximateDelayParameter::setDefault(const sc_time& delay) {
     mDefaultDelay = delay;
     ParamManager::get().callParamUpdateHandlers();
 }

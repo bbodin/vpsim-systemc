@@ -39,7 +39,7 @@ T ParameterSet::getParameterValue(const paramContainer &pc, uint64_t addr) const
     return T();
 }
 
-BlockingTLMEnabledParameter ParameterSet::getParameterValForAddrSpace(const paramContainer &pc, AddrSpace addr) const {
+BlockingTLMEnabledParameter ParameterSet::getParameterValForAddrSpace(const paramContainer &pc, const AddrSpace& addr) const {
     //	static size_t i{0};
     //	if(i++ % 1000 == 0)
     //		cout << "ParameterSet::getParameterValForAddrSpace " << i << "\n" ;
@@ -68,7 +68,7 @@ BlockingTLMEnabledParameter ParameterSet::getParameterValForAddrSpace(const para
     static const function<BlockingTLMEnabledParameter
                 (const paramContainer &, paramContainer::const_iterator, AddrSpace)>
             helper = [](const paramContainer &pc, paramContainer::const_iterator begin,
-                        AddrSpace as) -> BlockingTLMEnabledParameter {
+                        const AddrSpace& as) -> BlockingTLMEnabledParameter {
                 BlockingTLMEnabledParameter accumulator(false);
                 for (auto p = begin; p != pc.cend(); ++p) {
                     if (as.intersect(p->first)) {
@@ -90,7 +90,7 @@ BlockingTLMEnabledParameter ParameterSet::getParameterValForAddrSpace(const para
     return helper(pc, pc.cbegin(), addr);
 }
 
-void ParameterSet::setParameter(AddrSpace as, const ModuleParameter &param) {
+void ParameterSet::setParameter(const AddrSpace& as, const ModuleParameter &param) {
     auto pick = [](const ModuleParameter &, const ModuleParameter &newMp)
         -> unique_ptr<ModuleParameter> {
         return newMp.clone();
@@ -112,7 +112,7 @@ BlockingTLMEnabledParameter ParameterSet::getBlockingTLMEnabledParameter(uint64_
     return getParameterValue<BlockingTLMEnabledParameter>(mBlockingTLMEnabledParameter, addr);
 }
 
-BlockingTLMEnabledParameter ParameterSet::getBlockingTLMEnabledParameter(AddrSpace addr) const {
+BlockingTLMEnabledParameter ParameterSet::getBlockingTLMEnabledParameter(const AddrSpace& addr) const {
     return getParameterValForAddrSpace(mBlockingTLMEnabledParameter, addr);
 }
 

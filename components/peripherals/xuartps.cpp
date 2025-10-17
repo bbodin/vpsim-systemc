@@ -25,7 +25,7 @@ namespace vpsim {
     using namespace std;
     using namespace tlm;
 
-    xuartps::xuartps(sc_module_name name) : CommonUartInterface(name),
+    xuartps::xuartps(const sc_module_name& name) : CommonUartInterface(name),
                                             TargetIf(string(name), 0x1000) {
         TargetIf<REG_T>::RegisterReadAccess(REGISTER(xuartps, read));
         TargetIf<REG_T>::RegisterWriteAccess(REGISTER(xuartps, write));

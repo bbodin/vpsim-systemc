@@ -118,7 +118,7 @@ namespace vpsim {
 
         //---------------------------------------------------
         //Constructor
-        interconnect(sc_module_name name, uint32_t nin, uint32_t nout);
+        interconnect(const sc_module_name& name, uint32_t nin, uint32_t nout);
 
         ~interconnect() {
         };
@@ -135,7 +135,7 @@ namespace vpsim {
         set_socket_out_addr(uint32_t num_port, uint64_t base_addr, uint64_t offset);
 
         void
-        set_latency(sc_time val);
+        set_latency(const sc_time& val);
 
         void
         set_enable_latency(bool val);

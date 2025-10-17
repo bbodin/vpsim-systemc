@@ -1,3 +1,5 @@
+#include <utility>
+
 /*
  * Copyright (C) 2024 Commissariat à l'énergie atomique et aux énergies alternatives (CEA)
 
@@ -52,7 +54,7 @@ namespace vpsim {
         inline void setRequesterId(const idx_t id) { requesterId = id; }
         inline idx_t getRequesterId() { return requesterId; }
 
-        inline void setTargetIds(set<idx_t> ids) { targetIds = ids; }
+        inline void setTargetIds(set<idx_t> ids) { targetIds = std::move(ids); }
         inline set<idx_t> getTargetIds() { return targetIds; }
 
         /*

@@ -48,8 +48,8 @@ namespace vpsim {
         //! @param[in] date     The date of the appointment
         //! @param[in] param	  The parameter to set at the appointment
         ParamAppointment(string module,
-                         AddrSpace as,
-                         sc_core::sc_time date,
+                         const AddrSpace& as,
+                         const sc_core::sc_time& date,
                          const ModuleParameter &param);
 
         //! @brief Only public constructor
@@ -57,7 +57,7 @@ namespace vpsim {
         //! @param[in] date     The date of the appointment
         //! @param[in] param	  The parameter to set at the appointment
         ParamAppointment(string module,
-                         sc_core::sc_time date,
+                         const sc_core::sc_time& date,
                          const ModuleParameter &param);
 
         //! @brief Tels if the appointment is passed

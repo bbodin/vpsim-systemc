@@ -28,12 +28,12 @@ VpsimModule::VpsimModule(string name, moduleType type, const AddrSpace &as, size
     mOwnAddrSpace(as),
     mModuleType(type),
     mNbOutPorts(nbPort),
-    mName(name) {
+    mName(std::move(name)) {
     ParamManager::get().registerModule(*this);
 }
 
 VpsimModule::VpsimModule(string name, moduleType type, size_t nbPort) : VpsimModule(
-    name, type, AddrSpace::maxRange, nbPort) {
+    std::move(name), type, AddrSpace::maxRange, nbPort) {
 }
 
 VpsimModule::~VpsimModule() {
@@ -150,7 +150,7 @@ void VpsimModule::refreshParameters(bool clear) {
 }
 
 
-void VpsimModule::setParameter(AddrSpace as, ModuleParameter const &param) {
+void VpsimModule::setParameter(const AddrSpace& as, ModuleParameter const &param) {
     mIntrinsecParameters.setParameter(as, param);
     refreshParameters();
 }
@@ -169,7 +169,7 @@ BlockingTLMEnabledParameter VpsimModule::getBlockingTLMEnabled(size_t port, uint
     return mEffectiveParameters[port].getBlockingTLMEnabledParameter(addr);
 }
 
-BlockingTLMEnabledParameter VpsimModule::getBlockingTLMEnabled(size_t port, AddrSpace addr) const {
+BlockingTLMEnabledParameter VpsimModule::getBlockingTLMEnabled(size_t port, const AddrSpace& addr) const {
     return mEffectiveParameters[port].getBlockingTLMEnabledParameter(addr);
 }
 

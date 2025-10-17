@@ -33,6 +33,31 @@
 #include "SesamController.hpp"
 
 #include "components/CallbackRegister.hpp"
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
 #include <vpsimModule/ForwardSimpleSocket.hpp>
 #include "peripherals/ItCtrl.hpp"
 #include "peripherals/uart.hpp"
@@ -60,7 +85,7 @@ namespace vpsim {
 
 
 	struct DynamicExternalSimulator : public VpsimIp<InPortType, OutPortType> {
-		DynamicExternalSimulator(string name) : VpsimIp(name), mModulePtr(nullptr) {
+		DynamicExternalSimulator(string name) : VpsimIp(std::move(name)), mModulePtr(nullptr) {
 			registerRequiredAttribute("base_address");
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("lib_path");
@@ -128,7 +153,7 @@ namespace vpsim {
 	};
 
 	struct DynamicSystemCTarget : public VpsimIp<InPortType, OutPortType> {
-		DynamicSystemCTarget(string name) : VpsimIp(name), mModulePtr(nullptr) {
+		DynamicSystemCTarget(string name) : VpsimIp(std::move(name)), mModulePtr(nullptr) {
 			registerRequiredAttribute("base_address");
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("interrupt_parent");
@@ -180,7 +205,7 @@ namespace vpsim {
 			public gic,
 			public VpsimIp<InPortType, OutPortType> {
 	public:
-		explicit DynamicGIC(std::string name) : gic(name.c_str()),
+		explicit DynamicGIC(const std::string& name) : gic(name.c_str()),
 		                                        VpsimIp(name) {
 			registerRequiredAttribute("base_address");
 
@@ -271,7 +296,7 @@ namespace vpsim {
 	struct DynamicRemoteInitiator
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicRemoteInitiator(std::string name) : VpsimIp(name),
+		DynamicRemoteInitiator(std::string name) : VpsimIp(std::move(name)),
 		                                           mModulePtr(nullptr) {
 			registerRequiredAttribute("remote_ip");
 			//registerRequiredAttribute("port");
@@ -345,7 +370,7 @@ namespace vpsim {
 	};
 
 	struct DynamicRemoteTarget : public VpsimIp<InPortType, OutPortType> {
-		DynamicRemoteTarget(string name) : VpsimIp(name), mModulePtr(nullptr) {
+		DynamicRemoteTarget(string name) : VpsimIp(std::move(name)), mModulePtr(nullptr) {
 			registerRequiredAttribute("base_address");
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("channel");
@@ -403,7 +428,7 @@ namespace vpsim {
 	struct DynamicSystemCCosimulator
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicSystemCCosimulator(std::string name) : VpsimIp(name),
+		DynamicSystemCCosimulator(std::string name) : VpsimIp(std::move(name)),
 		                                              mModulePtr(nullptr) {
 			registerRequiredAttribute("n_out_ports");
 			registerOptionalAttribute("roi_only", "1");
@@ -473,7 +498,7 @@ namespace vpsim {
 	struct DynamicIOAccessCosimulator
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicIOAccessCosimulator(std::string name) : VpsimIp(name),
+		DynamicIOAccessCosimulator(std::string name) : VpsimIp(std::move(name)),
 		                                               mModulePtr(nullptr) {
 			registerRequiredAttribute("n_out_ports");
 		}
@@ -540,7 +565,7 @@ namespace vpsim {
 	struct DynamicArm
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicArm(std::string name) : VpsimIp(name),
+		DynamicArm(std::string name) : VpsimIp(std::move(name)),
 		                               mModulePtr(nullptr) {
 			registerRequiredAttribute("model");
 			registerRequiredAttribute("iss");
@@ -692,7 +717,7 @@ namespace vpsim {
 	struct DynamicArm64
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicArm64(std::string name) : VpsimIp(name),
+		DynamicArm64(std::string name) : VpsimIp(std::move(name)),
 		                                 mModulePtr(nullptr) {
 			registerRequiredAttribute("model");
 			registerRequiredAttribute("iss");
@@ -885,7 +910,7 @@ namespace vpsim {
 
 
 	struct DynamicVirtioProxy : public VpsimIp<InPortType, OutPortType>, public VirtioTlm {
-		DynamicVirtioProxy(string name) : VpsimIp(name), VirtioTlm(name.c_str()) {
+		DynamicVirtioProxy(const string& name) : VpsimIp(name), VirtioTlm(name.c_str()) {
 			registerRequiredAttribute("provider_instance");
 			registerRequiredAttribute("base_address");
 			registerRequiredAttribute("irq");
@@ -986,7 +1011,7 @@ namespace vpsim {
 			  public VpsimModule,
 			  public InterruptIf {
 	public:
-		DynamicExternalCPU(std::string name) : VpsimIp(name),
+		DynamicExternalCPU(const std::string& name) : VpsimIp(name),
 		                                       VpsimModule(name, moduleType::intermediate, 1),
 		                                       lib(nullptr) {
 			registerRequiredAttribute("lib_path");
@@ -1124,7 +1149,7 @@ namespace vpsim {
 	};
 
 	struct DynamicCache : public VpsimIp<InPortType, OutPortType> {
-		DynamicCache(std::string name) : VpsimIp(name),
+		DynamicCache(std::string name) : VpsimIp(std::move(name)),
 		                                 mModulePtr(nullptr) {
 			registerRequiredAttribute("latency");
 			registerRequiredAttribute("size");
@@ -1385,7 +1410,7 @@ namespace vpsim {
 
 	struct DynamicCoherenceInterconnect : public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicCoherenceInterconnect(std::string name) : VpsimIp(name),
+		DynamicCoherenceInterconnect(std::string name) : VpsimIp(std::move(name)),
 		                                                 mConnectionCounter_cache(0),
 		                                                 mConnectionCounter_home(0),
 		                                                 mConnectionCounter_mmapped(0),
@@ -1769,7 +1794,7 @@ namespace vpsim {
 	struct DynamicNoCDeviceController
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicNoCDeviceController(std::string name) : VpsimIp(name) {
+		DynamicNoCDeviceController(std::string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("id_dev");
 			registerRequiredAttribute("x_id");
 			registerRequiredAttribute("y_id");
@@ -1803,7 +1828,7 @@ namespace vpsim {
 	struct DynamicNoCMemoryController
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicNoCMemoryController(std::string name) : VpsimIp(name) {
+		DynamicNoCMemoryController(std::string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("base_address");
 			//registerRequiredAttribute("cpu_affinity");
@@ -1849,7 +1874,7 @@ namespace vpsim {
 	struct DynamicCacheController
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicCacheController(std::string name) : VpsimIp(name) {
+		DynamicCacheController(std::string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("base_address");
 			//registerRequiredAttribute("cpu_affinity");
@@ -1887,7 +1912,7 @@ namespace vpsim {
 	struct DynamicCacheIdController
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicCacheIdController(std::string name) : VpsimIp(name) {
+		DynamicCacheIdController(std::string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("noc");
 			registerRequiredAttribute("cache");
 			registerRequiredAttribute("x_id");
@@ -1924,7 +1949,7 @@ namespace vpsim {
 	struct DynamicCpuController
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicCpuController(std::string name) : VpsimIp(name) {
+		DynamicCpuController(std::string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("id");
 			registerRequiredAttribute("noc");
 			registerRequiredAttribute("x_id");
@@ -1960,7 +1985,7 @@ namespace vpsim {
 	struct DynamicInterconnect
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicInterconnect(std::string name) : VpsimIp(name),
+		DynamicInterconnect(std::string name) : VpsimIp(std::move(name)),
 		                                        mConnectionCounter(0),
 		                                        mModulePtr(nullptr) {
 			registerRequiredAttribute("latency");
@@ -2077,7 +2102,7 @@ namespace vpsim {
 	struct DynamicNoCHomeNode
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicNoCHomeNode(std::string name) : VpsimIp(name) {
+		DynamicNoCHomeNode(std::string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("base_address");
 			registerRequiredAttribute("noc_id");
@@ -2113,7 +2138,7 @@ namespace vpsim {
 	struct DynamicNoCSource
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicNoCSource(std::string name) : VpsimIp(name) {
+		DynamicNoCSource(std::string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("src_id");
 			registerRequiredAttribute("noc_id");
 			registerRequiredAttribute("noc");
@@ -2147,7 +2172,7 @@ namespace vpsim {
 	struct DynamicMemory
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicMemory(std::string name) : VpsimIp(name),
+		DynamicMemory(std::string name) : VpsimIp(std::move(name)),
 		                                  mModulePtr(nullptr) {
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("base_address");
@@ -2276,7 +2301,7 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		DynamicBlobLoader(string name) : VpsimIp(name) {
+		DynamicBlobLoader(string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("target_memory");
 			registerRequiredAttribute("file");
 			registerRequiredAttribute("offset");
@@ -2316,7 +2341,7 @@ namespace vpsim {
 
 		NEEDS_DMI_OVERRIDE;
 
-		DynamicElfLoader(string name) : VpsimIp(name) {
+		DynamicElfLoader(string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("path");
 		}
 
@@ -2352,7 +2377,7 @@ namespace vpsim {
 		N_IN_PORTS_OVERRIDE(0);
 		N_OUT_PORTS_OVERRIDE(0);
 
-		DynamicMonitor(string name) : VpsimIp(name) {
+		DynamicMonitor(string name) : VpsimIp(std::move(name)) {
 			registerRequiredAttribute("start_address");
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("cpu");
@@ -2387,7 +2412,7 @@ namespace vpsim {
 	struct DynamicUart
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicUart(std::string name) : VpsimIp(name),
+		DynamicUart(std::string name) : VpsimIp(std::move(name)),
 		                                mModulePtr(nullptr) {
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("base_address");
@@ -2474,7 +2499,7 @@ namespace vpsim {
 	struct DynamicItCtrl
 			: public VpsimIp<InPortType, OutPortType> {
 	public:
-		DynamicItCtrl(std::string name) : VpsimIp(name),
+		DynamicItCtrl(std::string name) : VpsimIp(std::move(name)),
 		                                  mModulePtr(nullptr) {
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("base_address");
@@ -2583,7 +2608,7 @@ namespace vpsim {
 			public PL011Uart,
 			public VpsimIp<InPortType, OutPortType> {
 	public:
-		explicit DynamicPL011Uart(std::string name) : PL011Uart(name.c_str()),
+		explicit DynamicPL011Uart(const std::string& name) : PL011Uart(name.c_str()),
 		                                              VpsimIp(name) {
 			registerRequiredAttribute("base_address");
 			registerOptionalAttribute("size", "4095");
@@ -2667,7 +2692,7 @@ namespace vpsim {
 			public xuartps,
 			public VpsimIp<InPortType, OutPortType> {
 	public:
-		explicit DynamicXuartPs(std::string name) : xuartps(name.c_str()),
+		explicit DynamicXuartPs(const std::string& name) : xuartps(name.c_str()),
 		                                            VpsimIp(name) {
 			registerRequiredAttribute("base_address");
 			registerOptionalAttribute("cycle_duration", "100e3");
@@ -2751,7 +2776,7 @@ namespace vpsim {
 			public VpsimIp<InPortType, OutPortType>,
 			public AddressTranslator {
 	public:
-		explicit DynamicAddressTranslator(std::string name) : VpsimIp(name), AddressTranslator(name.c_str()) {
+		explicit DynamicAddressTranslator(const std::string& name) : VpsimIp(name), AddressTranslator(name.c_str()) {
 			registerRequiredAttribute("base_address");
 			registerRequiredAttribute("size");
 			registerRequiredAttribute("output_base_address");
@@ -2918,7 +2943,7 @@ namespace vpsim {
 		map<string, int> mCheckpoints;
 
 	public:
-		explicit DynamicSesamController(std::string name) : VpsimIp(name),
+		explicit DynamicSesamController(const std::string& name) : VpsimIp(name),
 		                                                    SesamController(name.c_str()) {
 			registerRequiredAttribute("base_address");
 			registerOptionalAttribute("size", "4");
@@ -3643,7 +3668,7 @@ namespace vpsim {
 
 	struct DynamicPythonDevice :
 			public VpsimIp<InPortType, OutPortType> {
-		explicit DynamicPythonDevice(std::string name) : VpsimIp(name),
+		explicit DynamicPythonDevice(std::string name) : VpsimIp(std::move(name)),
 		                                                 mModulePtr(nullptr) {
 			registerRequiredAttribute("base_address");
 			registerRequiredAttribute("size");

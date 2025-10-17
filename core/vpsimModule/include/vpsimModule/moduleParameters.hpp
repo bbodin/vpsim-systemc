@@ -133,7 +133,7 @@ namespace vpsim {
     public:
         //! @brief Changes the default delay
         //! @brief[in] v New default delay
-        static void setDefault(sc_core::sc_time v);
+        static void setDefault(const sc_core::sc_time& v);
 
         //! @return true if the delay of this is smaller than the delay of max
         bool operator<(const ModuleParameter &that) const override;
@@ -159,7 +159,7 @@ namespace vpsim {
 
         //! @brief default implicit constructor
         //! @param[in] val value to be stored in the object
-        ApproximateDelayParameter(sc_core::sc_time delay = mDefaultDelay);
+        ApproximateDelayParameter(const sc_core::sc_time& delay = mDefaultDelay);
     };
 
 

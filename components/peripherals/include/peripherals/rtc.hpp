@@ -60,7 +60,7 @@ namespace vpsim {
         //! @brief Constructor
 	//! @param[in] name name of the sc_module
 	//! @param[in] frequency frequency of the RTC
-        Rtc(sc_core::sc_module_name name, uint64_t frequency = RTC_DEFAULT_FREQUENCY);
+        Rtc(const sc_core::sc_module_name& name, uint64_t frequency = RTC_DEFAULT_FREQUENCY);
 
         //! @cond
         // Ignore this systemc specificity for the documentation

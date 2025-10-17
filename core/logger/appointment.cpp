@@ -23,7 +23,7 @@
 
 namespace vpsim {
     Appointment::Appointment(Logger &logger,
-                             sc_core::sc_time date,
+                             const sc_core::sc_time& date,
                              DebugLvl debugLvl) : mLogger(logger), mDate(date), mDebugLvl(debugLvl) {
     }
 

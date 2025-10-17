@@ -97,7 +97,7 @@ namespace vpsim {
         //! @brief Generic setter for parameter values
         //! @param[in] as AddrSpace on which the parameter is to be set
         //! @param[in] param Parameter value
-        void setParameter(AddrSpace as, const ModuleParameter &p);
+        void setParameter(const AddrSpace& as, const ModuleParameter &p);
 
         //! @brief Generic setter for parameter values
         //! @param[in] param Parameter value
@@ -143,7 +143,7 @@ namespace vpsim {
         //! @brief get the value of the parameter "blocking TLM enabled"
         //! @param[in] addr address space where the parameter value is required
         //! @return The parameter value
-        BlockingTLMEnabledParameter getBlockingTLMEnabled(size_t port, AddrSpace addr) const;
+        BlockingTLMEnabledParameter getBlockingTLMEnabled(size_t port, const AddrSpace& addr) const;
 
         //! @brief get the value of the parameter approximate delay.
         //! It is ponderated by the approximate traversal rate of the module

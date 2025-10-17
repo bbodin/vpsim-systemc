@@ -34,7 +34,7 @@ namespace vpsim {
     public:
         //! @brief SystemC standard constructor
         //! @param[in] name Name of the instance as a systemC module
-        LoggerScheduler(sc_core::sc_module_name name);
+        LoggerScheduler(const sc_core::sc_module_name& name);
 
         //! @cond
         // Ignore this systemc specificity for the documentation
@@ -46,7 +46,7 @@ namespace vpsim {
 
         //! @brief Adds an Appointment to the schedule
         //! @param[in] appointment Appointment to be added to the Schedule
-        void addAppointment(const Appointment appointment);
+        void addAppointment(const Appointment& appointment);
 
         friend std::ostream &operator<<(std::ostream &ostr,
                                         const LoggerScheduler &loggerScheduler);

@@ -16,6 +16,8 @@
 
 #include <memory>
 #include <systemc>
+#include <utility>
+#include <utility>
 #include "paramManager.hpp"
 #include "vpsimModule.hpp"
 
@@ -31,30 +33,30 @@ namespace vpsim {
         return *instance;
     }
 
-    void ParamManager::setParameter(string module, AddrSpace as, const ModuleParameter &param) {
+    void ParamManager::setParameter(const string& module, const AddrSpace& as, const ModuleParameter &param) {
         mVpsimModules.at(module)->setParameter(as, param);
         callParamUpdateHandlers();
     }
 
 
-    void ParamManager::setParameter(string module, const ModuleParameter &param) {
+    void ParamManager::setParameter(const string& module, const ModuleParameter &param) {
         mVpsimModules.at(module)->setParameter(param);
         callParamUpdateHandlers();
     }
 
 
     void ParamManager::addAppointment(string module,
-                                      AddrSpace as,
-                                      sc_core::sc_time date,
+                                      const AddrSpace& as,
+                                      const sc_core::sc_time& date,
                                       const ModuleParameter &param) {
-        mParamScheduler.addAppointment(ParamAppointment(module, as, date, param));
+        mParamScheduler.addAppointment(ParamAppointment(std::move(module), as, date, param));
     }
 
 
     void ParamManager::addAppointment(string module,
-                                      sc_core::sc_time date,
+                                      const sc_core::sc_time& date,
                                       const ModuleParameter &param) {
-        mParamScheduler.addAppointment(ParamAppointment(module, date, param));
+        mParamScheduler.addAppointment(ParamAppointment(std::move(module), date, param));
     }
 
     void ParamManager::registerModule(VpsimModule &module) {
@@ -64,7 +66,7 @@ namespace vpsim {
         }
     }
 
-    void ParamManager::unregisterModule(string name) {
+    void ParamManager::unregisterModule(const string& name) {
         mVpsimModules.erase(name);
         mUpdateHandlers.erase(name);
     }

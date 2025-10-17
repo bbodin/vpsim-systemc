@@ -22,7 +22,7 @@
 namespace vpsim {
     //-----------------------------------------------------------------------------
     //Constructor
-    interconnect::interconnect(sc_module_name name, uint32_t nin, uint32_t nout) : sc_module(name),
+    interconnect::interconnect(const sc_module_name& name, uint32_t nin, uint32_t nout) : sc_module(name),
         Logger(string(name)),
         NAME(string(name)),
         DIAGNOSTIC_LEVEL(DBG_L0),
@@ -68,7 +68,7 @@ namespace vpsim {
 
 
     void
-    interconnect::set_latency(sc_time val) { ACCESS_LATENCY = val; }
+    interconnect::set_latency(const sc_time& val) { ACCESS_LATENCY = val; }
 
 
     void

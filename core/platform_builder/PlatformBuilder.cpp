@@ -16,6 +16,30 @@
 
 #include "platform_builder/PlatformBuilder.hpp"
 
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 namespace vpsim {
     int PlatformBuilder::Container = 0;
 
@@ -38,7 +62,7 @@ namespace vpsim {
     }
 
     VpsimIp<InPortType, OutPortType> &PlatformBuilder::beginBuild(
-        std::string ipType, std::string ipName) {
+        const std::string& ipType, const std::string& ipName) {
         std::cout << "Now building " << ipType << " " << ipName << std::endl;
 
         if (mCurrentIp && !mCurrentIp->isContainer()) {
@@ -83,24 +107,24 @@ namespace vpsim {
     }
 
     void PlatformBuilder::setAttribute(std::string attr, std::string value) {
-        mCurrentIp->setAttribute(attr, value);
+        mCurrentIp->setAttribute(std::move(attr), std::move(value));
     }
 
     void PlatformBuilder::connect(std::string srcIpName,
                                   std::string srcOutPortName, std::string dstIpName,
                                   std::string dstInPortName) {
-        mCurrentIp->getChild(srcIpName)->connect(srcOutPortName,
-                                                 mCurrentIp->getChild(dstIpName), dstInPortName);
+        mCurrentIp->getChild(std::move(srcIpName))->connect(std::move(srcOutPortName),
+                                                 mCurrentIp->getChild(std::move(dstIpName)), std::move(dstInPortName));
     }
 
     void PlatformBuilder::forwardInPort(std::string childName,
                                         std::string childInPortName, std::string portAlias) {
-        mCurrentIp->forwardChildInPort(childName, childInPortName, portAlias);
+        mCurrentIp->forwardChildInPort(std::move(childName), std::move(childInPortName), std::move(portAlias));
     }
 
     void PlatformBuilder::forwardOutPort(std::string childName,
                                          std::string childOutPortName, std::string portAlias) {
-        mCurrentIp->forwardChildOutPort(childName, childOutPortName, portAlias);
+        mCurrentIp->forwardChildOutPort(std::move(childName), std::move(childOutPortName), std::move(portAlias));
     }
 
     void PlatformBuilder::dumpComponents(ostream &stream) {

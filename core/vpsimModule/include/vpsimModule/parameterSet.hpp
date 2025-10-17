@@ -64,13 +64,13 @@ namespace vpsim {
         template<class T>
         T getParameterValue(const paramContainer &pc, uint64_t addr) const;
 
-        BlockingTLMEnabledParameter getParameterValForAddrSpace(const paramContainer &pc, AddrSpace addr) const;
+        BlockingTLMEnabledParameter getParameterValForAddrSpace(const paramContainer &pc, const AddrSpace& addr) const;
 
     public:
         //! @brief Generic setter for parameter values
         //! @param[in] as AddrSpace on which the parameter is to be set
         //! @param[in] param Parameter value
-        void setParameter(AddrSpace as, const ModuleParameter &param);
+        void setParameter(const AddrSpace& as, const ModuleParameter &param);
 
         //! @brief Merge two parameter set together
         //! @param[in] importedParam Other ParameterSet to merge with *this
@@ -101,7 +101,7 @@ namespace vpsim {
         //! @return Value of the parameter for the address passed
         BlockingTLMEnabledParameter getBlockingTLMEnabledParameter(uint64_t addr) const;
 
-        BlockingTLMEnabledParameter getBlockingTLMEnabledParameter(AddrSpace addr) const;
+        BlockingTLMEnabledParameter getBlockingTLMEnabledParameter(const AddrSpace& addr) const;
 
 
         //! @brief Get the approximate delay parameter parameter value

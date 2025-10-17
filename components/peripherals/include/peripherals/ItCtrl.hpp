@@ -37,7 +37,7 @@ namespace vpsim {
         uint32_t mWordLengthInByte;
 
     public:
-        ItCtrl(sc_module_name Name, uint32_t LineCount, uint32_t LineSize);
+        ItCtrl(const sc_module_name& Name, uint32_t LineCount, uint32_t LineSize);
 
         ~ItCtrl() override;
 

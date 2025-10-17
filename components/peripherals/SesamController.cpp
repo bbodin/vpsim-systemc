@@ -25,7 +25,7 @@
 const unsigned int MAX_BUF_LENGTH = 4096;
 
 namespace vpsim {
-    SesamController::SesamController(sc_module_name name) : sc_module(name), TargetIf(string(name), 0x4) {
+    SesamController::SesamController(const sc_module_name& name) : sc_module(name), TargetIf(string(name), 0x4) {
         TargetIf<REG_T>::RegisterReadAccess(REGISTER(SesamController, read));
         TargetIf<REG_T>::RegisterWriteAccess(REGISTER(SesamController, write));
     }

@@ -26,7 +26,7 @@ namespace vpsim {
     public:
         //---------------------------------------------------
         //Constructor
-        arm64(sc_module_name name, std::string model, const IssFinder &iss, uint32_t id, uint32_t quantum, bool is_gdb,
+        arm64(const sc_module_name& name, const std::string& model, const IssFinder &iss, uint32_t id, uint32_t quantum, bool is_gdb,
               bool simflag, uint64_t init_pc, bool use_log, const char *logfile) : IssWrapper(
             name, id, iss.getIssLibPath("aarch64-softmmu"),
             model.c_str(), quantum, is_gdb, B64, simflag, init_pc, use_log, logfile) {

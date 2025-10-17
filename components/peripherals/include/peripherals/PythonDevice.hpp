@@ -57,7 +57,7 @@ namespace vpsim {
             return tlm::TLM_OK_RESPONSE;
         }
 
-        PyDevice(sc_module_name nameS, std::string typeName, std::map<std::string, std::string> &args,
+        PyDevice(const sc_module_name& nameS, const std::string& typeName, std::map<std::string, std::string> &args,
                  uint64_t size) : sc_module(nameS),
                                   TargetIf(string(nameS), size) {
             string name = string(nameS);

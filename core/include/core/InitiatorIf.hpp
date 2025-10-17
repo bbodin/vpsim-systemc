@@ -39,7 +39,7 @@ namespace vpsim {
 
         InitiatorIf(string Name, unsigned int Quantum, uint32_t NbPort);
 
-        InitiatorIf(string Name, unsigned int Quantum, bool Active, uint32_t NbPort);
+        InitiatorIf(const string& Name, unsigned int Quantum, bool Active, uint32_t NbPort);
 
         //Destructor
         ~InitiatorIf();

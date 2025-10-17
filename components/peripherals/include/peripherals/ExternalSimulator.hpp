@@ -59,7 +59,7 @@ namespace vpsim {
 
     class ExternalSimulator : public sc_module, public TargetIf<uint8_t>, public InterruptSource {
     public:
-        ExternalSimulator(sc_module_name name, size_t size, string path);
+        ExternalSimulator(const sc_module_name& name, size_t size, const string& path);
 
         ~ExternalSimulator() override;
 
@@ -77,7 +77,7 @@ namespace vpsim {
                 lowerInterrupt();
         }
 
-        void *loadSymbol(string sym) {
+        void *loadSymbol(const string& sym) {
             if (!lib)
                 throw runtime_error("getting symbol from null library !");
 
@@ -98,7 +98,7 @@ namespace vpsim {
             wait(executed, SC_NS);
         }
 
-        void addParam(string arg) {
+        void addParam(const string& arg) {
             argv.push_back(arg);
         }
 

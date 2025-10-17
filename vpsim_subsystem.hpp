@@ -26,7 +26,7 @@
 namespace vpsim {
     class Subsystem : public sc_core::sc_module {
     public:
-        Subsystem(sc_core::sc_module_name name, const char *platform_xml_path);
+        Subsystem(const sc_core::sc_module_name& name, const char *platform_xml_path);
 
         ~Subsystem() override;
 

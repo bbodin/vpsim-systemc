@@ -64,7 +64,7 @@ namespace vpsim {
         //! @param [in] name : a unique string to represent the TargetIf instance in standard output
         //! @param [in] size : the size of the memory address range that this TargetIf will encompass
         //!
-        TargetIf(string Name, uint64_t Size);
+        TargetIf(const string& Name, uint64_t Size);
 
         //!
         //! constructor that allows to enable the support of DMI communications
@@ -73,7 +73,7 @@ namespace vpsim {
         //! @param [in] byte_enable : activates byte masked communication if set to true
         //! @param [in] dmi_enable : activates the support of DMI accesses if set to true
         //!
-        TargetIf(string Name, uint64_t Size, bool ByteEnable, bool DmiEnable);
+        TargetIf(const string& Name, uint64_t Size, bool ByteEnable, bool DmiEnable);
 
         //!
         //! destructor

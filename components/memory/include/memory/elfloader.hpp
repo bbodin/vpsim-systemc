@@ -38,7 +38,7 @@ namespace vpsim {
         dump_elf_file();
 
         void
-        load_elf_file(const string name, uint64_t base_addr, uint64_t size, bool debug = false);
+        load_elf_file(const string& name, uint64_t base_addr, uint64_t size, bool debug = false);
 
         void
         print_elf_segments_info();

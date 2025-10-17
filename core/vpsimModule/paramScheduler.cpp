@@ -23,7 +23,7 @@ using namespace std;
 namespace vpsim {
     //! @brief SystemC standard constructor
     //! @param[in] name Name of the ParamScheduler as a systemC module
-    ParamScheduler::ParamScheduler(sc_core::sc_module_name name) : sc_module(name) {
+    ParamScheduler::ParamScheduler(const sc_core::sc_module_name& name) : sc_module(name) {
         SC_THREAD(schedule);
         sensitive << mNewAppointmentEvent;
     }

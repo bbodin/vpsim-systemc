@@ -15,6 +15,12 @@
 */
 
 #include "issWrapper.hpp"
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
 #include "EndianHelper.hpp"
 #include "log.hpp"
 
@@ -22,7 +28,7 @@
 extern uint64_t HOST_TIME_START;
 
 namespace vpsim {
-    IssWrapper::IssWrapper(sc_module_name Name, int id_cpu, string lib, const char *cpu_model, unsigned int quantum,
+    IssWrapper::IssWrapper(const sc_module_name& Name, int id_cpu, string lib, const char *cpu_model, unsigned int quantum,
                            bool is_gdb, ARCHI_TYPE type, bool simflag, uint64_t init_pc, bool use_log,
                            const char *logfile)
         : sc_module(Name),
@@ -35,7 +41,7 @@ namespace vpsim {
           sim_flag(simflag),
           mICount(0),
           mDCount(0),
-          mLib(string(Name), lib, (void *) this, id_cpu, is_gdb),
+          mLib(string(Name), std::move(lib), (void *) this, id_cpu, is_gdb),
           mGic(nullptr) {
         setForceLt(false);
         setDiagnosticLevel(DBG_L0);
@@ -374,11 +380,11 @@ namespace vpsim {
     }
 
     void IssWrapper::iss_create_rom(string name, uint64_t base_address, uint32_t size, void *data) {
-        mLib.create_rom(name, base_address, size, data);
+        mLib.create_rom(std::move(name), base_address, size, data);
     }
 
     void IssWrapper::add_map_dmi(string name, uint64_t base_address, uint32_t size, void *data) {
-        mLib.map_dmi(name, base_address, size, data);
+        mLib.map_dmi(std::move(name), base_address, size, data);
     }
 
     void IssWrapper::iss_linux_mem_init(uint32_t ncores, uint32_t size) {

@@ -15,13 +15,17 @@
 */
 
 #include "CoherenceInterconnect.hpp"
+
+#include <utility>
+
+#include <utility>
 #include "log.hpp"
 #include "MainMemCosim.hpp"
 #include "IOAccessCosim.hpp"
 
 namespace vpsim {
     CoherenceInterconnect::CoherenceInterconnect
-    (sc_module_name name,
+    (const sc_module_name& name,
      uint32_t num_cache_in,
      uint32_t num_cache_out,
      uint32_t num_home_in,
@@ -117,7 +121,7 @@ namespace vpsim {
     /**
   * Set functions
   */
-    void CoherenceInterconnect::set_latency(sc_time val) { ACCESS_LATENCY = val; }
+    void CoherenceInterconnect::set_latency(const sc_time& val) { ACCESS_LATENCY = val; }
 
     void CoherenceInterconnect::set_enable_latency(bool val) { ENABLE_LATENCY = val; }
 
@@ -156,7 +160,7 @@ namespace vpsim {
         HomeCount++;
     }
 
-    void CoherenceInterconnect::set_cache_id(idx_t num_port, idx_t id, string name) {
+    void CoherenceInterconnect::set_cache_id(idx_t num_port, idx_t id, const string& name) {
         assert(id != NULL_IDX);
         for (unsigned i = 0; i < CacheOutputs.size(); i++) {
             if (CacheOutputs[i].name == name) {
@@ -169,7 +173,7 @@ namespace vpsim {
 
     void CoherenceInterconnect::set_cache_pos(string name, idx_t pos) {
         id_struct cacheOutput;
-        cacheOutput.name = name;
+        cacheOutput.name = std::move(name);
         cacheOutput.position = pos;
         CacheOutputs[pos] = cacheOutput;
     }
@@ -205,7 +209,7 @@ namespace vpsim {
         }
     }
 
-    inline void CoherenceInterconnect::sendTransactionToCache(tlm::tlm_generic_payload &trans, set<idx_t> targetIds,
+    inline void CoherenceInterconnect::sendTransactionToCache(tlm::tlm_generic_payload &trans, const set<idx_t>& targetIds,
                                                               sc_time &delay) {
         //if (targetIds.size() == 0 || NUM_CACHE == 0) throw runtime_error("No cache found\n");
         if (targetIds.size() == 0)
@@ -413,14 +417,14 @@ namespace vpsim {
         return get<2>(mHomeIDs[index]);
     }
 
-    inline void CoherenceInterconnect::computeNoCPerformance(uint64_t distance, sc_time latency) {
+    inline void CoherenceInterconnect::computeNoCPerformance(uint64_t distance, const sc_time& latency) {
         TotalDistance += distance;
         TotalLatency += latency;
         PacketsCount++;
     }
 
     uint64_t CoherenceInterconnect::computeNoCLatency(bool isHome, bool isIdMapped, uint64_t addr, idx_t src_id,
-                                                      set<idx_t> dst_ids) {
+                                                      const set<idx_t>& dst_ids) {
         mesh_pos src_pos = get_noc_pos_by_id(src_id);
         mesh_pos dst_pos;
         idx_t src_x = src_pos.x_id;
@@ -471,7 +475,7 @@ namespace vpsim {
     /**
   * NoC perf stats for each initiator
   */
-    void CoherenceInterconnect::FillInitTotalStats(idx_t id, mesh_pos src_pos, uint64_t dist, sc_time lat) {
+    void CoherenceInterconnect::FillInitTotalStats(idx_t id, mesh_pos src_pos, uint64_t dist, const sc_time& lat) {
         string position = to_string(src_pos.x_id) + '_' + to_string(src_pos.y_id);
         get<0>(initTotalStats[id]) = position;
         get<1>(initTotalStats[id]) += 1;
@@ -498,7 +502,7 @@ namespace vpsim {
         mBufferSize = buffer_size;
     }
 
-    void CoherenceInterconnect::SavePacket(idx_t id, route path, uint32_t nbFlits) {
+    void CoherenceInterconnect::SavePacket(idx_t id, const route& path, uint32_t nbFlits) {
         sc_time t0 = sc_time(0, SC_NS);
         for (uint32_t count = 0; count < nbFlits; ++count) packetBuffer.push_back(make_tuple(id + count, path, t0));
     }
@@ -586,8 +590,8 @@ namespace vpsim {
         return path;
     }
 
-    sc_time CoherenceInterconnect::QueueWaitingTime(sc_time wait, sc_time router_latency, sc_time link_latency,
-                                                    sc_time time_interval, uint64_t queue_nbr_packets) {
+    sc_time CoherenceInterconnect::QueueWaitingTime(const sc_time& wait, const sc_time& router_latency, const sc_time& link_latency,
+                                                    const sc_time& time_interval, uint64_t queue_nbr_packets) {
         int64_t ns_per_sec = 1000000000;
         double wt = (wait.to_seconds()) * ns_per_sec + (router_latency.to_seconds()) * ns_per_sec + (link_latency.
                         to_seconds()) * ns_per_sec - (
@@ -610,7 +614,7 @@ namespace vpsim {
    * @param nbr_hops is the number of routers on the packet's path.
    * @return sc_time 
    */
-    sc_time CoherenceInterconnect::PacketLatency(sc_time total_wait, sc_time router_latency, sc_time link_latency,
+    sc_time CoherenceInterconnect::PacketLatency(const sc_time& total_wait, const sc_time& router_latency, const sc_time& link_latency,
                                                  uint64_t nbr_hops) {
         return (nbr_hops * router_latency + (nbr_hops + 1) * link_latency + total_wait);
     }
@@ -724,7 +728,7 @@ namespace vpsim {
         return avg_latency;
     }
 
-    void CoherenceInterconnect::PrintPath(route path) {
+    void CoherenceInterconnect::PrintPath(const route& path) {
         cout << "***path***:" << endl;
         for (const auto &i: path) {
             cout << get<0>(i) << "_" << get<1>(i) << "_" << get<2>(i) << endl;
@@ -776,7 +780,7 @@ namespace vpsim {
     }
 
     vector<CoherenceInterconnect::mesh_pos> CoherenceInterconnect::GetDestinations(
-        tlm::tlm_generic_payload &trans, bool isHome, bool isIdMapped, set<idx_t> dst_ids) {
+        tlm::tlm_generic_payload &trans, bool isHome, bool isIdMapped, const set<idx_t>& dst_ids) {
         vector<mesh_pos> dest;
         mesh_pos dst_pos;
         if (!isIdMapped) {
@@ -812,8 +816,8 @@ namespace vpsim {
         }
     }
 
-    void CoherenceInterconnect::NetworkTimingModel(tlm::tlm_generic_payload &trans, sc_time trans_time_stamp,
-                                                   sc_time time_interval, bool isHome, bool isIdMapped,
+    void CoherenceInterconnect::NetworkTimingModel(tlm::tlm_generic_payload &trans, const sc_time& trans_time_stamp,
+                                                   const sc_time& time_interval, bool isHome, bool isIdMapped,
                                                    uint32_t nbFlits, mesh_pos src_pos, set<idx_t> dst_ids,
                                                    bool device) {
         route path;
@@ -824,7 +828,7 @@ namespace vpsim {
             size_t index = IndexFirstMemoryController; //index of the first memory controller
             src_pos = (this->*get_noc_pos_by_address)(trans.get_address(), index);
         } else {
-            dest = GetDestinations(trans, isHome, isIdMapped, dst_ids);
+            dest = GetDestinations(trans, isHome, isIdMapped, std::move(dst_ids));
         }
         int64_t ns_per_sec = 1000000000;
         sc_time ts = sc_time((trans_time_stamp.to_seconds()) * ns_per_sec, SC_NS);

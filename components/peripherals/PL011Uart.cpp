@@ -27,7 +27,7 @@ namespace vpsim {
     using namespace tlm;
 
 
-    PL011Uart::PL011Uart(sc_module_name name) : CommonUartInterface(name),
+    PL011Uart::PL011Uart(const sc_module_name& name) : CommonUartInterface(name),
                                                 TargetIf<uint32_t>(string(name), 0x1000) {
         TargetIf<REG_T>::RegisterReadAccess(REGISTER(PL011Uart, read));
         TargetIf<REG_T>::RegisterWriteAccess(REGISTER(PL011Uart, write));

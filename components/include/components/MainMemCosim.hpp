@@ -356,7 +356,7 @@ namespace vpsim {
 
     class SystemCCosimulator : public sc_module, public MainMemCosim {
     public:
-        SystemCCosimulator(sc_module_name name, uint32_t outPorts) : sc_module(name) {
+        SystemCCosimulator(const sc_module_name& name, uint32_t outPorts) : sc_module(name) {
             mOutPorts.resize(outPorts);
             for (uint32_t i = 0; i < outPorts; i++) {
                 mOutPorts[i].first = new tlm_utils::simple_initiator_socket<SystemCCosimulator>(

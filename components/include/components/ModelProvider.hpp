@@ -32,6 +32,13 @@
 #include <functional>
 #include <deque>
 #include <unordered_map>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
+#include <utility>
 
 #include "DynamicComponents.hpp"
 #include "CacheBase.hpp"
@@ -42,7 +49,7 @@ namespace vpsim {
     /* Instruction cache model based on CacheBase */
     class StandaloneInstructionCache : public CacheBase<uint64_t, uint64_t> {
     public:
-        StandaloneInstructionCache(sc_module_name name,
+        StandaloneInstructionCache(const sc_module_name& name,
                                    int cpu_id,
                                    uint64_t CacheSize,
                                    uint64_t CacheLineSize,
@@ -185,7 +192,7 @@ namespace vpsim {
 #define LDFCT(typ,nm) nm=(typ##_t)loadSymbol(#typ)
 
     struct ModelProvider : public sc_module, public InterruptIf {
-        ModelProvider(sc_module_name name, string path, uint64_t poll_period, uint64_t quantum = 1000,
+        ModelProvider(const sc_module_name& name, const string& path, uint64_t poll_period, uint64_t quantum = 1000,
                       double conversion_factor = 1.0) : sc_module(name), configured(false), poll_period(poll_period),
                                                         quantum(quantum), conversion_factor(conversion_factor) {
             lib = dlopen(path.c_str(), RTLD_LOCAL | RTLD_LAZY);
@@ -230,7 +237,7 @@ namespace vpsim {
 
         SC_HAS_PROCESS(ModelProvider);
 
-        void *loadSymbol(string sym) {
+        void *loadSymbol(const string& sym) {
             if (!lib)
                 throw runtime_error("getting symbol from null library !");
 
@@ -243,11 +250,11 @@ namespace vpsim {
             return ptr;
         }
 
-        void addParam1(string arg) {
+        void addParam1(const string& arg) {
             argv.push_back(arg);
         }
 
-        void addParam2(string param, string value) {
+        void addParam2(const string& param, const string& value) {
             argv.push_back(param);
             argv.push_back(value);
         }
@@ -371,9 +378,9 @@ namespace vpsim {
 
 
     struct ModelProviderDev : public sc_module {
-        ModelProviderDev(sc_module_name name, string model, uint64_t addr, uint32_t size, int irq) : sc_module(name),
+        ModelProviderDev(const sc_module_name& name, string model, uint64_t addr, uint32_t size, int irq) : sc_module(name),
             //TargetIf(string(name), size),
-            model(model),
+            model(std::move(model)),
             read_callback(nullptr),
             write_callback(nullptr),
             internal_dev(nullptr),
@@ -430,14 +437,14 @@ namespace vpsim {
     };
 
     struct ModelProviderCpu : public sc_module, public InitiatorIf, public InterruptIf {
-        ModelProviderCpu(sc_module_name name, string model, uint32_t index, uint64_t start_pc, uint64_t quantum,
+        ModelProviderCpu(const sc_module_name& name, string model, uint32_t index, uint64_t start_pc, uint64_t quantum,
                          int secure, int start_off,
                          uint64_t iCacheSize,
                          uint64_t iCacheLineSize,
                          uint64_t iCacheAssociativity,
                          CacheReplacementPolicy iCacheReplPolicy) : sc_module(name),
                                                                     InitiatorIf(string(name), quantum, true, 1),
-                                                                    model(model),
+                                                                    model(std::move(model)),
                                                                     index(index),
                                                                     start_pc(start_pc),
                                                                     quantum(quantum),
@@ -613,7 +620,7 @@ namespace vpsim {
     struct DynamicModelProviderCpu
             : public VpsimIp<InPortType, OutPortType> {
     public:
-        DynamicModelProviderCpu(std::string name) : VpsimIp(name),
+        DynamicModelProviderCpu(std::string name) : VpsimIp(std::move(name)),
                                                     mModulePtr(nullptr) {
             registerRequiredAttribute("model");
             registerRequiredAttribute("reset_pc");
@@ -787,7 +794,7 @@ namespace vpsim {
     struct DynamicModelProviderDev
             : public VpsimIp<InPortType, OutPortType> {
     public:
-        DynamicModelProviderDev(std::string name) : VpsimIp(name),
+        DynamicModelProviderDev(std::string name) : VpsimIp(std::move(name)),
                                                     mModulePtr(nullptr) {
             registerRequiredAttribute("model");
             registerRequiredAttribute("base_address");
@@ -861,7 +868,7 @@ namespace vpsim {
     };
 
     struct DynamicModelProviderParam1 : public VpsimIp<InPortType, OutPortType> {
-        DynamicModelProviderParam1(std::string name) : VpsimIp(name) {
+        DynamicModelProviderParam1(std::string name) : VpsimIp(std::move(name)) {
             registerRequiredAttribute("option");
             registerRequiredAttribute("provider");
         }
@@ -911,7 +918,7 @@ namespace vpsim {
     };
 
     struct DynamicModelProviderParam2 : public VpsimIp<InPortType, OutPortType> {
-        DynamicModelProviderParam2(std::string name) : VpsimIp(name) {
+        DynamicModelProviderParam2(std::string name) : VpsimIp(std::move(name)) {
             registerRequiredAttribute("option");
             registerRequiredAttribute("value");
             registerRequiredAttribute("provider");
@@ -962,7 +969,7 @@ namespace vpsim {
     };
 
     struct DynamicModelProvider : public VpsimIp<InPortType, OutPortType> {
-        DynamicModelProvider(std::string name) : VpsimIp(name),
+        DynamicModelProvider(std::string name) : VpsimIp(std::move(name)),
                                                  mModulePtr(nullptr) {
             registerRequiredAttribute("path");
             registerRequiredAttribute("io_poll_period");

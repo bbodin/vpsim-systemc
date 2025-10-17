@@ -154,7 +154,7 @@ void init_() {
 
 extern "C" {
 namespace vpsim {
-    Subsystem::Subsystem(sc_module_name name, const char *xml_path) : sc_module(name) {
+    Subsystem::Subsystem(const sc_module_name& name, const char *xml_path) : sc_module(name) {
         if (!VPSim_Lib_Init)
             init_();
 

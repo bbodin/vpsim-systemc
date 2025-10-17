@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 namespace vpsim {
-    RemoteTarget::RemoteTarget(sc_module_name name, size_t size) : sc_module(name), TargetIf(string(name), size) {
+    RemoteTarget::RemoteTarget(const sc_module_name& name, size_t size) : sc_module(name), TargetIf(string(name), size) {
         TargetIf<REG_T>::RegisterReadAccess(REGISTER(RemoteTarget, read));
         TargetIf<REG_T>::RegisterWriteAccess(REGISTER(RemoteTarget, write));
         SC_THREAD(rtPoll);

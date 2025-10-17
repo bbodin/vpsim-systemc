@@ -53,7 +53,7 @@ namespace vpsim {
         //! @param[in] date     The date of the appointment
         //! @param[in] debugLvl The debug level of the logger after the appointment
         Appointment(Logger &logger,
-                    sc_core::sc_time date,
+                    const sc_core::sc_time& date,
                     DebugLvl debugLvl);
 
         //! @brief Tels if the appointment is passed

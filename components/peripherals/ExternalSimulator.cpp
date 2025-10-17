@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 namespace vpsim {
-    ExternalSimulator::ExternalSimulator(sc_module_name name, size_t size, string path) : sc_module(name),
+    ExternalSimulator::ExternalSimulator(const sc_module_name& name, size_t size, const string& path) : sc_module(name),
         TargetIf(string(name), size),
         lib(nullptr),
         configured(false) {

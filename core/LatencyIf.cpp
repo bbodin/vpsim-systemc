@@ -36,7 +36,7 @@ namespace vpsim {
         mInitialCyclesPerAccess = InititalCyclesPerAccess;
     }
 
-    void LatencyIf::setCycleDuration(sc_time CycleDuration) { mCycleDuration = CycleDuration; }
+    void LatencyIf::setCycleDuration(const sc_time& CycleDuration) { mCycleDuration = CycleDuration; }
 
     void LatencyIf::setEnableLatency(bool EnableLatency) { mEnableLatency = EnableLatency; }
 
