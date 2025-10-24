@@ -35,8 +35,8 @@ namespace vpsim {
                 auto &back = mSegmentedStats.back();
 
                 for (size_t i = 0; i < getMaxOutPortCount(); ++i) {
-                    auto readsKey = string("reads") + std::to_string(i);
-                    auto writesKey = string("writes") + std::to_string(i);
+                    auto readsKey = string("read_bytes[") + std::to_string(i) + "]";
+                    auto writesKey = string("written_bytes[") + std::to_string(i) + "]";
                     back[readsKey] = "0";
                     back[writesKey] = "0";
                 }
@@ -46,8 +46,8 @@ namespace vpsim {
             decltype(mSegmentedStats)::value_type newMap;
 
             for (size_t i = 0; i < getMaxOutPortCount(); ++i) {
-                auto readsKey = string("reads") + std::to_string(i);
-                auto writesKey = string("writes") + std::to_string(i);
+                auto readsKey = string("read_bytes[") + std::to_string(i) + "]";
+                auto writesKey = string("written_bytes[") + std::to_string(i) + "]";
 
                 auto reads = to_string(mModulePtr->getReadCount(i) - stoull(back.at(readsKey)));
                 auto writes = to_string(mModulePtr->getWriteCount(i) - stoull(back.at(writesKey)));

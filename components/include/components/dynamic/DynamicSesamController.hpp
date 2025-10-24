@@ -135,32 +135,44 @@ namespace vpsim {
         }
 
         void process_end_capture(size_t counter) {
-            string outputBuffer;
+            // Use the same logger formatting as the global log to ensure consistency
+            const std::string baseName = std::string("sesamBench_") + appName + std::string("_") + std::to_string(counter - 1);
+            vpsim::Logger benchLogger(baseName);
+
+            // 1) Dump stats for delayed IPs participating in the benchmark
             VpsimIp::MapIf(
                 [this](VpsimIp *ip) {
                     return (ip->getAttrAsUInt64("domain") == this->mBenchDomain && ip->getDelayStatCapture());
                 }, // Delayed IPs
-                [&outputBuffer](VpsimIp *ip) {
+                [&benchLogger](VpsimIp *ip) {
                     ip->pushStats();
                     auto &stats = ip->getSegStats().back();
-                    if (stats.size()) {
-                        outputBuffer += "-----------------------------------\n";
-                        outputBuffer += "\nStatistics from ";
-                        outputBuffer += ip->getName() + "\n";
+                    if (!stats.empty()) {
                         for (auto &stat: stats) {
-                            outputBuffer += "\t";
-                            outputBuffer += stat.first + " = ";
-                            outputBuffer += stat.second + "\n";
+                            VpsimIp::WriteStatToLogger(benchLogger, ip->getName(), stat.first, stat.second);
                         }
                         ip->clearSegStats();
                     }
                 }
             );
-            std::FILE *LogFile = fopen(
-                (std::string("sesamBench_") + appName + std::string("_") + std::to_string(counter - 1) + ".log")
-                .c_str(), "a");
-            fprintf(LogFile, "%s", outputBuffer.c_str());
-            fclose(LogFile);
+
+            // 2) Dump stats for non-delayed IPs (e.g., CPUs) as well to keep previous behavior
+            VpsimIp::MapIf(
+                [this](VpsimIp *ip) {
+                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain && !ip->getDelayStatCapture());
+                }, // Non delayed IPs
+                [&benchLogger](VpsimIp *ip) {
+                    ip->pushStats();
+                    auto &stats = ip->getSegStats().back();
+                    if (!stats.empty()) {
+                        for (auto &stat: stats) {
+                            VpsimIp::WriteStatToLogger(benchLogger, ip->getName(), stat.first, stat.second);
+                        }
+                        ip->clearSegStats();
+                    }
+                }
+            );
+
             delayedCaptureRunning = false;
         }
 

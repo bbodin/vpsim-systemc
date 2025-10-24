@@ -199,41 +199,12 @@ target_include_directories(RapidXML INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/extern
 #############################################################
 # VPSIM_CORE
 
-add_library(vpsim_core STATIC
-        core/include/core/AddrSpace.hpp
-        core/include/core/EndianHelper.hpp
-        core/include/core/global.hpp
-        core/include/core/GlobalPrivate.hpp
-        core/include/core/HybridList.hpp
-        core/include/core/InitiatorIf.hpp
-        core/include/core/LatencyIf.hpp
-        core/include/core/Payload.hpp
-        core/include/core/quantum.hpp
-        core/include/core/TargetIf.hpp
-        core/include/core/TlmCallbackIf.hpp
-        core/include/core/TlmCallbackPrivate.hpp
-        core/include/core/DmiKeeper.hpp
-        core/platform_builder/include/platform_builder/PlatformBuilder.hpp
-        core/logger/include/logger/appointment.hpp
-        core/logger/include/logger/log.hpp
-        core/logger/include/logger/logger.hpp
-        core/logger/include/logger/loggerCore.hpp
-        core/logger/include/logger/loggerScheduler.hpp
-        core/logger/include/logger/logResources.hpp
-        core/logger/appointment.cpp
-        core/logger/logger.cpp
-        core/logger/loggerCore.cpp
-        core/logger/loggerScheduler.cpp
-        core/vpsimModule/include/vpsimModule/moduleParameters.hpp
-        core/vpsimModule/include/vpsimModule/paramAppointment.hpp
-        core/vpsimModule/include/vpsimModule/parameterSet.hpp
-        core/vpsimModule/include/vpsimModule/parameterSetModifier.hpp
-        core/vpsimModule/include/vpsimModule/paramManager.hpp
-        core/vpsimModule/include/vpsimModule/paramScheduler.hpp
-        core/vpsimModule/include/vpsimModule/vpsimModule.hpp
-        core/vpsimModule/include/vpsimModule/vpsimParam.hpp
-        core/vpsimModule/include/vpsimModule/VpsimIp.hpp
-        core/vpsimModule/include/vpsimModule/ExtraIpFeatures_if.hpp
+file(GLOB VPSIM_CORE_SOURCES
+        CONFIGURE_DEPENDS
+        core/include/core/*.hpp
+        core/logger/include/logger/*.hpp
+        core/logger/*.cpp
+        core/vpsimModule/include/vpsimModule/*.hpp
         core/vpsimModule/moduleParameters.cpp
         core/vpsimModule/paramAppointment.cpp
         core/vpsimModule/parameterSet.cpp
@@ -248,13 +219,16 @@ add_library(vpsim_core STATIC
         core/LatencyIf.cpp
         core/Payload.cpp
         core/quantum.cpp
-        core/TargetIf.cpp core/platform_builder/xmlConfigParser.cpp
-        core/platform_builder/include/platform_builder/xmlConfigParser.hpp
-        core/platform_builder/PlatformBuilder.cpp
+        core/TargetIf.cpp
+        core/platform_builder/include/platform_builder/*.hpp
+        core/platform_builder/*.cpp
         core/TargetIf.cpp
         core/vpsimModule/ForwardSimpleSocket.cpp
         core/vpsimModule/include/vpsimModule/ForwardSimpleSocket.hpp
-        )
+
+)
+
+add_library(vpsim_core STATIC ${VPSIM_CORE_SOURCES})
 
 target_include_directories(vpsim_core PUBLIC
         core/include/core
@@ -280,15 +254,11 @@ set_target_properties(vpsim_core PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 #############################################################
 # COMPONENTS
-
-add_library(vpsim_components STATIC
+file(GLOB VPSIM_COMPONENTS_SOURCES
+        CONFIGURE_DEPENDS
         components/compute/include/compute/arm.hpp
         components/compute/InterruptIf.cpp
-        components/compute/include/compute/InterruptIf.hpp
-        components/compute/include/compute/iss_plugin.h
-        components/compute/include/compute/issFinder.hpp
-        components/compute/include/compute/issLibWrapper.hpp
-        components/compute/include/compute/issWrapper.hpp
+        components/compute/include/compute/*.hpp
         components/compute/issFinder.cpp
         components/compute/issLibWrapper.cpp
         components/compute/issWrapper.cpp
@@ -296,12 +266,8 @@ add_library(vpsim_components STATIC
         components/connect/include/connect/interconnect.hpp
         components/connect/CoherenceInterconnect.cpp
         components/connect/include/connect/CoherenceInterconnect.hpp
-        components/include/components/DynamicComponents.hpp
-        components/include/components/ModelProvider.hpp
-        components/include/components/IOAccessCosim.hpp
-        components/include/components/MainMemCosim.hpp
-        components/include/components/readerwriterqueue.h
-        components/include/components/atomicops.h
+        components/include/components/*.hpp
+        components/include/components/*.h
         components/memory/include/memory/Cache.hpp
         components/memory/include/memory/CacheBase.hpp
         components/memory/include/memory/CacheLine.hpp
@@ -349,10 +315,13 @@ add_library(vpsim_components STATIC
         components/clean_components/include/components/SmartUart.hpp
         components/clean_components/include/components/CallbackRegister.hpp
         components/clean_components/CallbackRegister.cpp
-	)
+)
+
+add_library(vpsim_components STATIC ${VPSIM_COMPONENTS_SOURCES})
 
 target_include_directories(vpsim_components PUBLIC
         components/compute/include/compute
+        components/compute/include/compute/dynamic
         components/compute/include
         components/connect/include/connect
         components/connect/include

@@ -511,11 +511,15 @@ namespace vpsim {
             });
         }
 
+        static void WriteStatToLogger(vpsim::Logger &logger, const std::string& sourceName, const std::string& statName, const std::string& statValue,
+                                      const std::string& statUnit = "") {
+            logger.logStats() << "[Stats] (" << sourceName << ") " << statName << " " << statValue << " " << statUnit << std::endl;
+        }
+
         static void WriteStat(const std::string& sourceName, const std::string& statName, const std::string& statValue,
                               const std::string& statUnit = "") {
-            // for now write to global log.
-            LOG_GLOBAL_STATS << "(" << sourceName << ") " << statName << " " << statValue << " " << statUnit << "" <<
- endl;
+            // for now write to global log
+            WriteStatToLogger(globalLogger, sourceName, statName, statValue, statUnit);
         }
 
         static void GatherStats() {
