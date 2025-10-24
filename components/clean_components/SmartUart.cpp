@@ -14,11 +14,9 @@
  * limitations under the License.
 */
 
-#include <core/TlmCallbackPrivate.hpp>
-#include <logger/log.hpp>
+
 #include "components/SmartUart.hpp"
 #include <unistd.h>
-#include <poll.h>
 
 #include <vpsimModule/VpsimIp.hpp>
 #include <core/platform_builder/include/platform_builder/PlatformBuilder.hpp>
@@ -28,7 +26,7 @@ using namespace tlm;
 
 using namespace vpsim;
 
-SmartUart::SmartUart(ostream &output) : mOutput(output) {
+SmartUart::SmartUart(ostream &output) : mOutput(output), mWriteAccesses(0), mReadAccesses(0) {
 }
 
 void SmartUart::read() {

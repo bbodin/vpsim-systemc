@@ -21,8 +21,6 @@
 #include <unordered_map>
 #include <functional>
 #include <utility>
-#include <utility>
-#include <utility>
 #include <vector>
 #include <chrono>
 #include <sstream>
@@ -50,12 +48,12 @@ namespace vpsim {
         typedef std::tuple<OutPortType *, shared_ptr<VpsimModule>, unsigned> WrappedOutSock;
 
     public:
-        VpsimIp(std::string name)
+        explicit VpsimIp(std::string name)
             : mName(std::move(name)),
               mInPortCounter(0),
               mOutPortCounter(0),
               delayStatCapture(false) {
-            registerRequiredAttribute("domain");
+            VpsimIp<InPortType, OutPortType>::registerRequiredAttribute("domain");
         }
 
         ~VpsimIp() override {
@@ -63,38 +61,38 @@ namespace vpsim {
 
         virtual std::string getName() { return mName; }
 
-        virtual void setAttribute(std::string key, std::string value) {
+        virtual void setAttribute(const std::string key, std::string value) {
             mAttributes[key] = std::move(value);
         }
 
-        virtual void registerRequiredAttribute(std::string attrName) {
+        virtual void registerRequiredAttribute(const std::string attrName) {
             mRequiredAttrs.push_back(attrName);
         }
 
-        virtual void registerOptionalAttribute(std::string attrName, std::string defaultValue) {
+        virtual void registerOptionalAttribute(const std::string attrName, const std::string defaultValue) {
             mOptionalAttrs[attrName] = std::move(defaultValue);
         }
 
         virtual void checkAttributes() {
-            for (auto reqIter = mRequiredAttrs.begin(); reqIter != mRequiredAttrs.end(); reqIter++) {
+            for (auto reqIter = mRequiredAttrs.begin(); reqIter != mRequiredAttrs.end(); ++reqIter) {
                 if (mAttributes.find(*reqIter) == mAttributes.end()) {
                     throw runtime_error(*reqIter + " : Required attribute not provided !");
                 }
             }
-            for (auto optIter = mOptionalAttrs.begin(); optIter != mOptionalAttrs.end(); optIter++) {
+            for (auto optIter = mOptionalAttrs.begin(); optIter != mOptionalAttrs.end(); ++optIter) {
                 if (mAttributes.find(optIter->first) == mAttributes.end()) {
                     mAttributes[optIter->first] = optIter->second;
                 }
             }
         }
 
-        virtual uint64_t getAttrAsUInt64(std::string attrName) {
-            std::string str = getAttr(attrName);
+        virtual uint64_t getAttrAsUInt64(const std::string attrName) {
+            const std::string str = getAttr(attrName);
             return stoull(str);
         }
 
 
-        virtual std::string getAttr(std::string attrName) {
+        virtual std::string getAttr(const std::string attrName) {
             if (mAttributes.find(attrName) == mAttributes.end()) {
                 throw runtime_error(attrName + " Getting non existing attribute.");
             }
@@ -105,7 +103,7 @@ namespace vpsim {
         virtual bool isContainer() { return false; }
 
 
-        virtual VpsimIp<InPortType, OutPortType> *getChild(std::string name) {
+        virtual VpsimIp<InPortType, OutPortType> *getChild(const std::string name) {
             throw runtime_error("Calling getChild() from non-container.");
         }
 
@@ -187,7 +185,7 @@ namespace vpsim {
                 portAlias += name;
             }
 
-            if (ports.find(portAlias) != ports.end()) {
+            if (ports.contains(portAlias)) {
                 // name exists, too bad
                 throw runtime_error(portAlias + " : Port alias already exists.");
             }
@@ -195,7 +193,7 @@ namespace vpsim {
             return portAlias;
         }
 
-        std::string addInPort(std::string portAlias) {
+        virtual std::string addInPort(const std::string &portAlias) {
             std::string newName = addPort<IpPortDirectionInput, WrappedInSock>(portAlias, mInPorts);
 
             mInPorts[newName] = make_pair(getNextInPort(), getVpsimModule());
@@ -204,7 +202,7 @@ namespace vpsim {
             return newName;
         }
 
-        std::string addOutPort(std::string portAlias) {
+        virtual std::string addOutPort(const std::string &portAlias) {
             std::string newName = addPort<IpPortDirectionOutput, WrappedOutSock>(portAlias, mOutPorts);
 
             if (useDmiSettings) {
@@ -226,7 +224,7 @@ namespace vpsim {
             return newName;
         }
 
-        std::string addInPort(std::string portAlias, InPortType *inP) {
+        std::string addInPort(const std::string &portAlias, InPortType *inP) {
             std::string newName = addPort<IpPortDirectionInput, WrappedInSock>(portAlias, mInPorts);
 
             mInPorts[newName] = make_pair(inP, getVpsimModule());
@@ -235,7 +233,7 @@ namespace vpsim {
             return newName;
         }
 
-        std::string addOutPort(std::string portAlias, OutPortType *outP) {
+        std::string addOutPort(const std::string &portAlias, OutPortType *outP) {
             std::string newName = addPort<IpPortDirectionOutput, WrappedOutSock>(portAlias, mOutPorts);
 
             if (useDmiSettings) {
@@ -258,14 +256,14 @@ namespace vpsim {
         }
 
         virtual WrappedInSock getInPort(std::string portAlias) {
-            if (mInPorts.find(portAlias) == mInPorts.end()) {
+            if (!mInPorts.contains(portAlias)) {
                 portAlias = addInPort(portAlias);
             }
             return mInPorts[portAlias];
         }
 
         virtual WrappedOutSock getOutPort(std::string portAlias) {
-            if (mOutPorts.find(portAlias) == mOutPorts.end()) {
+            if (!mOutPorts.contains(portAlias)) {
                 portAlias = addOutPort(portAlias);
             }
 
@@ -280,7 +278,7 @@ namespace vpsim {
             if (!isContainer()) {
                 throw runtime_error(getName() + " : Forwarding in child port from non-container.");
             }
-            if (mInPorts.find(myPortAlias) != mInPorts.end()) {
+            if (mInPorts.contains(myPortAlias)) {
                 throw runtime_error(getName() + " : Alias for child port already exists.");
             }
             VpsimIp<InPortType, OutPortType> *child = getChild(childName);
@@ -291,7 +289,7 @@ namespace vpsim {
             if (!isContainer()) {
                 throw runtime_error(getName() + " : Forwarding out child port from non-container.");
             }
-            if (mOutPorts.find(myPortAlias) != mOutPorts.end()) {
+            if (mOutPorts.contains(myPortAlias)) {
                 throw runtime_error(getName() + " : Alias for child port already exists.");
             }
             VpsimIp<InPortType, OutPortType> *child = getChild(childName);
@@ -370,11 +368,11 @@ namespace vpsim {
         }
 
         static bool IsKnown(std::string className) {
-            return (RegisteredClasses.find(className) != RegisteredClasses.end());
+            return (RegisteredClasses.contains(className));
         }
 
         static bool IsNameUsed(std::string instanceName) {
-            for (auto objs = AllInstances.begin(); objs != AllInstances.end(); objs++) {
+            for (auto objs = AllInstances.begin(); objs != AllInstances.end(); ++objs) {
                 if (objs->second.find(instanceName) != objs->second.end()) {
                     return true;
                 }
@@ -383,7 +381,7 @@ namespace vpsim {
         }
 
         static VpsimIp *Find(std::string instanceName) {
-            for (auto objs = AllInstances.begin(); objs != AllInstances.end(); objs++) {
+            for (auto objs = AllInstances.begin(); objs != AllInstances.end(); ++objs) {
                 for (auto obj: objs->second) {
                     if (obj.first == instanceName)
                         return obj.second;
@@ -393,7 +391,7 @@ namespace vpsim {
         }
 
         static std::pair<string, VpsimIp *> FindWithType(std::string instanceName) {
-            for (auto objs = AllInstances.begin(); objs != AllInstances.end(); objs++) {
+            for (auto objs = AllInstances.begin(); objs != AllInstances.end(); ++objs) {
                 for (auto obj: objs->second) {
                     if (obj.first == instanceName)
                         return make_pair(objs->first, obj.second);
@@ -404,8 +402,8 @@ namespace vpsim {
 
         static void MapIf(function<bool(VpsimIp<InPortType, OutPortType> *)> filterCond,
                           function<void(VpsimIp<InPortType, OutPortType> *)> callback) {
-            for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); typeIter++) {
-                for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); objIter++) {
+            for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); ++typeIter) {
+                for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); ++objIter) {
                     if (!objIter->second->isContainer() && filterCond(objIter->second)) {
                         callback(objIter->second);
                     }
@@ -420,7 +418,7 @@ namespace vpsim {
             if (typeIter == AllInstances.end()) {
                 return;
             }
-            for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); objIter++) {
+            for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); ++objIter) {
                 if (filterCond(objIter->second)) {
                     callback(objIter->second);
                 }
@@ -444,8 +442,8 @@ namespace vpsim {
         }
 
         static void Finalize() {
-            for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); typeIter++) {
-                for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); objIter++) {
+            for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); ++typeIter) {
+                for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); ++objIter) {
                     objIter->second->finalize();
                 }
             }
@@ -473,8 +471,8 @@ namespace vpsim {
         }
 
         static void Finalize(std::vector<std::string> &ipList) {
-            for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); typeIter++) {
-                for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); objIter++) {
+            for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); ++typeIter) {
+                for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); ++objIter) {
                     if (std::find(ipList.begin(), ipList.end(), objIter->second->getName()) != ipList.end())
                         objIter->second->finalize();
                 }
@@ -558,11 +556,11 @@ namespace vpsim {
             xml.writeEndElement();
             xml.writeEndDocument();*/
 
-            for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); typeIter++) {
-                for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); objIter++) {
+            for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); ++typeIter) {
+                for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); ++objIter) {
                     //cout.clear(); cout<<"Collecting stats for : "<<objIter->second->getName()<<endl;
                     objIter->second->setStatsAndDie();
-                    for (auto stat = objIter->second->mStats.begin(); stat != objIter->second->mStats.end(); stat++) {
+                    for (auto stat = objIter->second->mStats.begin(); stat != objIter->second->mStats.end(); ++stat) {
                         WriteStat(objIter->second->getName(), stat->first, stat->second);
                     }
                     //cout.clear(); cout<<"Done : "<<objIter->second->getName()<<endl;
@@ -584,8 +582,8 @@ namespace vpsim {
         getSegStats() { return mSegmentedStats; }
 
         void clearSegStats() { mSegmentedStats.clear(); }
-        void setDelayStatCapture(bool toDelay) { delayStatCapture = toDelay; }
-        bool getDelayStatCapture() { return delayStatCapture; }
+        void setDelayStatCapture(const bool toDelay) { delayStatCapture = toDelay; }
+        bool getDelayStatCapture() const { return delayStatCapture; }
 
     protected:
         std::string mName;
@@ -639,73 +637,73 @@ namespace vpsim {
         typedef std::tuple<OutPortType *, shared_ptr<VpsimModule>, unsigned> WrappedOutSock;
 
     public:
-        Container(std::string name)
+        explicit Container(std::string name)
             : VpsimIp<InPortType, OutPortType>(name) {
         }
 
-        ~Container() {
+        ~Container() override {
             for (auto childIter = mChildIps.begin();
-                 childIter != mChildIps.end(); childIter++) {
+                 childIter != mChildIps.end(); ++childIter) {
                 delete childIter->second;
             }
         }
 
-        virtual bool isContainer() { return true; }
+        virtual bool isContainer() override { return true; }
 
-        virtual VpsimIp<InPortType, OutPortType> *getChild(std::string name) {
-            if (mChildIps.find(name) == mChildIps.end()) {
+        virtual VpsimIp<InPortType, OutPortType> *getChild(std::string name) override {
+            if (!mChildIps.contains(name)) {
                 throw runtime_error(name + " : Child not found.");
             }
             return mChildIps[name];
         }
 
-        virtual unsigned getMaxInPortCount() {
+        virtual unsigned getMaxInPortCount() override {
             return 0;
         }
 
-        virtual unsigned getMaxOutPortCount() {
+        unsigned getMaxOutPortCount() override {
             return 0;
         }
 
-        virtual InPortType *getNextInPort() {
+        virtual InPortType *getNextInPort() override {
             throw runtime_error(this->getName() + " : Automatically adding ports is not supported for containers.");
         }
 
-        virtual OutPortType *getNextOutPort() {
+        virtual OutPortType *getNextOutPort() override {
             throw runtime_error(this->getName() + " : Automatically adding ports is not supported for containers.");
         }
 
-        virtual WrappedInSock getInPort(std::string portAlias) {
+        WrappedInSock getInPort(std::string portAlias) override {
             if (this->mInPorts.find(portAlias) == this->mInPorts.end()) {
                 throw runtime_error(this->getName() + " Port not found. Have you forwarded child ports ?");
             }
             return this->mInPorts[portAlias];
         }
 
-        virtual WrappedOutSock getOutPort(std::string portAlias) {
+        virtual WrappedOutSock getOutPort(std::string portAlias) override {
             if (this->mOutPorts.find(portAlias) == this->mOutPorts.end()) {
                 throw runtime_error(this->getName() + " Port not found. Have you forwarded child ports ?");
             }
             return this->mOutPorts[portAlias];
         }
 
-        std::string addInPort(const std::string& portAlias) {
+        std::string addInPort(const std::string& portAlias) override {
             throw runtime_error(this->getName() + " : Automatically adding ports is not supported for containers.");
         }
 
-        std::string addOutPort(const std::string& portAlias) {
+        std::string addOutPort(const std::string& portAlias) override {
             throw runtime_error(this->getName() + " : Automatically adding ports is not supported for containers.");
         }
 
-        virtual void addChild(VpsimIp<InPortType, OutPortType> *child) {
-            if (mChildIps.find(child->getName()) != mChildIps.end()) {
+        virtual void addChild(VpsimIp<InPortType, OutPortType> *child) override {
+            if (mChildIps.contains(child->getName())) {
                 throw runtime_error(child->getName() + " : Child already exists.");
             }
             mChildIps[child->getName()] = child;
         }
 
 
-        virtual void make() {
+        virtual void make() override {
             // do nothing
         }
 
@@ -756,4 +754,4 @@ namespace vpsim {
 #define ID_MAPPED_OVERRIDE virtual bool isIdMapped() override { return true; }
 }
 
-#endif /* _VPSIMIP_H_ */
+#endif /* _VPSIMIP_HPP_ */

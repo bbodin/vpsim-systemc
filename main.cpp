@@ -22,11 +22,9 @@
 #include "platform_builder/xmlConfigParser.hpp"
 
 #include <sstream>
-
 #include <csignal>
 #include <netinet/ip.h>
 #include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -94,8 +92,8 @@ int64_t getClk() {
     return tv.tv_sec * 1000000000LL + (tv.tv_usec * 1000);
 }
 
-void onInterrupt(int sig) {
-    cout << "User interrupt received. Stopping SystemC simulation." << endl;
+void onInterrupt(const int sig) {
+    cout << "User interrupt received (" << sig << "). Stopping SystemC simulation." << endl;
     sc_stop();
 }
 
@@ -106,7 +104,7 @@ bool PyDevice::PythonInit = false;
 //#############################################################
 // Main function
 //#############################################################
-int sc_main(int argc, char *argv[]) {
+int sc_main(const int argc, char *argv[]) {
     copyright();
 
     //-----------------------------------------------------------------------------------------
@@ -183,12 +181,12 @@ int sc_main(int argc, char *argv[]) {
 
         //Real-time computation
         struct timeval tp;
-        double sec, usec, start, end;
+
         // Time stamp before the computations
-        gettimeofday(&tp, NULL);
-        sec = static_cast<double>(tp.tv_sec) * 1e6;
-        usec = static_cast<double>(tp.tv_usec);
-        start = sec + usec;
+        gettimeofday(&tp, nullptr);
+        double sec = static_cast<double>(tp.tv_sec) * 1e6;
+        double usec = static_cast<double>(tp.tv_usec);
+        const double start = sec + usec;
 
         // HOST_TIME_START = getClk();
         HOST_TIME_START = 0;
@@ -202,17 +200,17 @@ int sc_main(int argc, char *argv[]) {
 
         //-----------------------------------------------------------------------------------------
         // Time stamp after the computations
-        gettimeofday(&tp, NULL);
+        gettimeofday(&tp, nullptr);
         sec = static_cast<double>(tp.tv_sec) * 1e6;
         usec = static_cast<double>(tp.tv_usec);
-        end = sec + usec;
+        const double end = sec + usec;
         // Time calculation (in ms)
-        double PhysicalTimeSec = (end - start) / 1000;
+        const double PhysicalTimeSec = (end - start) / 1000;
 
         //Print time
         //setvbuf(stdout, NULL, _IOLBF, 0);//line buffered
 
-        setvbuf(stdout, NULL, _IONBF, 0); //char buffered
+        setvbuf(stdout, nullptr, _IONBF, 0); //char buffered
 
         VpsimIp<InPortType, OutPortType>::WriteStat("global", "real_execution_time", std::to_string(PhysicalTimeSec), "ms");
         VpsimIp<InPortType, OutPortType>::WriteStat("global", "sc_simulation_time", sc_time_stamp().to_string(), "");
