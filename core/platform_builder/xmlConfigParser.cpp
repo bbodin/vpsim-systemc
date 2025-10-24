@@ -16,6 +16,7 @@
 
 #include <string>
 #include <log.hpp>
+#include <filesystem>
 #include "platform_builder/xmlConfigParser.hpp"
 
 
@@ -31,7 +32,7 @@ namespace vpsim {
             if (node && (std::string(node->name()) == "vpsim")) {
                 readVpsim(node);
             } else {
-                XmlConfigParser::unsupportedXmlFile();
+                XmlConfigParser::unsupportedXmlFile("Unsupported node: " + std::string(node->name()));
             }
         } catch (const std::exception &e) {
             LOG_GLOBAL_ERROR << e.what() << std::endl;
@@ -57,13 +58,13 @@ namespace vpsim {
         if (node && std::string(node->name()) == "platform") {
             readPlatform(node);
         } else {
-            XmlConfigParser::unsupportedXmlFile();
+            XmlConfigParser::unsupportedXmlFile("Unsupported node: " + std::string(node->name()));
         }
         node = mXml.first_node("vpsim")->first_node("simulation");
         if (node && std::string(node->name()) == "simulation") {
             readSimulation(node);
         } else {
-            XmlConfigParser::unsupportedXmlFile();
+            XmlConfigParser::unsupportedXmlFile("Unsupported node: " + std::string(node->name()));
         }
     }
 
@@ -74,14 +75,14 @@ namespace vpsim {
         if (ipsNode) {
             readIps(ipsNode);
         } else {
-            XmlConfigParser::unsupportedXmlFile();
+            XmlConfigParser::unsupportedXmlFile("Node is not found: ips");
         }
 
         rapidxml::xml_node<> *linksNode = platformNode->first_node("links");
         if (linksNode) {
             readLinks(linksNode);
         } else {
-            XmlConfigParser::unsupportedXmlFile();
+            XmlConfigParser::unsupportedXmlFile("Node is not found: links");
         }
 
         mBuilder.finalize();
@@ -115,7 +116,7 @@ namespace vpsim {
             if (std::string(linkNode->name()) == "link") {
                 readLink(linkNode);
             } else {
-                XmlConfigParser::unsupportedXmlFile();
+                XmlConfigParser::unsupportedXmlFile("Node is not found: link");
             }
         }
     }
@@ -137,7 +138,7 @@ namespace vpsim {
             fromPort = std::string(fromNode->first_attribute("port")->value());
             fromName = std::string(fromNode->value());
         } else {
-            XmlConfigParser::unsupportedXmlFile();
+            XmlConfigParser::unsupportedXmlFile("Node is not found: from");
         }
 
         rapidxml::xml_node<> *toNode = linkNode->first_node("to");
@@ -145,7 +146,7 @@ namespace vpsim {
             toPort = std::string(toNode->first_attribute("port")->value());
             toName = std::string(toNode->value());
         } else {
-            XmlConfigParser::unsupportedXmlFile();
+            XmlConfigParser::unsupportedXmlFile("Node is not found: to");
         }
 
         mBuilder.connect(fromName, fromPort, toName, toPort);
@@ -167,6 +168,21 @@ namespace vpsim {
                                        ? BlockingTLMEnabledParameter::BT_ENABLED
                                        : BlockingTLMEnabledParameter::BT_DISABLED;
                 BlockingTLMEnabledParameter::setDefault(defaultBTLM);
+            } else if (simNodeName == "logDir") {
+                std::string dir = std::string(simNode->value());
+                if (!dir.empty()) {
+                    std::error_code ec;
+                    std::filesystem::create_directories(dir, ec);
+                    if (ec) {
+                        std::cerr << "[WARNING] Failed to create log directory '" << dir << "': " << ec.message() << std::endl;
+                    }
+                    std::filesystem::current_path(dir, ec);
+                    if (ec) {
+                        std::cerr << "[WARNING] Failed to change working directory to '" << dir << "': " << ec.message() << std::endl;
+                    } else {
+                        std::cout << "[INFO] Logging directory set to '" << std::filesystem::current_path().string() << "'" << std::endl;
+                    }
+                }
             } else if (simNodeName == "logSchedule") {
                 readLogSchedule(simNode);
             } else if (simNodeName == "blockingTLMSchedule") {
@@ -174,7 +190,7 @@ namespace vpsim {
             } else if (simNodeName == "callback") {
                 readCallback(simNode);
             } else {
-                XmlConfigParser::unsupportedXmlFile();
+                XmlConfigParser::unsupportedXmlFile("Unsupported node: " + simNodeName);
             }
         }
     }
@@ -202,7 +218,7 @@ namespace vpsim {
                 const auto &dbgLvlVec = std::vector<DebugLvl>({dbg0, dbg1, dbg2, dbg3, dbg4, dbg5, dbg6});
                 dbgLvl = dbgLvlVec.at(std::stoul(logNode->value()));
             } else {
-                XmlConfigParser::unsupportedXmlFile();
+                XmlConfigParser::unsupportedXmlFile("Unsupported node: " + logNodeName);
             }
         }
 
@@ -243,12 +259,12 @@ namespace vpsim {
                 withAddrRange = true;
                 as = readAddrRange(logNode);
             } else {
-                XmlConfigParser::unsupportedXmlFile();
+                XmlConfigParser::unsupportedXmlFile("Unsupported node: " + logNodeName);
             }
         }
 
         if (stringTriggered && timeTriggered) {
-            XmlConfigParser::unsupportedXmlFile();
+            XmlConfigParser::unsupportedXmlFile("String and time triggers cannot be used together");
         }
 
         if (stringTriggered) {
@@ -312,7 +328,7 @@ namespace vpsim {
         callbackRegister.registerCallback(val, callback);
     }
 
-    void XmlConfigParser::unsupportedXmlFile() {
-        std::cerr << "Unsupported VPSim xml file" << std::endl;
+    void XmlConfigParser::unsupportedXmlFile(const string &error_msg) {
+        std::cerr << "Unsupported VPSim xml file:" << error_msg << std::endl;
     }
 }

@@ -63,7 +63,7 @@ namespace vpsim {
 
         void readCallback(rapidxml::xml_node<> *);
 
-        void unsupportedXmlFile();
+        void unsupportedXmlFile(const std::string &error_msg);
     };
 }
 
