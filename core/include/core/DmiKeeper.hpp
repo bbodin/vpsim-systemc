@@ -17,7 +17,6 @@
 #ifndef _DMIKEEPER_HPP_
 #define _DMIKEEPER_HPP_
 
-#include <inttypes.h>
 #include <stdint.h>
 #include <vector>
 #include <deque>

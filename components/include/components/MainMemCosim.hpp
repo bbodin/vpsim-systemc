@@ -17,7 +17,6 @@
 #ifndef _MAINMEMCOSIM_HPP_
 #define _MAINMEMCOSIM_HPP_
 #include <string>
-#include <systemc>
 #include <pthread.h>
 #include <vector>
 #include <tlm>
@@ -356,7 +355,7 @@ namespace vpsim {
 
     class SystemCCosimulator : public sc_module, public MainMemCosim {
     public:
-        SystemCCosimulator(const sc_module_name& name, uint32_t outPorts) : sc_module(name) {
+        SystemCCosimulator(const sc_module_name& name, uint32_t outPorts) : sc_module(name), src() {
             mOutPorts.resize(outPorts);
             for (uint32_t i = 0; i < outPorts; i++) {
                 mOutPorts[i].first = new tlm_utils::simple_initiator_socket<SystemCCosimulator>(

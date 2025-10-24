@@ -19,7 +19,6 @@
 
 #include "global.hpp"
 #include "InitiatorIf.hpp"
-#include "TargetIf.hpp"
 
 #include "quantum.hpp"
 #include "InterruptIf.hpp"
@@ -30,14 +29,6 @@
 #include <dlfcn.h>
 
 #include <functional>
-#include <deque>
-#include <unordered_map>
-#include <utility>
-#include <utility>
-#include <utility>
-#include <utility>
-#include <utility>
-#include <utility>
 #include <utility>
 
 #include "DynamicComponents.hpp"
@@ -366,25 +357,26 @@ namespace vpsim {
         modelprovider_register_ioaccess_stat_cb_t modelprovider_register_ioaccess_stat_cb;
     };
 
-    void model_provider_unlock_cb(void *opaque) {
-        ModelProvider *mp = (ModelProvider *) opaque;
+    inline void model_provider_unlock_cb(void *opaque) {
+        const auto mp = static_cast<ModelProvider *>(opaque);
         mp->unlock();
     }
 
-    void model_provider_wait_unlock_cb(void *opaque) {
-        ModelProvider *mp = (ModelProvider *) opaque;
+    inline void model_provider_wait_unlock_cb(void *opaque) {
+        const auto mp = static_cast<ModelProvider *>(opaque);
         mp->wait_unlock();
     }
 
 
     struct ModelProviderDev : public sc_module {
-        ModelProviderDev(const sc_module_name& name, string model, uint64_t addr, uint32_t size, int irq) : sc_module(name),
+        ModelProviderDev(const sc_module_name& name, string model, uint64_t addr, uint32_t size, int irq) : sc_module(
+                name),
             //TargetIf(string(name), size),
             model(std::move(model)),
             read_callback(nullptr),
             write_callback(nullptr),
             internal_dev(nullptr),
-            irq(irq) {
+            irq(irq), get_stats(nullptr) {
             //TargetIf <REG_T>::RegisterReadAccess(REGISTER(ModelProviderDev,read));
             //TargetIf <REG_T>::RegisterWriteAccess(REGISTER(ModelProviderDev,write));
 
@@ -393,7 +385,7 @@ namespace vpsim {
             base_address = addr;
         }
 
-        tlm::tlm_response_status read(payload_t &payload, sc_time &delay) {
+        tlm::tlm_response_status read(const payload_t &payload, sc_time &delay) const {
             if (!read_callback || !write_callback || !internal_dev)
                 throw runtime_error("ModelProviderDev: not properly initialized !");
 

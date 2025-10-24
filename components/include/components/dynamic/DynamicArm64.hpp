@@ -7,7 +7,6 @@
 #include "InitiatorIf.hpp"
 #include "components/SmartUart.hpp"
 #include "gic.hpp"
-#include "compute/arm.hpp"
 #include "compute/arm64.hpp"
 
 

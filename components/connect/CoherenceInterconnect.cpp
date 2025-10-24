@@ -15,9 +15,6 @@
 */
 
 #include "CoherenceInterconnect.hpp"
-
-#include <utility>
-
 #include <utility>
 #include "log.hpp"
 #include "MainMemCosim.hpp"

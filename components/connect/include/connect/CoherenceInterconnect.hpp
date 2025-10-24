@@ -21,7 +21,6 @@
 #include <list>
 #include "log.hpp"
 #include "TargetIf.hpp"
-#include "InitiatorIf.hpp"
 #include "DmiKeeper.hpp"
 #include "CoherenceExtension.hpp"
 

@@ -21,7 +21,6 @@
 #include <functional>
 #include <memory>
 #include <set>
-#include <systemc>
 #include "parameterSet.hpp"
 #include "parameterSetModifier.hpp"
 #include "paramManager.hpp"

@@ -16,15 +16,9 @@
 
 #ifndef _SYSTEMCTARGET_HPP_
 #define _SYSTEMCTARGET_HPP_
-#include <cstdint>
-#include <iostream>
-#include <tuple>
-#include <vector>
 #include <core/TlmCallbackPrivate.hpp>
 #include <functional>
 #include <core/TargetIf.hpp>
-#include "paramManager.hpp"
-#include "InterruptIf.hpp"
 #include "InterruptSource.hpp"
 
 namespace vpsim {

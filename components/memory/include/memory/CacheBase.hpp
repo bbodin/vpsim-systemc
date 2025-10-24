@@ -20,8 +20,6 @@
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
-#include <list>
-#include <deque>
 #include <bitset>
 #include <iostream>
 #include "systemc.h"

@@ -25,8 +25,7 @@
 
 #include <signal.h>
 #include <netinet/ip.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
 #include <string.h>
 #include <sys/socket.h>
 #include <netdb.h>

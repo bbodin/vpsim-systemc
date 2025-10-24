@@ -17,16 +17,13 @@
 #ifndef _IOACCESSCOSIM_HPP_
 #define _IOACCESSCOSIM_HPP_
 
-#include <systemc>
 #include <vector>
 #include <tlm>
 #include "tlm_utils/simple_initiator_socket.h"
 #include "CosimExtensions.hpp"
 #include "readerwriterqueue.h"
-#include <map>
 #include <tuple>
 #include <cstdio>
-#include <cinttypes>
 
 using namespace std;
 using namespace moodycamel;
@@ -72,7 +69,7 @@ namespace vpsim {
 
     class IOAccessCosimulator : public sc_module, public IOAccessCosim {
     public:
-        IOAccessCosimulator(const sc_module_name& name, uint32_t outPorts) : sc_module(name) {
+        IOAccessCosimulator(const sc_module_name& name, uint32_t outPorts) : sc_module(name), src() {
             mOutPorts.resize(outPorts);
             for (uint32_t i = 0; i < outPorts; i++) {
                 mOutPorts[i] = new tlm_utils::simple_initiator_socket<IOAccessCosimulator>(

@@ -17,13 +17,6 @@
 #ifndef _ADDRESSTRANSLATOR_HPP_
 #define _ADDRESSTRANSLATOR_HPP_
 
-
-#include <cstdint>
-#include <iostream>
-#include <tuple>
-#include <vector>
-
-#include <core/TargetIf.hpp>
 #include "paramManager.hpp"
 
 namespace vpsim {

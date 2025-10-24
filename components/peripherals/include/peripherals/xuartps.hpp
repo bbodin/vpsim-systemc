@@ -17,11 +17,6 @@
 #ifndef _XUARTPS_HPP_
 #define _XUARTPS_HPP_
 
-#include <cstdint>
-#include <iostream>
-#include <algorithm>
-#include <functional>
-
 #include <core/TargetIf.hpp>
 #include <queue>
 #include "paramManager.hpp"

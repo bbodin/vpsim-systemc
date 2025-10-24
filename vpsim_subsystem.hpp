@@ -17,9 +17,7 @@
 #ifndef _VPSIM_SUBSYSTEM_HPP_
 #define _VPSIM_SUBSYSTEM_HPP_
 
-#include <string>
 #include <functional>
-#include <iostream>
 #include <systemc>
 #include <tlm>
 

@@ -15,7 +15,6 @@
 */
 
 #include <AddressTranslator.hpp>
-#include "log.hpp"
 
 namespace vpsim {
     AddressTranslator::AddressTranslator(const sc_module_name& name) : sc_module(name), mTranslate(0) {

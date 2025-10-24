@@ -18,11 +18,8 @@
 #define _SMARTUART_HPP
 
 
-#include <cstdint>
 #include <iostream>
-#include <core/TargetIf.hpp>
 #include "paramManager.hpp"
-#include "CommonUartInterface.hpp"
 
 #define THRE 0x20
 #define TEMT 0x40

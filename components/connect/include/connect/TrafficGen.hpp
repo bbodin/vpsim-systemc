@@ -19,8 +19,6 @@
 
 #include "NoCBasicTypes.hpp"
 #include <list>
-
-#include <iostream> // to use std::fixed
 #include <iomanip> //to manage float formatting
 
 #ifndef CSV_SEP

@@ -17,8 +17,6 @@
 #include <algorithm>
 #include "AddrSpace.hpp"
 
-#include <iostream>
-
 using namespace std;
 
 namespace vpsim {

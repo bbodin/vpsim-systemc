@@ -20,7 +20,6 @@
 #include "platform_builder/PlatformBuilder.hpp"
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
-#include "rapidxml_print.hpp"
 
 namespace vpsim {
     class XmlConfigParser {

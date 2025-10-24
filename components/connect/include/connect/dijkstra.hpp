@@ -24,10 +24,7 @@
 // For details please refer to Introduction to algorithm by Cormen.
 // Complete c++ code with a test code is given below.
 
-#include <iostream>
 #include <vector>
-#include <algorithm>
-#include <limits>
 #include <queue>
 using namespace std;
 

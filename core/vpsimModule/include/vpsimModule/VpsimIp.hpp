@@ -18,7 +18,6 @@
 #define _VPSIMIP_HPP_
 
 #include <iostream>
-#include <unordered_map>
 #include <functional>
 #include <utility>
 #include <vector>

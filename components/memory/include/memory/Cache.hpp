@@ -19,13 +19,11 @@
 
 #include "global.hpp"
 #include "CacheBase.hpp"
-#include "InitiatorIf.hpp"
-#include "TargetIf.hpp"
 #include "DmiKeeper.hpp"
 #include "MainMemCosim.hpp"
 #include "CoherenceExtension.hpp"
 #include <functional>
-#include "log.hpp"
+
 
 #define begin_uncached_regions(cache) cache->is_uncached_region=[](uint64_t a){return (false
 #define region(base, size) ||(a>=base && a<(base+size))

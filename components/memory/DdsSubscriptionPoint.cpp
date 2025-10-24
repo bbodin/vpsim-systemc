@@ -16,7 +16,6 @@
 
 #include "DdsSubscriptionPoint.hpp"
 #include "EndianHelper.hpp"
-#include <stdlib.h>
 #include <malloc.h>
 #include "GlobalPrivate.hpp"
 
