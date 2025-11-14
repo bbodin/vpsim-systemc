@@ -17,8 +17,8 @@
 #ifndef CACHELINE_HPP
 #define CACHELINE_HPP
 
+#include <iostream>
 
-using namespace std;
 
 namespace vpsim {
     enum CoherenceState {
@@ -76,7 +76,7 @@ namespace vpsim {
     //! CacheLine default constructor
     //! Builds an empty line (invalid)
     //!
-        CacheLine<AddressType>()
+        CacheLine()
             : Address(0)
               , LineSize(0)
               , Tag(0)
@@ -87,7 +87,7 @@ namespace vpsim {
         {
         };
 
-        CacheLine<AddressType>(unsigned lineSize/*, unsigned higherCacheNb*/)
+        CacheLine(unsigned lineSize/*, unsigned higherCacheNb*/)
             : Address(0)
               , LineSize(lineSize)
               , Tag(0)
@@ -104,12 +104,12 @@ namespace vpsim {
     //! deep copy of the source line
     //! @param OtherLine another cacheline reference with the same template parameters
     //!
-        CacheLine<AddressType>(const CacheLine<AddressType> &OtherLine) {
+        CacheLine(const CacheLine<AddressType> &OtherLine) {
         };
         //!
     //! CacheLine destructor
     //!
-        ~CacheLine<AddressType>() {
+        ~CacheLine() {
             //delete [] Data;
         };
 
@@ -192,8 +192,8 @@ namespace vpsim {
         }
 
         inline void printData() {
-            cout << " | " << "Line index = " << hex << Address << dec;
-            for (size_t i = 0; i < LineSize; i++) cout << (unsigned) Data[i];
+            std::cout << " | " << "Line index = " << std::hex << Address << std::dec;
+            for (size_t i = 0; i < LineSize; i++) std::cout << (unsigned) Data[i];
         }
 
         inline unsigned getSize() {
@@ -221,7 +221,7 @@ namespace vpsim {
         //!
     //! ostream operator is friend on the CacheLine to support CacheLine cout
     //!
-        friend ostream &operator<<<>(ostream &os, const CacheLine</*LineSize,*/ AddressType> &l);
+        friend std::ostream &operator<<<>(std::ostream &os, const CacheLine</*LineSize,*/ AddressType> &l);
     };
 
 
@@ -234,7 +234,7 @@ namespace vpsim {
   //!
     template<typename AddressType>
     std::ostream &operator<<(std::ostream &os, const CacheLine</*LineSize,*/ AddressType> &l) {
-        os << "CacheLine " << hex << l.Address << dec;
+        os << "CacheLine " << std::hex << l.Address << std::dec;
         os << " valid = " << l.Valid;
         os << " Dirty = " << l.Dirty;
         /* os << " Data  = [";

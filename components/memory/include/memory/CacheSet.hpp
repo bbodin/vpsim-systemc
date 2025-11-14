@@ -17,7 +17,10 @@
 #ifndef CACHESET_HPP
 #define CACHESET_HPP
 
-using namespace std;
+#include <cstdint>
+#include <cassert>
+#include <iostream>
+#include "CacheLine.hpp"
 
 namespace vpsim {
     //fwd declaration
@@ -89,20 +92,20 @@ namespace vpsim {
         }
 
         void printSet() {
-            cout.clear();
+            std::cout.clear();
             for (unsigned i = 0; i < Associativity; i++) {
                 Lines[i].line.printLine();
-                cout << " || ReplData: " << Lines[i].repl_data << endl;
+                std::cout << " || ReplData: " << Lines[i].repl_data << std::endl;
             }
         }
 
         void printCountAcess() {
-            cout << ", CountUntilRepl: " << CountUntilRepl << flush;
+            std::cout << ", CountUntilRepl: " << CountUntilRepl << std::flush;
         }
 
         void printReplacementData() {
             for (unsigned i = 0; i < Associativity; i++)
-                cout << "Line [" << i << "] -> " << Lines[i].repl_data << endl;
+                std::cout << "Line [" << i << "] -> " << Lines[i].repl_data << std::endl;
         }
 
         inline void incrementCountUntilRepl() {
