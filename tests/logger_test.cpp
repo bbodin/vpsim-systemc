@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-
-
+ 
+#include <filesystem>
 #include <gtest/gtest.h>
 #include "log.hpp"
 
@@ -87,42 +87,55 @@ TEST(Logger, getOftreams) {
 }
 
 TEST(Logger, writeLog) {
-    Logger logger("testLoggerWriteLog");
-    std::ifstream ifstream(logger.logName());
-    const uint size = 100;
-    char lineIn[size], lineOut[size];
+
+    // most log are not in the log file, but in the standard output or a specific stream
+
+    std::ostringstream oss;
+    Logger logger("testLoggerWriteLog", oss);
+
+    std::ifstream stats_ifstream(logger.logName());
+    std::string lineIn, lineOut;
     LoggerCore::get().enableLogging(true);
 
-    sprintf(lineIn, "test log info");
+    oss.str("");
+    lineIn = "test log info";
     logger.logInfo() << lineIn << std::endl;
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
-    sprintf(lineIn, "test log Warning");
+    oss.str("");
+    lineIn =  "test log Warning";
     logger.logWarning() << lineIn << std::endl;
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
-    sprintf(lineIn, "test log error");
+    oss.str("");
+    lineIn =  "test log error";
     logger.logError() << lineIn << std::endl;
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
-    sprintf(lineIn, "test log stats");
-    logger.logStats() << lineIn << std::endl;
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
 
-    sprintf(lineIn, "test log debug");
+    oss.str("");
+    lineIn =  "test log debug";
     logger.logDebug(dbg0) << lineIn << std::endl;
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
+
+    // Stats are in a separate file.
+    
+    lineIn =  "test log stats is here";
+    logger.logStats() << lineIn << std::endl;
+    std::getline(stats_ifstream, lineOut);
+    EXPECT_EQ(lineIn, lineOut);
+
+
 }
 
 TEST(Logger, writeLogMacro) {
     class MyIp : public Logger {
     public:
-        MyIp(std::string name) : Logger(name) {
+        MyIp(std::string name, std::ostringstream& oss) : Logger(name, oss) {
         }
 
         void writeAnInfo() { LOG_INFO << "An info" << std::endl; }
@@ -132,81 +145,103 @@ TEST(Logger, writeLogMacro) {
         void writeADebug(DebugLvl lvl) { LOG_DEBUG(lvl) << "A debug" << std::endl; }
     };
 
-    MyIp myIp("testLoggerWriteLogMacro");
+    std::ostringstream oss;
+    MyIp myIp("testLoggerWriteLogMacro", oss);
     LoggerCore::get().enableLogging(true);
     LoggerCore::get().setDebugLvl(myIp, dbg6);
-    std::ifstream ifstream(myIp.logName());
+    std::ifstream stats_ifstream(myIp.logName());
 
-    const uint size = 100;
-    char lineIn[size], lineOut[size];
+    std::string lineIn, lineOut;
 
+    oss.str("");
     myIp.writeAnInfo();
-    sprintf(lineIn, "[Info] An info");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn =  "[Info] An info";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
+    oss.str("");
     myIp.writeAWarning();
-    sprintf(lineIn, "[Warning] A warning");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn =  "[Warning] A warning";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
-    myIp.writeAStat();
-    sprintf(lineIn, "[Stats] A stat");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
-
+    oss.str("");
     myIp.writeAnError();
-    sprintf(lineIn, "[Error] An error");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn =  "[Error] An error";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
+    oss.str("");
     myIp.writeADebug(dbg1);
-    sprintf(lineIn, "[Debug1] A debug");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn =  "[Debug1] A debug";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
+    oss.str("");
     myIp.writeADebug(dbg6);
-    sprintf(lineIn, "[Debug6] A debug");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn =  "[Debug6] A debug";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
+
+    
+    myIp.writeAStat();
+    lineIn =  "[Stats] A stat";
+    std::getline(stats_ifstream, lineOut);
+    EXPECT_EQ(lineIn, lineOut);
+
 }
 
 
 TEST(Logger, writeGlobalLogMacro) {
+    std::ostringstream oss;
     LoggerCore::get().enableLogging(true);
     LoggerCore::get().setDebugLvl("globalLog", dbg6);
-    std::ifstream ifstream(globalLogger.logName());
+    std::ifstream stats_ifstream(globalLogger.logName());
+    std::string lineIn, lineOut;
 
-    const uint size = 100;
-    char lineIn[size], lineOut[size];
+    // intercept cout
+    std::streambuf* oldCoutBuf = std::cout.rdbuf();
+    std::cout.rdbuf(oss.rdbuf());
 
+    oss.str("");
     LOG_GLOBAL_INFO << "An info" << std::endl;
-    sprintf(lineIn, "[Info] An info");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn =  "[Info] An info";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
+    oss.str("");
     LOG_GLOBAL_WARNING << "A warning" << std::endl;
-    sprintf(lineIn, "[Warning] A warning");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn = "[Warning] A warning";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
-    LOG_GLOBAL_STATS << "A stat" << std::endl;
-    sprintf(lineIn, "[Stats] A stat");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
 
+    oss.str("");
     LOG_GLOBAL_ERROR << "An error" << std::endl;
-    sprintf(lineIn, "[Error] An error");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn = "[Error] An error";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
+    oss.str("");
     LOG_GLOBAL_DEBUG(dbg1) << "A debug" << std::endl;
-    sprintf(lineIn, "[Debug1] A debug");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn = "[Debug1] A debug";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
 
+    oss.str("");
     LOG_GLOBAL_DEBUG(dbg6) << "A debug" << std::endl;
-    sprintf(lineIn, "[Debug6] A debug");
-    ifstream.getline(lineOut, size);
-    EXPECT_STREQ(lineIn, lineOut);
+    lineIn = "[Debug6] A debug";
+    lineOut = oss.str();
+    EXPECT_EQ(lineIn + '\n', lineOut);
+
+    // Restore original buffer
+    std::cout.rdbuf(oldCoutBuf);
+
+    
+    LOG_GLOBAL_STATS << "A stat" << std::endl;
+    lineIn =  "[Stats] A stat";
+    std::getline(stats_ifstream, lineOut);
+    EXPECT_EQ(lineIn , lineOut);
+
+
 }

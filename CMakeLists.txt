@@ -224,7 +224,6 @@ file(GLOB VPSIM_CORE_SOURCES
         core/platform_builder/*.cpp
         core/TargetIf.cpp
         core/vpsimModule/ForwardSimpleSocket.cpp
-        core/vpsimModule/include/vpsimModule/ForwardSimpleSocket.hpp
 
 )
 
@@ -256,64 +255,32 @@ set_target_properties(vpsim_core PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 # COMPONENTS
 file(GLOB VPSIM_COMPONENTS_SOURCES
         CONFIGURE_DEPENDS
-        components/compute/include/compute/arm.hpp
+        #components/compute/include/compute/arm.hpp
         components/compute/InterruptIf.cpp
-        components/compute/include/compute/*.hpp
+        #components/compute/include/compute/*.hpp
         components/compute/issFinder.cpp
         components/compute/issLibWrapper.cpp
         components/compute/issWrapper.cpp
         components/connect/interconnect.cpp
-        components/connect/include/connect/interconnect.hpp
+        #components/connect/include/connect/interconnect.hpp
         components/connect/CoherenceInterconnect.cpp
-        components/connect/include/connect/CoherenceInterconnect.hpp
-        components/include/components/*.hpp
-        components/include/components/*.h
-        components/memory/include/memory/Cache.hpp
-        components/memory/include/memory/CacheBase.hpp
-        components/memory/include/memory/CacheLine.hpp
-        components/memory/include/memory/CacheSet.hpp
-        components/memory/include/memory/CoherenceExtension.hpp
-        components/memory/include/memory/elfloader.hpp
-        components/memory/include/memory/memory.hpp
+        #components/connect/include/connect/CoherenceInterconnect.hpp
+        #components/include/components/*.hpp
+        #components/include/components/*.h
+        #components/memory/include/memory/Cache.hpp
+        #components/memory/include/memory/CacheBase.hpp
+        #components/memory/include/memory/CacheLine.hpp
+        #components/memory/include/memory/CacheSet.hpp
+        #components/memory/include/memory/CoherenceExtension.hpp
+        #components/memory/include/memory/elfloader.hpp
+        #components/memory/include/memory/memory.hpp
         components/memory/elfloader.cpp
         components/memory/memory.cpp
-        components/peripherals/include/peripherals/gic.hpp
-        components/peripherals/include/peripherals/ItCtrl.hpp
-        components/peripherals/include/peripherals/rtc.hpp
-        components/peripherals/include/peripherals/timer.hpp
-        components/peripherals/include/peripherals/uart.hpp
-        components/peripherals/include/peripherals/xuartps.hpp
-        components/peripherals/include/peripherals/PL011Uart.hpp
-        components/peripherals/include/peripherals/InterruptSource.hpp
-        components/peripherals/include/peripherals/CommonUartInterface.hpp
-        components/peripherals/include/peripherals/VirtioTlm.hpp
-        components/peripherals/include/peripherals/AddressTranslator.hpp
-        components/peripherals/include/peripherals/RemoteInitiator.hpp
-        components/peripherals/include/peripherals/RemoteTarget.hpp
-        components/peripherals/include/peripherals/ChannelManager.hpp
-        components/peripherals/include/peripherals/RemoteTransaction.hpp
-        components/peripherals/include/peripherals/PythonDevice.hpp
-        components/peripherals/include/peripherals/SesamController.hpp
-        components/peripherals/include/peripherals/ExternalSimulator.hpp
-        components/peripherals/RemoteInitiator.cpp
-        components/peripherals/RemoteTarget.cpp
-        components/peripherals/ChannelManager.cpp
-        components/peripherals/ItCtrl.cpp
-        components/peripherals/AddressTranslator.cpp
-        components/peripherals/rtc.cpp
-        components/peripherals/timer.cpp
-        components/peripherals/uart.cpp
-        components/peripherals/gic.cpp
-        components/peripherals/xuartps.cpp
-        components/peripherals/PL011Uart.cpp
-        components/peripherals/VirtioTlm.cpp
-        components/peripherals/InterruptSource.cpp
-        components/peripherals/CommonUartInterface.cpp
-        components/peripherals/SesamController.cpp
-        components/peripherals/ExternalSimulator.cpp
+        components/peripherals/include/peripherals/*.hpp
+        components/peripherals/*.cpp
         components/clean_components/SmartUart.cpp
-        components/clean_components/include/components/SmartUart.hpp
-        components/clean_components/include/components/CallbackRegister.hpp
+        #components/clean_components/include/components/SmartUart.hpp
+        #components/clean_components/include/components/CallbackRegister.hpp
         components/clean_components/CallbackRegister.cpp
 )
 
@@ -404,8 +371,13 @@ endif()
 macro(add_gtest_test test_name sources)
     if(GTEST_FOUND)
         add_executable(${test_name} ${sources})
+        target_compile_options(${test_name} PRIVATE -g -O0 -DDEBUG)
+
         target_link_libraries(${test_name} PRIVATE gtest vpsim_core)
-        gtest_add_tests(TARGET ${test_name})
+        gtest_add_tests(TARGET ${test_name}
+         TEST_PREFIX "vpsim."
+         PROPERTIES
+        ENVIRONMENT "SYSTEMC_DISABLE_COPYRIGHT_MESSAGE=1")
         if(IPO_ENABLED)
             set_target_properties(${test_name} PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
         endif()
@@ -421,20 +393,10 @@ endmacro(add_gtest_test)
 # add_gtest_test(parameterSetModifier_test
 #         ${CMAKE_CURRENT_SOURCE_DIR}/core/vpsimModule/test/parameterSetModifier_test.cpp)
 
-# add_gtest_test(vpsimModule_test
-#         ${CMAKE_CURRENT_SOURCE_DIR}/core/vpsimModule/test/vpsimModule_test.cpp)
-
-# add_gtest_test(appointment_test
-#         ${CMAKE_CURRENT_SOURCE_DIR}/core/logger/test/appointment_test.cpp)
-
-# add_gtest_test(logger_test
-#         ${CMAKE_CURRENT_SOURCE_DIR}/core/logger/test/logger_test.cpp)
-
-# add_gtest_test(loggerCore_test
-#         ${CMAKE_CURRENT_SOURCE_DIR}/core/logger/test/loggerCore_test.cpp)
-
-# add_gtest_test(loggerScheduler_test
-#         ${CMAKE_CURRENT_SOURCE_DIR}/core/logger/test/loggerScheduler_test.cpp)
+add_gtest_test(appointment_test     ${CMAKE_CURRENT_SOURCE_DIR}/tests/appointment_test.cpp)
+add_gtest_test(logger_test          ${CMAKE_CURRENT_SOURCE_DIR}/tests/logger_test.cpp)
+add_gtest_test(loggerCore_test      ${CMAKE_CURRENT_SOURCE_DIR}/tests/loggerCore_test.cpp)
+add_gtest_test(loggerScheduler_test ${CMAKE_CURRENT_SOURCE_DIR}/tests/loggerScheduler_test.cpp)
 
 
 #############################################################
