@@ -53,19 +53,22 @@ namespace vpsim {
 
     void XmlConfigParser::readFromPythonXml() {
         assert(mXml.first_node("vpsim"));
-
-        rapidxml::xml_node<> *node = mXml.first_node("vpsim")->first_node("platform");
-        if (node && std::string(node->name()) == "platform") {
-            readPlatform(node);
-        } else {
-            XmlConfigParser::unsupportedXmlFile("Unsupported node: " + std::string(node->name()));
-        }
-        node = mXml.first_node("vpsim")->first_node("simulation");
+        
+        // Read 
+        rapidxml::xml_node<> *node = mXml.first_node("vpsim")->first_node("simulation");
         if (node && std::string(node->name()) == "simulation") {
             readSimulation(node);
         } else {
             XmlConfigParser::unsupportedXmlFile("Unsupported node: " + std::string(node->name()));
         }
+
+        node = mXml.first_node("vpsim")->first_node("platform");
+        if (node && std::string(node->name()) == "platform") {
+            readPlatform(node);
+        } else {
+            XmlConfigParser::unsupportedXmlFile("Unsupported node: " + std::string(node->name()));
+        }
+        
     }
 
     void XmlConfigParser::readPlatform(rapidxml::xml_node<> *platformNode) {
@@ -163,12 +166,13 @@ namespace vpsim {
             } else if (simNodeName == "log") {
                 bool enable = std::string(simNode->value()) == "enable";
                 LoggerCore::get().enableLogging(enable);
+                LOG_GLOBAL_INFO << "Logging info level is working" << endl;
             } else if (simNodeName == "defaultBlockingTLM") {
                 auto defaultBTLM = std::string(simNode->value()) == "enable"
                                        ? BlockingTLMEnabledParameter::BT_ENABLED
                                        : BlockingTLMEnabledParameter::BT_DISABLED;
                 BlockingTLMEnabledParameter::setDefault(defaultBTLM);
-            } else if (simNodeName == "logDir") {
+            } else if (simNodeName == "workingDir") {
                 std::string dir = std::string(simNode->value());
                 if (!dir.empty()) {
                     std::error_code ec;

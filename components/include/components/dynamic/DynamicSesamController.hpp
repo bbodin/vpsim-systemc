@@ -2,6 +2,7 @@
 #define VPSIM_DYNAMIC_DYNAMICSESAMCONTROLLER_HPP
 #include <sstream>
 
+#include <stdexcept>
 #include <atomic>
 #include <csignal>
 #include "VpsimIp.hpp"
@@ -39,8 +40,14 @@ namespace vpsim {
     public:
         explicit DynamicSesamController(const std::string& name) : VpsimIp(name),
                                                             SesamController(name.c_str()) {
+            
+            VpsimIp<InPortType, OutPortType>::registerOptionalAttribute("log_directory", "");
+
             VpsimIp<InPortType, OutPortType>::registerRequiredAttribute("base_address");
             VpsimIp<InPortType, OutPortType>::registerOptionalAttribute("size", "4");
+
+        
+             
 
             mState = RUN;
             mBytesPerLine = 8;
@@ -86,6 +93,13 @@ namespace vpsim {
             return getAttrAsUInt64("size");
         }
 
+        std::string getLogDirectory() {
+                try {
+                return getAttr("log_directory");
+            } catch (std::runtime_error& e) {
+                return "";
+            }
+        }
 
         static bool ready() {
             return ChannelManager::fdCheckReady(0);
@@ -136,7 +150,11 @@ namespace vpsim {
 
         void process_end_capture(size_t counter) {
             // Use the same logger formatting as the global log to ensure consistency
-            const std::string baseName = std::string("sesamBench_") + appName + std::string("_") + std::to_string(counter - 1);
+            const std::string baseName = this->getLogDirectory() + "/" + std::string("sesamBench_") + appName + std::string("_") + std::to_string(counter - 1);
+            
+            LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
+            LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
+
             vpsim::Logger benchLogger(baseName);
 
             // 1) Dump stats for delayed IPs participating in the benchmark
@@ -223,9 +241,12 @@ namespace vpsim {
                     }
                 }
             );
-            std::FILE *LogFile = fopen(
-                (std::string("sesamBench_") + appName + std::string("_") + std::to_string(
-                     nbCommandCounter++) + ".log").c_str(), "w");
+            std::string baseName = this->getLogDirectory() + "/" + std::string("sesamBench_") + appName + std::string("_") + std::to_string(
+                     nbCommandCounter++) + ".log";
+            LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
+            LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
+
+            std::FILE *LogFile = fopen(baseName.c_str(), "w");
             fprintf(LogFile, "%s", mCommandOutputBuffer.c_str());
             fclose(LogFile);
         }
@@ -434,6 +455,7 @@ namespace vpsim {
             }
             if (delayedCaptureRunning) {
                 // Tests did not show any occurrence of overlapping "sesam benchmark" commands
+                LOG_GLOBAL_ERROR << "Wait for the previous benchmark counters to be captured entirely!\n";
                 fprintf(stderr, "Wait for the previous benchmark counters to be captured entirely!\n");
                 return true;
             }
@@ -463,7 +485,9 @@ namespace vpsim {
             appName = args.at(1);
             mInBenchmark = true;
             mBenchDomain = mCurrentDomain;
-            fprintf(stderr, "Benchmark mode started.\n");
+            
+            //fprintf(stderr, "Benchmark mode started.\n");
+            LOG_GLOBAL_INFO << "Benchmark mode started" << std::endl;
             return false;
         }
 

@@ -15,11 +15,12 @@
 */
 
 #include "quantum.hpp"
+#include "log.hpp"
 
 namespace vpsim {
     ParallelQuantumKeeper::ParallelQuantumKeeper(unsigned int quantum) : forceSyncCount(0),
                                                                          syncCount(0) {
-        cout << "Setting global quantum to " << sc_time(quantum, SC_NS) << endl;
+        LOG_GLOBAL_INFO << "Setting global quantum to " << sc_time(quantum, SC_NS) << endl;
         set_global_quantum(sc_time(quantum, SC_NS));
     }
 

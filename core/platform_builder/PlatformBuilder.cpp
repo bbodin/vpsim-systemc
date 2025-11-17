@@ -16,27 +16,6 @@
 
 #include "platform_builder/PlatformBuilder.hpp"
 
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
 
 #include <utility>
 
@@ -63,7 +42,8 @@ namespace vpsim {
 
     VpsimIp<InPortType, OutPortType> &PlatformBuilder::beginBuild(
         const std::string& ipType, const std::string& ipName) {
-        std::cout << "Now building " << ipType << " " << ipName << std::endl;
+        
+       LOG_GLOBAL_INFO << "Now building " << ipType << " " << ipName << std::endl;
 
         if (mCurrentIp && !mCurrentIp->isContainer()) {
             throw runtime_error(ipType + "Building outside container.");
@@ -91,13 +71,13 @@ namespace vpsim {
         if (newIp != nullptr)
             *newIp = newlyBuilt;
 
-        std::cout << "Done building " << newlyBuilt->getName()
+        LOG_GLOBAL_INFO << "Done building " << newlyBuilt->getName()
                 << ", now calling make()" << std::endl;
 
         newlyBuilt->make();
         mLocalIps.push_back(newlyBuilt->getName());
 
-        std::cout << "Make ok !" << std::endl;
+        LOG_GLOBAL_INFO << "Make ok !" << std::endl;
         return *mCurrentIp;
     }
 

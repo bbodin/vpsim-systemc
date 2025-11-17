@@ -305,7 +305,7 @@ namespace vpsim {
 
         virtual void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
                              std::string inPortAlias) {
-            std::cout << "Connecting " << getName() << " to " << otherIp->getName() << std::endl;
+            LOG_GLOBAL_INFO << "Connecting " << getName() << " to " << otherIp->getName() << std::endl;
 
             WrappedOutSock thisSock = getOutPort(outPortAlias);
             WrappedInSock thatSock = otherIp->getInPort(inPortAlias);

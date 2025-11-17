@@ -252,16 +252,16 @@ namespace vpsim {
                 set = CacheSet<CacheLineType,
                     AddressType>(CacheLineSize, Associativity, ReplPolicy/*, higherCachesNb*/);
 
-            cout << "Cache parameters: " << endl;
-            cout << "Address bits: " << AddressBits << endl;
-            cout << "Offset bits : " << OffsetBits << endl;
-            cout << "IndexBits   : " << IndexBits << endl;
-            //cout << "TagBits     : "     << TagBits       << endl;
-            cout << "Nb sets     : " << NbSets << endl;
-            cout << "Cache size  : " << CacheSize << endl;
-            //cout << "NbLines     : "     << NbLines       << endl;
-            cout << "Line size   : " << CacheLineSize << endl;
-            cout << "Is a home   : " << IsHome << endl;
+            LOG_GLOBAL_INFO << "Cache parameters: " << endl;
+            LOG_GLOBAL_INFO << "Address bits: " << AddressBits << endl;
+            LOG_GLOBAL_INFO << "Offset bits : " << OffsetBits << endl;
+            LOG_GLOBAL_INFO << "IndexBits   : " << IndexBits << endl;
+            //LOG_GLOBAL_INFO << "TagBits     : "     << TagBits       << endl;
+            LOG_GLOBAL_INFO << "Nb sets     : " << NbSets << endl;
+            LOG_GLOBAL_INFO << "Cache size  : " << CacheSize << endl;
+            //LOG_GLOBAL_INFO << "NbLines     : "     << NbLines       << endl;
+            LOG_GLOBAL_INFO << "Line size   : " << CacheLineSize << endl;
+            LOG_GLOBAL_INFO << "Is a home   : " << IsHome << endl;
 
             NReads = NWrites = NInvals = NTotalInvals = NBackInvals = NEvicts = WriteBacks = EvictBacks = 0;
             NPutS = NPutM = NPutI = NGetS = NGetM = NFwdGetS = NFwdGetM = ReadBacks = 0;

@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include <atomic>
+#include "log.hpp"
 #include "VpsimIp.hpp"
 #include "connect/interconnect.hpp"
 
@@ -113,7 +114,7 @@ namespace vpsim {
                              std::string inPortAlias) override {
             // set address before connecting (used for forwarding)
             if (otherIp->isMemoryMapped()) {
-                cout << "MAP : " << otherIp->getBaseAddress() << " - " << otherIp->getSize() << endl;
+                LOG_GLOBAL_INFO << "MAP : " << otherIp->getBaseAddress() << " - " << otherIp->getSize() << endl;
                 mModulePtr->set_socket_out_addr(mConnectionCounter++, otherIp->getBaseAddress(), otherIp->getSize());
             } else {
                 mModulePtr->setDefaultRoute(mConnectionCounter++);
