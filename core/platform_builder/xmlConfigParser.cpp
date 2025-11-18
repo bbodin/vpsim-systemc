@@ -164,9 +164,33 @@ namespace vpsim {
                 cerr << "Global quantum is not currently supported" << endl;
                 LOG_GLOBAL_INFO << "Global quantum is not currently supported" << endl;
             } else if (simNodeName == "log") {
-                bool enable = std::string(simNode->value()) == "enable";
-                LoggerCore::get().enableLogging(enable);
+                std::string val = simNode->value();
+                vpsim::DebugLvl level;
+                if (val == "enable") {
+                    LoggerCore::get().enableLogging(true);
+                }
+                else if (val == "disable") {
+                    LoggerCore::get().enableLogging(false);
+                } else {
+                     try {
+                        int lvl = std::stoi(val);
+                        level = static_cast<vpsim::DebugLvl>(lvl);
+                        LoggerCore::get().setDebugLvl(level);
+                        LoggerCore::get().enableLogging(true);
+                    }
+                    catch (...) {
+                        // Handle unexpected input
+                        std::cerr << "Invalid logger setting: '" << val << "'\n";
+                    }
+                }
+
+                //bool enable = std::string(simNode->value()) == "enable";
+                //LoggerCore::get().enableLogging(enable);
+                //LoggerCore::get().setDebugLvl(level);
+                LOG_GLOBAL_DEBUG(dbg0) << "Logging info Debug0 is working" << endl;
                 LOG_GLOBAL_INFO << "Logging info level is working" << endl;
+                LOG_GLOBAL_WARNING << "Logging info warning is working" << endl;
+                LOG_GLOBAL_ERROR << "Logging info error is working" << endl;
             } else if (simNodeName == "defaultBlockingTLM") {
                 auto defaultBTLM = std::string(simNode->value()) == "enable"
                                        ? BlockingTLMEnabledParameter::BT_ENABLED

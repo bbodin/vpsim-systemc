@@ -196,20 +196,26 @@ namespace vpsim {
         }
 
         void end_benchmark() {
+
             mInBenchmark = false;
             sc_time diff;
+
             if (MainMemPtr) {
                 MainMemPtr->NotifySesamCommand(nbCommandCounter + 1, false);
                 diff = MainMemPtr->getCurrentTime() - mBenchStartTime;
             } else diff = sc_time_stamp() - mBenchStartTime;
+
+
             // get and display stats
             //printf("Checking all IPs of domain %ld\n", this->mBenchDomain);
-            fflush(stdout);
+            //fflush(stdout);
+
             mCommandOutputBuffer = string();
             stringstream ss;
             ss << diff;
             mCommandOutputBuffer += "Simulated time: ";
             mCommandOutputBuffer += ss.str() + "\n";
+
             VpsimIp::MapIf(
                 [this](VpsimIp *ip) {
                     //printf("ip %s is of domain %ld\n", ip->getName().c_str(),ip->getAttrAsUInt64("domain"));
@@ -242,9 +248,10 @@ namespace vpsim {
                     }
                 }
             );
-            std::string baseName = this->getLogDirectory() + "/" + std::string("sesamBench_") + appName + std::string("_") + std::to_string(
-                     nbCommandCounter++) + ".log";
-                     
+
+
+            std::string baseName = this->getLogDirectory() + "/sesamBench_" + appName + "_" + std::to_string(nbCommandCounter++) + ".log";
+
             LOG_GLOBAL_INFO << "inside end_benchmark " << std::endl;
             LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
             LOG_GLOBAL_INFO << "Saving ..." << std::endl;
@@ -469,21 +476,25 @@ namespace vpsim {
         }
 
         bool process_benchmark_cmd(const vector<string> &args) {
+
             if (args.size() - 2 != 0) {
                 printf("Usage: benchmark app\n");
                 return true;
             }
+
             if (delayedCaptureRunning) {
                 // Tests did not show any occurrence of overlapping "sesam benchmark" commands
                 LOG_GLOBAL_ERROR << "Wait for the previous benchmark counters to be captured entirely!\n";
                 fprintf(stderr, "Wait for the previous benchmark counters to be captured entirely!\n");
                 return true;
             }
+
             if (MainMemPtr) {
                 delayedCaptureRunning = true;
                 MainMemPtr->NotifySesamCommand(nbCommandCounter + 1, true);
                 mBenchStartTime = MainMemPtr->getCurrentTime();
             } else mBenchStartTime = sc_time_stamp();
+
             // First, create a new stats segment
             VpsimIp::MapIf(
                 [this](VpsimIp *ip) {
@@ -511,6 +522,77 @@ namespace vpsim {
             return false;
         }
 
+        
+        bool process_snapshot_cmd(const vector<string> &args) {
+
+            if (args.size() != 2) {
+                printf("Usage: snapshot app\n");
+                LOG_GLOBAL_ERROR << "argument count given to snapshot is " << args.size() << std::endl;
+                for (auto arg : args) {
+                    LOG_GLOBAL_ERROR << " - " << arg << std::endl;
+                }
+                return true;
+            }
+
+            if (MainMemPtr) {
+                delayedCaptureRunning = true;
+                MainMemPtr->NotifySesamCommand(nbCommandCounter + 1, true);
+                mBenchStartTime = MainMemPtr->getCurrentTime();
+            } else mBenchStartTime = sc_time_stamp();
+
+
+            appName = args.at(1);
+            //mInBenchmark = true;
+            mBenchDomain = mCurrentDomain;
+            
+
+            mCommandOutputBuffer = string();
+            stringstream ss;
+            ss << mBenchStartTime;
+            mCommandOutputBuffer += "Snapshot time: ";
+            mCommandOutputBuffer += ss.str() + "\n";
+
+            VpsimIp::MapIf(
+                [this](VpsimIp *ip) {
+                    //printf("ip %s is of domain %ld\n", ip->getName().c_str(),ip->getAttrAsUInt64("domain"));
+                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain && !ip->
+                            getDelayStatCapture()); // Non delayed IPs
+                },
+                [this](VpsimIp *ip) {
+                    ip->pushStats();
+                    auto &stats = ip->getSegStats().back();
+
+                    if (stats.size()) {
+                        mCommandOutputBuffer += "-----------------------------------\n";
+                        mCommandOutputBuffer += "\nStatistics from ";
+                        mCommandOutputBuffer += ip->getName() + "\n";
+                        for (auto &stat: stats) {
+                            mCommandOutputBuffer += "\t";
+                            mCommandOutputBuffer += stat.first + " = ";
+                            mCommandOutputBuffer += stat.second + "\n";
+                        }
+                        //ip->clearSegStats();
+                    }
+                }
+            );
+
+
+            std::string baseName = this->getLogDirectory() + "/sesamBench_" + appName + "_" + std::to_string(nbCommandCounter++) + ".log";
+
+            LOG_GLOBAL_INFO << "inside snapshot " << std::endl;
+            LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
+            LOG_GLOBAL_INFO << "Saving ..." << std::endl;
+
+            std::FILE *LogFile = fopen(baseName.c_str(), "w");
+            fprintf(LogFile, "%s", mCommandOutputBuffer.c_str());
+            fclose(LogFile);
+            LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
+
+            return false;
+            
+        }
+
+
         // Attention: 'counter' manages only one domain, mCurrentDomain and mBenchDomain are then equal
         void sesamCommand(vector<string> &args, size_t counter) override {
             if (counter) {
@@ -528,6 +610,8 @@ namespace vpsim {
                     case RUN: {
                         if (mInBenchmark) {
                             end_benchmark();
+                        } else {
+                            LOG_GLOBAL_WARNING << "Unknow situation state is RUN with arg " <<  args.at(0) << std::endl;
                         }
                     }
                         break;
@@ -551,6 +635,10 @@ namespace vpsim {
                             if (process_unwatch_cmd(args)) return;
                         } else if (cmd == "benchmark") {
                             if (process_benchmark_cmd(args)) return;
+                        } else if (cmd == "snapshot") {
+                            if (process_snapshot_cmd(args)) return;
+                        } else {
+                            LOG_GLOBAL_WARNING << "Unknow command " << cmd << std::endl;
                         }
                     }
                         break;

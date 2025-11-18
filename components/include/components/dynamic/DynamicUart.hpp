@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include <atomic>
-#include "VpsimIp.hpp"
+#include <vpsimModule/VpsimIp.hpp>
 #include "TargetIf.hpp"
 #include "peripherals/uart.hpp"
 
@@ -28,6 +28,7 @@ namespace vpsim {
         }
 
         void pushStats() override {
+            
             if (mSegmentedStats.empty()) {
                 mSegmentedStats.push_back({
                     {"reads", "0"},
