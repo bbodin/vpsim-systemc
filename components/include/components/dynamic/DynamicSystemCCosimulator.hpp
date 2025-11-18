@@ -1,12 +1,11 @@
 #ifndef VPSIM_DYNAMIC_SYSTEMC_COSIMULATOR_HPP
 #define VPSIM_DYNAMIC_SYSTEMC_COSIMULATOR_HPP
 
+#include <vpsimModule/VpsimIp.hpp>
+#include <components/MainMemCosim.hpp>
+
 #include <sstream>
-
 #include <atomic>
-#include "VpsimIp.hpp"
-#include "MainMemCosim.hpp"
-
 
 namespace vpsim {
     typedef tlm::tlm_target_socket<> InPortType;

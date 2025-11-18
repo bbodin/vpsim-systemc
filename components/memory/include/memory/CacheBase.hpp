@@ -1248,14 +1248,14 @@ namespace vpsim {
         void displayStats() {
             uint64_t AccessCount = MissCount + HitCount + NInvals + NEvicts;
             double MissRate = (AccessCount > 0) ? ((double) MissCount) / AccessCount : 0;
-            cout << this->name() << ": MissCount " << MissCount << " , HitCount " << HitCount << endl;
-            cout << this->name() << ": total accesses " << AccessCount << " , MissRate " << MissRate;
-            cout << " writes: " << NWrites << " reads: " << NReads << " WriteBacks: " << WriteBacks;
-            if (InclusionOfLower == Inclusive) cout << " total invalidations: " << NTotalInvals <<
+            LOG_GLOBAL_STATS << this->name() << ": MissCount " << MissCount << " , HitCount " << HitCount << endl;
+            LOG_GLOBAL_STATS << this->name() << ": total accesses " << AccessCount << " , MissRate " << MissRate;
+            LOG_GLOBAL_STATS << " writes: " << NWrites << " reads: " << NReads << " WriteBacks: " << WriteBacks;
+            if (InclusionOfLower == Inclusive) LOG_GLOBAL_STATS << " total invalidations: " << NTotalInvals <<
                                                " real invalidations: " << NInvals;
 
-            if (InclusionOfLower == Exclusive) cout << " evictions: " << NEvicts;
-            cout << endl;
+            if (InclusionOfLower == Exclusive) LOG_GLOBAL_STATS << " evictions: " << NEvicts;
+            LOG_GLOBAL_STATS << endl;
         }
 
         //!

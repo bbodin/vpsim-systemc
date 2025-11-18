@@ -1,15 +1,17 @@
 #ifndef VPSIM_DYNAMIC_DYNAMICSESAMCONTROLLER_HPP
 #define VPSIM_DYNAMIC_DYNAMICSESAMCONTROLLER_HPP
-#include <sstream>
 
+#include <vpsimModule/VpsimIp.hpp>
+#include <core/TargetIf.hpp>
+#include <peripherals/SesamController.hpp>
+#include <components/MainMemCosim.hpp>
+#include <peripherals/ChannelManager.hpp>
+#include <components/dynamic/DynamicSystemCCosimulator.hpp>
+
+#include <sstream>
 #include <stdexcept>
 #include <atomic>
 #include <csignal>
-#include "VpsimIp.hpp"
-#include "TargetIf.hpp"
-#include "SesamController.hpp"
-#include "MainMemCosim.hpp"
-
 
 namespace vpsim {
 
@@ -42,12 +44,9 @@ namespace vpsim {
                                                             SesamController(name.c_str()) {
             
             VpsimIp<InPortType, OutPortType>::registerOptionalAttribute("log_directory", "");
-
             VpsimIp<InPortType, OutPortType>::registerRequiredAttribute("base_address");
             VpsimIp<InPortType, OutPortType>::registerOptionalAttribute("size", "4");
 
-        
-             
 
             mState = RUN;
             mBytesPerLine = 8;
@@ -83,6 +82,7 @@ namespace vpsim {
             setBaseAddress(getAttrAsUInt64("base_address"));
             setPtrState(&mState);
             mCurrentDomain = this->getAttrAsUInt64("domain");
+            LOG_GLOBAL_INFO << "DynamicSesamController in the making, getLogDirectory is '" << this->getLogDirectory() << "'" << std::endl;
         }
 
         virtual uint64_t getBaseAddress() override {
@@ -152,6 +152,7 @@ namespace vpsim {
             // Use the same logger formatting as the global log to ensure consistency
             const std::string baseName = this->getLogDirectory() + "/" + std::string("sesamBench_") + appName + std::string("_") + std::to_string(counter - 1);
             
+            LOG_GLOBAL_INFO << "inside process_end_capture " << std::endl;
             LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
             LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
 
@@ -243,12 +244,15 @@ namespace vpsim {
             );
             std::string baseName = this->getLogDirectory() + "/" + std::string("sesamBench_") + appName + std::string("_") + std::to_string(
                      nbCommandCounter++) + ".log";
+                     
+            LOG_GLOBAL_INFO << "inside end_benchmark " << std::endl;
             LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
-            LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
+            LOG_GLOBAL_INFO << "Saving ..." << std::endl;
 
             std::FILE *LogFile = fopen(baseName.c_str(), "w");
             fprintf(LogFile, "%s", mCommandOutputBuffer.c_str());
             fclose(LogFile);
+            LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
         }
 
         static void process_quit_command() {
@@ -257,6 +261,7 @@ namespace vpsim {
         }
 
         static bool process_show_cmd(const vector<string> &args) {
+            LOG_GLOBAL_INFO << "Sesam Controller process the SHOW command." << std::endl;
             if (args.size() - 1 < 1) {
                 printf("Usage: show component1_name component2_name ...\n");
                 return true;
@@ -265,6 +270,7 @@ namespace vpsim {
                 string component = args.at(i);
                 VpsimIp *ip = VpsimIp::Find(component);
                 if (!ip) {
+                    LOG_GLOBAL_ERROR << "Component " << component << " not known to VPSim.\n";
                     printf("Error: Component %s not known to VPSim.\n", component.c_str());
                 } else {
                     ip->show();
@@ -274,6 +280,7 @@ namespace vpsim {
         }
 
         bool process_showmem_cmd(const vector<string> &args) const {
+            LOG_GLOBAL_INFO << "Sesam Controller process the SHOWMEM command." << std::endl;
             if (args.size() - 1 != 2) {
                 printf("Usage: showmem start_addr size\n");
                 return true;
@@ -298,19 +305,28 @@ namespace vpsim {
                                           && start < ip->getBaseAddress() + ip->getSize();
                                }
                                ,
-                               [this,&start,&found,&end ](VpsimIp *ip) {
+                               [this,&start,&size,&found,&end ](VpsimIp *ip) {
                                    uint64_t actualEnd = std::min(
                                        end, ip->getBaseAddress() + ip->getSize() - 1);
                                    uint64_t actualSize = actualEnd - start + 1;
-                                   uint64_t lines = actualSize / mBytesPerLine;
+                                   uint64_t lines =  actualSize <= mBytesPerLine ? 1 : actualSize / mBytesPerLine;
                                    uint64_t left = actualSize;
+                                   // getActualAddress and getBaseAddress are not aligned, we need to shift
+                                   uint64_t offset = start - ip->getBaseAddress();
                                    found = true;
+                                   LOG_GLOBAL_INFO << std::hex 
+                                                    << "Address " << start 
+                                                    << " of " << size 
+                                                    << " found in " << ip->getName() 
+                                                    << " with base address = " << ip->getBaseAddress() 
+                                                    << std::dec // reset to decimal
+                                                    << std::endl;
                                    for (uint64_t i = 0; i < lines; i++) {
-                                       printf("\n%016" PRIu64 "\t", start + i * mBytesPerLine);
+                                       printf("\n%016" PRIX64 "\t", start + i * mBytesPerLine);
                                        uint64_t Left = std::min(mBytesPerLine, left);
                                        for (uint64_t j = 0; j < Left; j++) {
                                            printf("%02X\t",
-                                                  ip->getActualAddress()[i * mBytesPerLine + j]);
+                                                  ip->getActualAddress()[offset + i * mBytesPerLine + j]);
                                            left--;
                                        }
                                    }
@@ -318,8 +334,8 @@ namespace vpsim {
                                }
                 );
                 if (!found) {
-                    printf("\nWarning: address space %" PRIu64 " to %" PRIu64 " not covered.\n", start,
-                           end);
+                    printf("\nWarning: address space %" PRIu64 " to %" PRIu64 " not covered.\n", start, end);
+                    
                     break;
                 }
                 if (start > end) {
@@ -348,6 +364,7 @@ namespace vpsim {
         }
 
         static bool process_config_cmd(const vector<string> &args) {
+            // TODO : This does nothing meaningful, the parameter value are not even passed.
             if (args.size() - 1 < 3) {
                 printf("Usage: configure component_family parameter value\n");
                 return true;
@@ -363,6 +380,7 @@ namespace vpsim {
             }
             return false;
         }
+
 
         static bool process_debug_cmd(const vector<string> &args) {
             if (args.size() - 1 < 2) {
@@ -391,7 +409,8 @@ namespace vpsim {
             uint64_t start, size;
             st >> hex >> start;
             sz >> hex >> size;
-            printf("Now monitoring following ranges: \n");
+
+            LOG_GLOBAL_INFO << "Now monitoring following ranges: \n";
 
 
             // Ask all IPs to watch out for this address space !
@@ -404,6 +423,7 @@ namespace vpsim {
                         ParamManager::get().setParameter(
                             ip->getName(), as, BlockingTLMEnabledParameter::bt_enabled);
                     } catch (exception &ex) {
+                        LOG_GLOBAL_WARNING << "Fail bt_enabled with " << ip->getName() << std::endl;
                     }
 
                     ip->addMonitor(start, size);
@@ -424,7 +444,7 @@ namespace vpsim {
             st >> hex >> start;
             sz >> hex >> size;
 
-            printf("Now monitoring following ranges: \n");
+            LOG_GLOBAL_INFO << "Now monitoring following ranges: \n";
 
             // Ask all IPs to watch out for this address space !
             VpsimIp::MapIf(

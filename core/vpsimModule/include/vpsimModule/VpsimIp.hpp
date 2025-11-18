@@ -321,16 +321,24 @@ namespace vpsim {
         }
 
         virtual void addMonitor(uint64_t, uint64_t) {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement addMonitor().\n";
         }
 
         virtual void removeMonitor(uint64_t, uint64_t) {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement removeMonitor().\n";
         }
 
-        virtual void showMonitor() {
+        virtual void showMonitor()  {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement showMonitor().\n";
         }
 
-        virtual void show() { cout << "Your component does not implement show()." << endl; }
-        virtual void configure() { printf("This component does not implement configure()\n"); }
+        virtual void show() {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement show().\n";
+        }
+
+        virtual void configure() {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement configure().\n";
+        }
 
         virtual void pushStats() {
             if (mSegmentedStats.empty()) {

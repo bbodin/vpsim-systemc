@@ -17,9 +17,9 @@
 #ifndef _TargetIf_HPP_
 #define _TargetIf_HPP_
 
+#include <logger/logger.hpp>
 #include "LatencyIf.hpp"
 #include "AddrSpace.hpp"
-#include "logger.hpp"
 
 namespace vpsim {
     //!
