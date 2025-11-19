@@ -40,7 +40,7 @@ TEST(Logger, name) {
 TEST(Logger, logName) {
     Logger logger("testLoggerName");
 
-    EXPECT_EQ("testLoggerName.log", logger.logName());
+    EXPECT_EQ("testLoggerName.log", logger.statLogName());
 }
 
 TEST(Logger, canLog) {
@@ -93,7 +93,7 @@ TEST(Logger, writeLog) {
     std::ostringstream oss;
     Logger logger("testLoggerWriteLog", oss);
 
-    std::ifstream stats_ifstream(logger.logName());
+    std::ifstream stats_ifstream(logger.statLogName());
     std::string lineIn, lineOut;
     LoggerCore::get().enableLogging(true);
 
@@ -149,7 +149,7 @@ TEST(Logger, writeLogMacro) {
     MyIp myIp("testLoggerWriteLogMacro", oss);
     LoggerCore::get().enableLogging(true);
     LoggerCore::get().setDebugLvl(myIp, dbg6);
-    std::ifstream stats_ifstream(myIp.logName());
+    std::ifstream stats_ifstream(myIp.statLogName());
 
     std::string lineIn, lineOut;
 
@@ -196,7 +196,7 @@ TEST(Logger, writeGlobalLogMacro) {
     std::ostringstream oss;
     LoggerCore::get().enableLogging(true);
     LoggerCore::get().setDebugLvl("globalLog", dbg6);
-    std::ifstream stats_ifstream(globalLogger.logName());
+    std::ifstream stats_ifstream(globalLogger.statLogName());
     std::string lineIn, lineOut;
 
     // intercept cout

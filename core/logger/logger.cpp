@@ -18,9 +18,11 @@
 #include "loggerCore.hpp"
 
 namespace vpsim {
+    
     Logger globalLogger("globalLog");
 
-    Logger::Logger(std::string name, std::ostream &stream) : mName(name), mLogName(name.append(".log")),
+
+    Logger::Logger(std::string name, std::ostream &stream) : mName(name), mStatLogName(name.append(".log")),
                                                              mDebugLvl(dbg0), mOfstream(stream), mEnabled(false) {
         //The logger must be registered to be accessible by the LoggerCore
         LoggerCore::get().registerLogger(*this);
@@ -37,9 +39,16 @@ namespace vpsim {
         return mName;
     }
 
-
-    std::string Logger::logName() const {
-        return mLogName;
+    bool Logger::setStatLogName(std::string name) {
+         if (!this->mStatStream.is_open()) {
+            this->mStatLogName = name;
+            return true;
+        } 
+         return false;
+    }
+    
+    std::string Logger::statLogName() const {
+        return mStatLogName;
     }
 
 
@@ -101,7 +110,10 @@ namespace vpsim {
     std::ofstream &Logger::logStats() {
         if (canLogStats()) {
             if (!mStatStream.is_open()) {
-                mStatStream.open(mLogName.c_str(), std::ofstream::out);
+                if (globalLogger.canLogInfo()) {
+                     globalLogger.logInfo()  << "Opening the stat logfile" << std::endl;
+                }      
+                mStatStream.open(mStatLogName.c_str(), std::ofstream::out);
             }
             mStatStream.clear();
         } else {

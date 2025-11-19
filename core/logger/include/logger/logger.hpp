@@ -34,7 +34,7 @@ namespace vpsim {
         std::string mName;
 
         //! @brief Name of the log output file of the logger
-        std::string mLogName;
+        std::string mStatLogName;
 
         //! @brief Current level of debug of the logger
         DebugLvl mDebugLvl;
@@ -60,7 +60,11 @@ namespace vpsim {
 
         //! @brief Access the name of the output file of the logger
         //! @return The name of the output file of the logger
-        std::string logName() const;
+        std::string statLogName() const;
+
+        //! @brief Change the name of the output file of the logger
+        //! @return true if the name is correctly change (fail if already opened)
+        bool setStatLogName(std::string);
 
         //! @brief Tells if the logger can log info messages
         //! @return True if it can log info messages, false otherwise

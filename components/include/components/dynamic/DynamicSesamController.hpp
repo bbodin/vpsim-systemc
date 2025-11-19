@@ -502,13 +502,7 @@ namespace vpsim {
                             getDelayStatCapture());
                 }, // Non delayed IPs
                 [](VpsimIp *ip) {
-                    // Enable access simulation to all IPs
-                    /*if (ip->isMemoryMapped()) {
-                                          AddrSpace as(ip->getBaseAddress(),ip->getBaseAddress()+ip->getSize()-1);
-                                           ParamManager::get().setParameter(ip->getName(), as, BlockingTLMEnabledParameter::bt_enabled);
-                                  }*/
-                    // now segment stats
-                    //printf("Pushing stats for IP %s\n", ip->getName().c_str());
+                  
                     ip->pushStats();
                     //printf("Push ok.\n");
                 }

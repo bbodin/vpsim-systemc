@@ -252,16 +252,16 @@ namespace vpsim {
                 set = CacheSet<CacheLineType,
                     AddressType>(CacheLineSize, Associativity, ReplPolicy/*, higherCachesNb*/);
 
-            LOG_GLOBAL_INFO << "Cache parameters: " << endl;
-            LOG_GLOBAL_INFO << "Address bits: " << AddressBits << endl;
-            LOG_GLOBAL_INFO << "Offset bits : " << OffsetBits << endl;
-            LOG_GLOBAL_INFO << "IndexBits   : " << IndexBits << endl;
-            //LOG_GLOBAL_INFO << "TagBits     : "     << TagBits       << endl;
-            LOG_GLOBAL_INFO << "Nb sets     : " << NbSets << endl;
-            LOG_GLOBAL_INFO << "Cache size  : " << CacheSize << endl;
-            //LOG_GLOBAL_INFO << "NbLines     : "     << NbLines       << endl;
-            LOG_GLOBAL_INFO << "Line size   : " << CacheLineSize << endl;
-            LOG_GLOBAL_INFO << "Is a home   : " << IsHome << endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "Cache parameters: " << endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "Address bits: " << AddressBits << endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "Offset bits : " << OffsetBits << endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "IndexBits   : " << IndexBits << endl;
+            //LOG_GLOBAL_DEBUG(dbg1) << "TagBits     : "     << TagBits       << endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "Nb sets     : " << NbSets << endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "Cache size  : " << CacheSize << endl;
+            //LOG_GLOBAL_DEBUG(dbg1) << "NbLines     : "     << NbLines       << endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "Line size   : " << CacheLineSize << endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "Is a home   : " << IsHome << endl;
 
             NReads = NWrites = NInvals = NTotalInvals = NBackInvals = NEvicts = WriteBacks = EvictBacks = 0;
             NPutS = NPutM = NPutI = NGetS = NGetM = NFwdGetS = NFwdGetM = ReadBacks = 0;
@@ -1248,14 +1248,23 @@ namespace vpsim {
         void displayStats() {
             uint64_t AccessCount = MissCount + HitCount + NInvals + NEvicts;
             double MissRate = (AccessCount > 0) ? ((double) MissCount) / AccessCount : 0;
-            LOG_GLOBAL_STATS << this->name() << ": MissCount " << MissCount << " , HitCount " << HitCount << endl;
-            LOG_GLOBAL_STATS << this->name() << ": total accesses " << AccessCount << " , MissRate " << MissRate;
-            LOG_GLOBAL_STATS << " writes: " << NWrites << " reads: " << NReads << " WriteBacks: " << WriteBacks;
-            if (InclusionOfLower == Inclusive) LOG_GLOBAL_STATS << " total invalidations: " << NTotalInvals <<
-                                               " real invalidations: " << NInvals;
+            LOG_GLOBAL_STATS << this->name() << ": MissCount " << MissCount << endl;
+            LOG_GLOBAL_STATS << this->name() << ": HitCount " << HitCount << endl;
+            LOG_GLOBAL_STATS << this->name() << ": total accesses " << AccessCount  << endl;
+            LOG_GLOBAL_STATS << this->name() << ": MissRate " << MissRate << endl;
+            LOG_GLOBAL_STATS << this->name() << ": writes: " << NWrites  << endl;
+            LOG_GLOBAL_STATS << this->name() << ": reads: " << NReads  << endl;
+            LOG_GLOBAL_STATS << this->name() << ": WriteBacks: " << WriteBacks << endl;
 
-            if (InclusionOfLower == Exclusive) LOG_GLOBAL_STATS << " evictions: " << NEvicts;
-            LOG_GLOBAL_STATS << endl;
+            if (InclusionOfLower == Inclusive) {
+                LOG_GLOBAL_STATS << this->name() << ": total invalidations: " << NTotalInvals<< endl;
+                LOG_GLOBAL_STATS << this->name() << ": real invalidations: " << NInvals<< endl;
+            }
+
+            if (InclusionOfLower == Exclusive) {
+                LOG_GLOBAL_STATS << " evictions: " << NEvicts<< endl;
+            } 
+            
         }
 
         //!

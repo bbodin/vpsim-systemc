@@ -155,23 +155,55 @@ namespace vpsim {
         mBuilder.connect(fromName, fromPort, toName, toPort);
     }
 
-    void XmlConfigParser::readSimulation(rapidxml::xml_node<> *node) {
-        assert(node && std::strcmp(node->name(), "simulation") == 0);
-        for (rapidxml::xml_node<> *simNode = node->first_node(); simNode; simNode = simNode->next_sibling()) {
-            std::string simNodeName(simNode->name());
-            if (simNodeName == "quantum") {
-                //simNode->skip_children();
-                cerr << "Global quantum is not currently supported" << endl;
-                LOG_GLOBAL_INFO << "Global quantum is not currently supported" << endl;
-            } else if (simNodeName == "log") {
-                std::string val = simNode->value();
-                vpsim::DebugLvl level;
-                if (val == "enable") {
-                    LoggerCore::get().enableLogging(true);
-                }
-                else if (val == "disable") {
-                    LoggerCore::get().enableLogging(false);
-                } else {
+    void readWorkingDirectory(rapidxml::xml_node<> *node) {
+        std::string dir = std::string(node->value());
+        if (!dir.empty()) {
+            std::error_code ec;
+            std::filesystem::create_directories(dir, ec);
+            if (ec) {
+                std::cerr << "[WARNING] Failed to create working directory '" << dir << "': " << ec.message() << std::endl;
+            }
+            std::filesystem::current_path(dir, ec);
+            if (ec) {
+                std::cerr << "[WARNING] Failed to change working directory to '" << dir << "': " << ec.message() << std::endl;
+            } else {
+                std::cout << "[INFO] working directory set to '" << std::filesystem::current_path().string() << "'" << std::endl;
+            }
+        }
+    }
+    
+    void readTraceFile(rapidxml::xml_node<> *node) {
+    }
+
+    
+    void readLoggingDir(rapidxml::xml_node<> *node) {
+        
+        std::string dir = std::string(node->value());
+            if (!dir.empty()) {
+            std::error_code ec;
+            std::filesystem::create_directories(dir, ec);
+            if (ec) {
+                std::cerr << "[WARNING] Failed to create log directory '" << dir << "': " << ec.message() << std::endl;
+            }
+            std::string new_name = dir + "/globallog.log";
+            if (globalLogger.setStatLogName(new_name)) {
+                std::cout << "[INFO] Stat logging file set to '" << globalLogger.statLogName() << "'" << std::endl;
+            } else {
+                std::cerr << "[WARNING] Failed to change  Stat logging file to '" << new_name  << std::endl;
+            }
+        }
+    }
+
+
+    void readLoggingLevel(rapidxml::xml_node<> *node) {
+        
+        std::string val = node->value();
+        vpsim::DebugLvl level;
+        if (val == "enable") {
+            LoggerCore::get().enableLogging(true);
+        } else if (val == "disable") {
+            LoggerCore::get().enableLogging(false);
+        } else {
                      try {
                         int lvl = std::stoi(val);
                         level = static_cast<vpsim::DebugLvl>(lvl);
@@ -182,35 +214,34 @@ namespace vpsim {
                         // Handle unexpected input
                         std::cerr << "Invalid logger setting: '" << val << "'\n";
                     }
-                }
+        }
 
-                //bool enable = std::string(simNode->value()) == "enable";
-                //LoggerCore::get().enableLogging(enable);
-                //LoggerCore::get().setDebugLvl(level);
-                LOG_GLOBAL_DEBUG(dbg0) << "Logging info Debug0 is working" << endl;
-                LOG_GLOBAL_INFO << "Logging info level is working" << endl;
-                LOG_GLOBAL_WARNING << "Logging info warning is working" << endl;
-                LOG_GLOBAL_ERROR << "Logging info error is working" << endl;
+        LOG_GLOBAL_DEBUG(dbg0) << "Logging debug level 0 or more is working" << endl;
+        LOG_GLOBAL_INFO << "Logging info is working" << endl;
+        LOG_GLOBAL_WARNING << "Logging warning is working" << endl;
+        LOG_GLOBAL_ERROR << "Logging error is working" << endl;
+
+    }
+
+    void XmlConfigParser::readSimulation(rapidxml::xml_node<> *node) {
+        assert(node && std::strcmp(node->name(), "simulation") == 0);
+        for (rapidxml::xml_node<> *simNode = node->first_node(); simNode; simNode = simNode->next_sibling()) {
+            std::string simNodeName(simNode->name());
+            if (simNodeName == "quantum") {
+                //simNode->skip_children();
+                cerr << "Global quantum is not currently supported" << endl;
+                LOG_GLOBAL_INFO << "Global quantum is not currently supported" << endl;
+            } else if (simNodeName == "log_level") {
+                readLoggingLevel(simNode);
             } else if (simNodeName == "defaultBlockingTLM") {
                 auto defaultBTLM = std::string(simNode->value()) == "enable"
                                        ? BlockingTLMEnabledParameter::BT_ENABLED
                                        : BlockingTLMEnabledParameter::BT_DISABLED;
                 BlockingTLMEnabledParameter::setDefault(defaultBTLM);
-            } else if (simNodeName == "workingDir") {
-                std::string dir = std::string(simNode->value());
-                if (!dir.empty()) {
-                    std::error_code ec;
-                    std::filesystem::create_directories(dir, ec);
-                    if (ec) {
-                        std::cerr << "[WARNING] Failed to create log directory '" << dir << "': " << ec.message() << std::endl;
-                    }
-                    std::filesystem::current_path(dir, ec);
-                    if (ec) {
-                        std::cerr << "[WARNING] Failed to change working directory to '" << dir << "': " << ec.message() << std::endl;
-                    } else {
-                        std::cout << "[INFO] Logging directory set to '" << std::filesystem::current_path().string() << "'" << std::endl;
-                    }
-                }
+            } else if (simNodeName == "log_directory") {
+               readLoggingDir(simNode);
+            } else if (simNodeName == "working_directory") {
+                readWorkingDirectory(simNode);
             } else if (simNodeName == "logSchedule") {
                 readLogSchedule(simNode);
             } else if (simNodeName == "blockingTLMSchedule") {
