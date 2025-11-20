@@ -176,20 +176,21 @@ namespace vpsim {
     }
 
     
-    void readLoggingDir(rapidxml::xml_node<> *node) {
+    void readStatsFile(rapidxml::xml_node<> *node) {
         
-        std::string dir = std::string(node->value());
-            if (!dir.empty()) {
+        std::string filename = std::string(node->value());
+            if (!filename.empty()) {
             std::error_code ec;
+            std::filesystem::path dir = std::filesystem::path(filename).parent_path(); // extracts "/path/to/some"
             std::filesystem::create_directories(dir, ec);
             if (ec) {
                 std::cerr << "[WARNING] Failed to create log directory '" << dir << "': " << ec.message() << std::endl;
             }
-            std::string new_name = dir + "/globallog.log";
-            if (globalLogger.setStatLogName(new_name)) {
-                std::cout << "[INFO] Stat logging file set to '" << globalLogger.statLogName() << "'" << std::endl;
+
+            if (globalLogger.setStatLogName(filename)) {
+                std::cout << "[INFO] Stats logging file set to '" << globalLogger.statLogName() << "'" << std::endl;
             } else {
-                std::cerr << "[WARNING] Failed to change  Stat logging file to '" << new_name  << std::endl;
+                std::cerr << "[WARNING] Failed to change  Stats logging file to '" << filename  << std::endl;
             }
         }
     }
@@ -238,8 +239,8 @@ namespace vpsim {
                                        ? BlockingTLMEnabledParameter::BT_ENABLED
                                        : BlockingTLMEnabledParameter::BT_DISABLED;
                 BlockingTLMEnabledParameter::setDefault(defaultBTLM);
-            } else if (simNodeName == "log_directory") {
-               readLoggingDir(simNode);
+            } else if (simNodeName == "stats_file") {
+               readStatsFile(simNode);
             } else if (simNodeName == "working_directory") {
                 readWorkingDirectory(simNode);
             } else if (simNodeName == "logSchedule") {

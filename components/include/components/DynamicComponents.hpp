@@ -38,5 +38,9 @@
 #include "dynamic/DynamicTLMCallbackRegister.hpp"
 #include "dynamic/DynamicSesamController.hpp"
 #include "dynamic/DynamicPythonDevice.hpp"
+#include "dynamic/DynamicModelProvider.hpp"
+#include "dynamic/DynamicModelProviderParam.hpp"
+#include "dynamic/DynamicModelProviderDev.hpp"
+#include "dynamic/DynamicModelProviderCpu.hpp"
 
 #endif // DYNAMICCOMPONENTS_HPP_

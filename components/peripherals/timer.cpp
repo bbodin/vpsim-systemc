@@ -15,7 +15,7 @@
 */
 
 #include "timer.hpp"
-#include "GlobalPrivate.hpp"
+#include <TlmCallbackPrivate.hpp>
 
 namespace vpsim {
     //-----------------------------------------------------------------------------

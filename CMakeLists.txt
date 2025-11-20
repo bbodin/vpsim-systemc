@@ -173,7 +173,7 @@ target_include_directories(elfio INTERFACE extern/elfio)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeLists-tbb.txt.in
         ${CMAKE_CURRENT_BINARY_DIR}/tbb-download/CMakeLists.txt)
 
-execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}"  -DTBB_TEST=OFF  -DBUILD_TESTING=OFF .
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tbb-download" )
 
 execute_process(COMMAND "${CMAKE_COMMAND}" --build .
@@ -255,32 +255,16 @@ set_target_properties(vpsim_core PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 # COMPONENTS
 file(GLOB VPSIM_COMPONENTS_SOURCES
         CONFIGURE_DEPENDS
-        #components/compute/include/compute/arm.hpp
         components/compute/InterruptIf.cpp
-        #components/compute/include/compute/*.hpp
         components/compute/issFinder.cpp
         components/compute/issLibWrapper.cpp
         components/compute/issWrapper.cpp
         components/connect/interconnect.cpp
-        #components/connect/include/connect/interconnect.hpp
         components/connect/CoherenceInterconnect.cpp
-        #components/connect/include/connect/CoherenceInterconnect.hpp
-        #components/include/components/*.hpp
-        #components/include/components/*.h
-        #components/memory/include/memory/Cache.hpp
-        #components/memory/include/memory/CacheBase.hpp
-        #components/memory/include/memory/CacheLine.hpp
-        #components/memory/include/memory/CacheSet.hpp
-        #components/memory/include/memory/CoherenceExtension.hpp
-        #components/memory/include/memory/elfloader.hpp
-        #components/memory/include/memory/memory.hpp
         components/memory/elfloader.cpp
         components/memory/memory.cpp
-        components/peripherals/include/peripherals/*.hpp
         components/peripherals/*.cpp
         components/clean_components/SmartUart.cpp
-        #components/clean_components/include/components/SmartUart.hpp
-        #components/clean_components/include/components/CallbackRegister.hpp
         components/clean_components/CallbackRegister.cpp
 )
 

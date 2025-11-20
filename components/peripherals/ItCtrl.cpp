@@ -14,9 +14,9 @@
  * limitations under the License.
 */
 
+#include <TlmCallbackPrivate.hpp>
 #include "ItCtrl.hpp"
 #include "EndianHelper.hpp"
-#include "GlobalPrivate.hpp"
 #include "log.hpp"
 
 namespace vpsim {

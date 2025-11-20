@@ -16,7 +16,6 @@
 
 #include "DdsPublicationPoint.hpp"
 #include "EndianHelper.hpp"
-#include "GlobalPrivate.hpp"
 
 namespace vpsim {
     DdsPublicationPoint::DdsPublicationPoint(sc_module_name Name, uint64_t Size) : sc_module(Name),

@@ -16,10 +16,9 @@
 
 #include "uart.hpp"
 #include "log.hpp"
-#include "GlobalPrivate.hpp"
 
-//#include "scriptParam.hpp"
 #include "vpsimParam.hpp"
+#include <TlmCallbackPrivate.hpp>
 #include <string>
 
 namespace vpsim {

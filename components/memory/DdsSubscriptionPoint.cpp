@@ -17,7 +17,6 @@
 #include "DdsSubscriptionPoint.hpp"
 #include "EndianHelper.hpp"
 #include <malloc.h>
-#include "GlobalPrivate.hpp"
 
 namespace vpsim {
     DdsSubscriptionPoint::DdsSubscriptionPoint(sc_module_name Name, uint64_t Size) : sc_module(Name),

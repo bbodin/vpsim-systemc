@@ -15,7 +15,7 @@
 */
 
 #include "memory.hpp"
-#include "GlobalPrivate.hpp"
+#include <TlmCallbackPrivate.hpp>
 
 namespace vpsim {
     //---------------------------------------------------

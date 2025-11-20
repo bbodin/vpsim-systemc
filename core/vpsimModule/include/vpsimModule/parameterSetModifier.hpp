@@ -21,7 +21,6 @@
 #include <set>
 #include "AddrSpace.hpp"
 #include "parameterSet.hpp"
-#include "GlobalPrivate.hpp"
 
 namespace vpsim {
     //! @brief Base class for classes which modifies a parameterSet when applied to a ParameterSet

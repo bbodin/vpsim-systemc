@@ -27,24 +27,24 @@ int sc_main(int argc, char *argv[]) {
 
 TEST(Logger, construction) {
     __attribute__((unused))
-            Logger logger("testLoggerConstruction");
+            Logger logger("testLoggerConstruction", "output.log");
     SUCCEED(); //Constructor did not crash: fine
 }
 
 TEST(Logger, name) {
-    Logger logger("testLoggerName");
+    Logger logger("testLoggerName", "output.log");
 
     EXPECT_EQ("testLoggerName", logger.name());
 }
 
 TEST(Logger, logName) {
-    Logger logger("testLoggerName");
+    Logger logger("testLoggerName", "output.log");
 
-    EXPECT_EQ("testLoggerName.log", logger.statLogName());
+    EXPECT_EQ("output.log", logger.statLogName());
 }
 
 TEST(Logger, canLog) {
-    Logger logger("testLoggerCanLog");
+    Logger logger("testLoggerCanLog", "output.log");
 
     LoggerCore::get().enableLogging(false);
     EXPECT_FALSE(logger.canLogInfo());
@@ -65,7 +65,7 @@ TEST(Logger, canLog) {
 }
 
 TEST(Logger, getOftreams) {
-    Logger logger("testLoggerGetOfstreams");
+    Logger logger("testLoggerGetOfstreams", "output.log");
 
     LoggerCore::get().enableLogging(false);
     EXPECT_FALSE(logger.logInfo().good());
@@ -90,10 +90,10 @@ TEST(Logger, writeLog) {
 
     // most log are not in the log file, but in the standard output or a specific stream
 
+    std::string logger_name = "testLoggerWriteLog";
     std::ostringstream oss;
-    Logger logger("testLoggerWriteLog", oss);
+    Logger logger(logger_name, "", oss);
 
-    std::ifstream stats_ifstream(logger.statLogName());
     std::string lineIn, lineOut;
     LoggerCore::get().enableLogging(true);
 
@@ -122,11 +122,34 @@ TEST(Logger, writeLog) {
     lineOut = oss.str();
     EXPECT_EQ(lineIn + '\n', lineOut);
 
-    // Stats are in a separate file.
+
+    // Stats are in a separate scope to make sure to saves the file.
+    std::string outputlogfile = "testLoggerWriteLog.log";
+    {
+        // The log file should not exist...
+        if (std::filesystem::exists(outputlogfile)) {
+            std::filesystem::remove(outputlogfile);
+        }
+
+        Logger logger(logger_name + "bis", outputlogfile, oss); // Two loggers cannot have the same name
+        EXPECT_FALSE(std::filesystem::exists(logger.statLogName()));
+        lineIn =  "test log stats is here";
+        logger.logStats() << lineIn << std::endl;
+    }
     
-    lineIn =  "test log stats is here";
-    logger.logStats() << lineIn << std::endl;
-    std::getline(stats_ifstream, lineOut);
+    std::ifstream stats_ifstream(outputlogfile);
+    if (std::getline(stats_ifstream, lineOut)) {
+        // Successfully read a line
+        std::cout << "Line: " << lineOut << "\n";
+    } else {
+        if (stats_ifstream.eof()) {
+            std::cerr << "Reached end of file\n";
+        } else if (stats_ifstream.fail()) {
+            std::cerr << "Logical error while reading\n";
+        } else if (stats_ifstream.bad()) {
+            std::cerr << "Read/write error on i/o operation\n";
+        }
+    }
     EXPECT_EQ(lineIn, lineOut);
 
 
@@ -135,7 +158,7 @@ TEST(Logger, writeLog) {
 TEST(Logger, writeLogMacro) {
     class MyIp : public Logger {
     public:
-        MyIp(std::string name, std::ostringstream& oss) : Logger(name, oss) {
+        MyIp(std::string name, std::ostringstream& oss) : Logger(name, name + ".log", oss) {
         }
 
         void writeAnInfo() { LOG_INFO << "An info" << std::endl; }

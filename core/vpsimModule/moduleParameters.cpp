@@ -17,7 +17,6 @@
 #include <utility>
 #include <algorithm>
 #include <paramManager.hpp>
-#include "GlobalPrivate.hpp"
 #include "moduleParameters.hpp"
 
 using namespace vpsim;

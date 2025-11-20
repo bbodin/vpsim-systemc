@@ -49,7 +49,7 @@ namespace vpsim {
     public:
         //! @brief Only public Constructor
         //! @param[in] name Name to give to the logger
-        Logger(const std::string name, std::ostream &stream = std::cout);
+        Logger(const std::string& name, const std::string& statslogfile = "", std::ostream &stream = std::cout);
 
         //! @brief Destructor
         ~Logger();
