@@ -15,7 +15,8 @@
 */
 
 #include <string>
-#include <log.hpp>
+#include <logger/logger.hpp>
+#include <logger/loggerCore.hpp>
 #include <filesystem>
 #include "platform_builder/xmlConfigParser.hpp"
 

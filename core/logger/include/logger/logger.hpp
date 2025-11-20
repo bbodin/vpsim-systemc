@@ -23,8 +23,10 @@
 #include <sstream>
 #include "logResources.hpp"
 
+
+
 namespace vpsim {
-    //! @brief Class to inherit from to use the logging macros in log.hpp.
+    //! @brief Class to inherit from to use the logging macros below.
     class Logger {
         //! @brief Allows the LoggerCore to change the debug level of the Logger object
         friend class LoggerCore;
@@ -122,5 +124,44 @@ namespace vpsim {
         Logger();
     };
 }
+
+
+namespace vpsim {
+    extern Logger globalLogger;
+}
+
+//! @brief provides a stream to the logging file for a line of INFO in the global log file
+#define LOG_GLOBAL_INFO        if(globalLogger.canLogInfo())       globalLogger.logInfo()       << "[Info] "
+
+//! @brief provides a stream to the logging file for a line of WARNING in the global log file
+#define LOG_GLOBAL_WARNING     if(globalLogger.canLogWarning())    globalLogger.logWarning()    << "[Warning] "
+
+//! @brief provides a stream to the logging file for a line of ERROR in the global log file
+#define LOG_GLOBAL_STATS       if(globalLogger.canLogStats())      globalLogger.logStats()      << "[Stats] "
+
+//! @brief provides a stream to the logging file for a line of ERROR in the global log file
+#define LOG_GLOBAL_ERROR       if(globalLogger.canLogError())      globalLogger.logError()      << "[Error] "
+
+//! @brief provides a stream to the logging file for a line of DEBUG in the global log file
+//! @param[in] lvl Level of debug of the message
+#define LOG_GLOBAL_DEBUG(lvl)  if(globalLogger.canLogDebug((lvl))) globalLogger.logDebug((lvl)) << "[Debug" << (lvl) << "] "
+
+
+
+//! @brief provides a stream to the logging file for a line of INFO
+#define LOG_INFO        if(Logger::canLogInfo())       Logger::logInfo()       << "[Info] "
+
+//! @brief provides a stream to the logging file for a line of WARNING
+#define LOG_WARNING     if(Logger::canLogWarning())    Logger::logWarning()    << "[Warning] "
+
+//! @brief provides a stream to the logging file for a line of STATS
+#define LOG_STATS       if(Logger::canLogStats())      Logger::logStats()      << "[Stats] "
+
+//! @brief provides a stream to the logging file for a line of ERROR
+#define LOG_ERROR       if(Logger::canLogError())      Logger::logError()      << "[Error] "
+
+//! @brief provides a stream to the logging file for a line of DEBUG
+//! @param[in] lvl Level of debug of the message
+#define LOG_DEBUG(lvl)  if(Logger::canLogDebug((lvl))) Logger::logDebug((lvl)) << "[Debug" << (lvl) << "] "
 
 #endif /* end of include guard: _LOGGER_HPP_ */

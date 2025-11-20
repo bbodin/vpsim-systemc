@@ -16,7 +16,7 @@
 
 #include "CoherenceInterconnect.hpp"
 #include <utility>
-#include "log.hpp"
+#include <logger/logger.hpp>
 #include "MainMemCosim.hpp"
 #include "IOAccessCosim.hpp"
 

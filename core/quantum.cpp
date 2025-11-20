@@ -15,7 +15,7 @@
 */
 
 #include "quantum.hpp"
-#include "log.hpp"
+#include <logger/logger.hpp>
 
 namespace vpsim {
     ParallelQuantumKeeper::ParallelQuantumKeeper(unsigned int quantum) : forceSyncCount(0),

@@ -15,7 +15,7 @@
 */
 
 #include "interconnect.hpp"
-#include "log.hpp"
+#include <logger/logger.hpp>
 #include <sstream>
 #include "MainMemCosim.hpp"
 

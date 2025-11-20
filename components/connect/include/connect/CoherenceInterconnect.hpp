@@ -19,7 +19,7 @@
 
 #include "global.hpp"
 #include <list>
-#include "log.hpp"
+#include <logger/logger.hpp>
 #include "TargetIf.hpp"
 #include "DmiKeeper.hpp"
 #include "CoherenceExtension.hpp"

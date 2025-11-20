@@ -26,7 +26,7 @@
 #include "InterruptSource.hpp"
 
 
-#include "log.hpp"
+#include <logger/logger.hpp>
 using namespace std;
 
 namespace vpsim {

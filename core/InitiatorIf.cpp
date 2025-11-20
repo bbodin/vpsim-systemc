@@ -19,7 +19,7 @@
 #include <utility>
 
 #include <utility>
-#include "log.hpp"
+#include <logger/logger.hpp>
 
 namespace vpsim {
     using namespace tlm;

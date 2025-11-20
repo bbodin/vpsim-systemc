@@ -16,7 +16,8 @@
 
 
 #include <gtest/gtest.h>
-#include "log.hpp"
+#include <logger/loggerCore.hpp>
+#include <logger/logger.hpp>
 #include "appointment.hpp"
 #include <sstream>
 #include <iomanip>

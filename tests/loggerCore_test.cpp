@@ -16,7 +16,8 @@
 
 
 #include <gtest/gtest.h>
-#include "log.hpp"
+#include <logger/logger.hpp>
+#include <logger/loggerCore.hpp>
 #include <sstream>
 
 using namespace vpsim;

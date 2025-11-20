@@ -19,7 +19,7 @@
 #include <poll.h>
 #include <unistd.h>
 
-#include "log.hpp"
+#include <logger/logger.hpp>
 
 namespace vpsim {
     using namespace std;

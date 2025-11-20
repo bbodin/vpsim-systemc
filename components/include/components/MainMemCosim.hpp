@@ -30,7 +30,7 @@
 #include <map>
 #include <mutex>
 #include <tuple>
-#include <logger/log.hpp>
+#include <logger/logger.hpp>
 using namespace std;
 using namespace moodycamel;
 

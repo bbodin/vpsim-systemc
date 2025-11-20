@@ -26,7 +26,7 @@
 
 #include "vpsimModule/vpsimModule.hpp"
 #include "vpsimModule/ExtraIpFeatures_if.hpp"
-#include "logger/log.hpp"
+#include <logger/logger.hpp>
 #include "ForwardSimpleSocket.hpp"
 
 
@@ -341,6 +341,7 @@ namespace vpsim {
         }
 
         virtual void pushStats() {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement pushStats().\n";
             if (mSegmentedStats.empty()) {
                 mSegmentedStats.push_back({});
             }
@@ -348,6 +349,7 @@ namespace vpsim {
         }
 
         virtual void setStatsAndDie() {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement setStatsAndDie().\n";
         }
 
         static std::map<std::string, std::function<VpsimIp<InPortType, OutPortType> *(std::string)> > RegisteredClasses;

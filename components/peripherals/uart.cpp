@@ -15,7 +15,7 @@
 */
 
 #include "uart.hpp"
-#include "log.hpp"
+#include <logger/logger.hpp>
 
 #include "vpsimParam.hpp"
 #include <TlmCallbackPrivate.hpp>

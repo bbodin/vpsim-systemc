@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include <atomic>
-#include "log.hpp"
+#include <logger/logger.hpp>
 #include "VpsimIp.hpp"
 #include "connect/interconnect.hpp"
 
@@ -31,6 +31,7 @@ namespace vpsim {
         }
 
         void pushStats() override {
+             LOG_GLOBAL_DEBUG(dbg0) << "Your component " << this->getName() << " is asked to push stats.\n";
             if (mSegmentedStats.empty()) {
                 mSegmentedStats.push_back({});
                 auto &back = mSegmentedStats.back();

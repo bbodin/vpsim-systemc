@@ -45,6 +45,7 @@ namespace vpsim {
         }
 
         void pushStats() override {
+             LOG_GLOBAL_DEBUG(dbg0) << "Your component " << this->getName() << " is asked to push stats.\n";
             static uint64_t ns_per_sec = 1000000000;
 
             string distanceKey = string("Total_Distance");

@@ -15,7 +15,8 @@
 */
 
 #include <gtest/gtest.h>
-#include "log.hpp"
+#include <logger/logger.hpp>
+#include <logger/loggerCore.hpp>
 
 using namespace vpsim;
 using namespace sc_core;

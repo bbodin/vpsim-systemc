@@ -17,7 +17,7 @@
 #include <TlmCallbackPrivate.hpp>
 #include "ItCtrl.hpp"
 #include "EndianHelper.hpp"
-#include "log.hpp"
+#include <logger/logger.hpp>
 
 namespace vpsim {
     ItCtrl::ItCtrl(const sc_module_name& Name, uint32_t LineCount, uint32_t LineSize) : sc_module(Name),

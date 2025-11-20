@@ -73,6 +73,7 @@ namespace vpsim {
         }
 
         void pushStats() override {
+             LOG_GLOBAL_DEBUG(dbg0) << "Your component " << this->getName() << " is asked to push stats.\n";
         }
 
         void setStatsAndDie() override {

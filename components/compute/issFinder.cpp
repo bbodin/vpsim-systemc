@@ -17,7 +17,7 @@
 #include <istream>
 #include <fstream>
 #include "issFinder.hpp"
-#include "log.hpp"
+#include <logger/logger.hpp>
 
 
 using namespace std;

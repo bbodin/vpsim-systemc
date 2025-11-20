@@ -31,6 +31,7 @@ namespace vpsim {
         }
 
         void pushStats() override {
+             LOG_GLOBAL_DEBUG(dbg0) << "Your component " << this->getName() << " is asked to push stats.\n";
             if (mSegmentedStats.empty()) {
                 mSegmentedStats.push_back({
                     {"reads", "0"},

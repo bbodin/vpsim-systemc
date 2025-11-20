@@ -21,7 +21,7 @@
 #include <map>
 #include <systemc>
 #include <tlm>
-#include <logger/log.hpp>
+#include <logger/logger.hpp>
 #include <core/TargetIf.hpp>
 #include <core/TlmCallbackPrivate.hpp>
 

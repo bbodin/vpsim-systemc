@@ -19,7 +19,7 @@
 
 #include "global.hpp"
 #include <list>
-#include "log.hpp"
+#include <logger/logger.hpp>
 
 namespace vpsim {
     struct addr_space_type {

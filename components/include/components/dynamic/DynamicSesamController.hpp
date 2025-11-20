@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <atomic>
 #include <csignal>
+#include <logger/loggerCore.hpp>
 
 namespace vpsim {
 
@@ -150,7 +151,7 @@ namespace vpsim {
 
         void process_end_capture(size_t counter) {
             // Use the same logger formatting as the global log to ensure consistency
-            const std::string baseName = this->getLogDirectory() + "/" + std::string("sesamBench_") + appName + std::string("_") + std::to_string(counter - 1);
+            const std::string baseName = this->getLogDirectory() + "/" + std::string("sesamCapture_") + appName + std::string("_") + std::to_string(counter - 1);
             
             LOG_GLOBAL_INFO << "inside process_end_capture " << std::endl;
             LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
@@ -571,7 +572,7 @@ namespace vpsim {
             );
 
 
-            std::string baseName = this->getLogDirectory() + "/sesamBench_" + appName + "_" + std::to_string(nbCommandCounter++) + ".log";
+            std::string baseName = this->getLogDirectory() + "/sesamSnap_" + appName + "_" + std::to_string(nbCommandCounter++) + ".log";
 
             LOG_GLOBAL_INFO << "inside snapshot " << std::endl;
             LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;

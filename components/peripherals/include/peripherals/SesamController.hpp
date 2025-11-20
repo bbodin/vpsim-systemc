@@ -50,7 +50,7 @@ namespace vpsim {
     protected:
         string mCommandOutputBuffer;
 
-        size_t nbCommandCounter = 0; //used to increment fileName id. For instance: sesamBench_0, sesamBench_1,...
+        size_t nbCommandCounter = 0; 
         //It is not a static variable, so not adapted if there are multiple instances of sesamController
         bool delayedCaptureRunning = false; // Precaution for sesam benchmark commands overlapping
     };

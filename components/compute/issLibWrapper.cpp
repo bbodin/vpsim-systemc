@@ -18,7 +18,7 @@
 
 #include "issLibWrapper.hpp"
 #include "issWrapper.hpp"
-#include "log.hpp"
+#include <logger/logger.hpp>
 
 #define DIAGNOSTIC_LEVEL DBG_L0
 
