@@ -151,8 +151,8 @@ namespace vpsim {
 
 
 
-        void setStatsAndDie() override {
-            if (mModulePtr) {
+        void setStats() override {
+             if (mModulePtr) {
                 struct ent {
                     char name[512];
                     uint64_t val;
@@ -160,12 +160,17 @@ namespace vpsim {
 
                 ent *statlist;
                 uint32_t count;
-
+                // TODO : Check memory leak here
                 mModulePtr->get_stats(mModulePtr->index, &count, (void **) &statlist);
                 for (unsigned i = 0; i < count; i++) {
                     mStats[string(statlist[i].name)] = to_string(statlist[i].val);
                 }
 
+            }
+        }
+        void terminate() override {
+            if (mModulePtr) {
+              
                 delete mModulePtr;
             }
         }

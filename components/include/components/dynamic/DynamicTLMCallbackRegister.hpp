@@ -89,10 +89,11 @@ namespace vpsim {
             });
         }
 
-        void setStatsAndDie() override {
+        void setStats() override {
             mStats["nb_reads"] = std::to_string(this->getNbReads());
             mStats["nb_writes"] = std::to_string(this->getNbWrites());
         }
+    
 
         void registerCallback(uint64_t val, const string &callback) override {
             TLMCallbackRegister<T>::registerCallback(val, callback);

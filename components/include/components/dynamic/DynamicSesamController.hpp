@@ -531,7 +531,7 @@ namespace vpsim {
                 return true;
             }
 
-            if (MainMemPtr) {
+            if (MainMemPtr && !delayedCaptureRunning ) {
                 delayedCaptureRunning = true;
                 MainMemPtr->NotifySesamCommand(nbCommandCounter + 1, true);
                 mBenchStartTime = MainMemPtr->getCurrentTime();
@@ -557,19 +557,13 @@ namespace vpsim {
                             getDelayStatCapture()); // Non delayed IPs
                 },
                 [this](VpsimIp *ip) {
-                    ip->pushStats();
-                    auto &stats = ip->getSegStats().back();
+                    ip->setStats();
+                    auto &stats = ip->getStats();
 
                     if (stats.size()) {
-                        mCommandOutputBuffer += "-----------------------------------\n";
-                        mCommandOutputBuffer += "\nStatistics from ";
-                        mCommandOutputBuffer += ip->getName() + "\n";
                         for (auto &stat: stats) {
-                            mCommandOutputBuffer += "\t";
-                            mCommandOutputBuffer += stat.first + " = ";
-                            mCommandOutputBuffer += stat.second + "\n";
+                            mCommandOutputBuffer += "(" + ip->getName() + ")\t"+ stat.first + " = "+ stat.second + "\n";
                         }
-                        //ip->clearSegStats();
                     }
                 }
             );
@@ -577,14 +571,10 @@ namespace vpsim {
 
             std::string baseName = this->getLogDirectory() + "/sesamSnap_" + appName + "_" + std::to_string(nbCommandCounter++) + ".log";
 
-            LOG_GLOBAL_INFO << "inside snapshot " << std::endl;
-            LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
-            LOG_GLOBAL_INFO << "Saving ..." << std::endl;
-
             std::FILE *LogFile = fopen(baseName.c_str(), "w");
             fprintf(LogFile, "%s", mCommandOutputBuffer.c_str());
             fclose(LogFile);
-            LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
+            LOG_GLOBAL_INFO << "Snapshot saved to " << baseName << std::endl;
 
             return false;
             

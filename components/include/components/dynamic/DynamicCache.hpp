@@ -236,7 +236,7 @@ namespace vpsim {
             });
         }
 
-        void setStatsAndDie() override {
+        void setStats() override {
             if (mModulePtr) {
                 mStats["misses"] = std::to_string(mModulePtr->getMisses());
                 mStats["hits"] = std::to_string(mModulePtr->getHits());
@@ -260,11 +260,17 @@ namespace vpsim {
                 mStats["GetM"] = std::to_string(mModulePtr->getGetM());
                 mStats["FwdGetS"] = std::to_string(mModulePtr->getFwdGetS());
                 mStats["FwdGetM"] = std::to_string(mModulePtr->getFwdGetM());
-                delete mModulePtr;
-            } else {
-                LOG_GLOBAL_WARNING << "The component " << this->getName() << " failed setStatsAndDie().\n";
             }
         }
+        
+        void terminate() override {
+            if (mModulePtr) {
+                delete mModulePtr;
+            }
+        }
+
+
+
 
         void configure() override {
             mModulePtr->configure();

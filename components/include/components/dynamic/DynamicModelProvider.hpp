@@ -245,7 +245,7 @@ namespace vpsim {
             mModulePtr->finalize_config();
         }
 
-        void setStatsAndDie() override {
+        void terminate() override {
             if (mModulePtr) {
                 delete mModulePtr;
             }

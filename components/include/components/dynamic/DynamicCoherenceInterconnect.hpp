@@ -215,8 +215,8 @@ namespace vpsim {
             mSegmentedStats.push_back(std::move(newMap));
         }
 
-        void setStatsAndDie() override {
-            uint64_t ns_per_sec = 1000000000;
+        void setStats() override {
+    uint64_t ns_per_sec = 1000000000;
             if (mModulePtr) {
                 if (getAttrAsUInt64("is_mesh")) {
                     /*for (unsigned i = 0; i<mModulePtr->getMMappedCount(); i++) {
@@ -271,12 +271,19 @@ namespace vpsim {
                                 avg_lat.to_seconds()*ns_per_sec) + " ns";
                         }
 
-                        (mModulePtr->initTotalStats).clear();
                     }
                 }
+            }
+        }
+        
+        void terminate() override {
+            if (mModulePtr) {
+                (mModulePtr->initTotalStats).clear();
                 delete mModulePtr;
             }
         }
+
+
 
         unsigned getMaxInPortCount() override {
             return getAttrAsUInt64("n_cache_in") + getAttrAsUInt64("n_home_in") + getAttrAsUInt64("n_device");

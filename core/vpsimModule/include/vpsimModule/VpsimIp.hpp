@@ -342,14 +342,23 @@ namespace vpsim {
 
         virtual void pushStats() {
             LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement pushStats().\n";
+
             if (mSegmentedStats.empty()) {
                 mSegmentedStats.push_back({});
             }
             mSegmentedStats.push_back({});
         }
+        virtual void setStats() {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement setStats().\n";
+        }
+        
+        virtual void terminate() {
+            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement terminate().\n";
+        }
 
         virtual void setStatsAndDie() {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement setStatsAndDie().\n";
+            this->setStats();
+            this->terminate();
         }
 
         static std::map<std::string, std::function<VpsimIp<InPortType, OutPortType> *(std::string)> > RegisteredClasses;
@@ -593,6 +602,8 @@ namespace vpsim {
 
         std::vector<std::map<std::string, std::string> > &
         getSegStats() { return mSegmentedStats; }
+        const std::map<std::string, std::string> &
+        getStats() const { return mStats; }
 
         void clearSegStats() { mSegmentedStats.clear(); }
         void setDelayStatCapture(const bool toDelay) { delayStatCapture = toDelay; }

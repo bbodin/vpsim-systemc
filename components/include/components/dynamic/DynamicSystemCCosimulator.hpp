@@ -54,7 +54,7 @@ namespace vpsim {
 
         void finalize() override {}
 
-        void setStatsAndDie() override {
+        void terminate() override {
             if (mModulePtr) { delete mModulePtr; } 
         }
 

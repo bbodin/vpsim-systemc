@@ -139,7 +139,7 @@ namespace vpsim {
             ((DynamicGIC *) instance)->update_irq(value, line | ((1 << id) << 16));
         }
 
-        void setStatsAndDie() override {
+        void terminate() override {
             if (lib) {
                 dlclose(lib);
             }

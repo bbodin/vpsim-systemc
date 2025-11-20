@@ -61,12 +61,16 @@ namespace vpsim {
             mSegmentedStats.push_back(std::move(newMap));
         }
 
-        void setStatsAndDie() override {
+        void setStats() override {
             if (mModulePtr) {
                 for (unsigned i = 0; i < getMaxOutPortCount(); i++) {
                     mStats[string("written_bytes[") + std::to_string(i) + "]"] = std::to_string(mModulePtr->getWriteCount(i));
                     mStats[string("read_bytes[") + std::to_string(i) + "]"] = std::to_string(mModulePtr->getReadCount(i));
                 }
+            }
+        }
+        void terminate() override {
+            if (mModulePtr) {
                 delete mModulePtr;
             }
         }

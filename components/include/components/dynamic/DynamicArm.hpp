@@ -147,11 +147,15 @@ namespace vpsim {
             });
         }
 
-        void setStatsAndDie() override {
+        void setStats() override {
             if (mModulePtr) {
                 mStats["instructions"] = std::to_string(mModulePtr->getInstructionCount());
                 mStats["data_access"] = std::to_string(mModulePtr->getDataAccessCount());
+            }
+        }
 
+        void terminate() override {
+            if (mModulePtr) {
                 delete mModulePtr;
             }
         }

@@ -73,7 +73,7 @@ namespace vpsim {
             cosim->mModulePtr->setIOAccessPtr(mModulePtr);
         }
 
-        void setStatsAndDie() override {
+        void terminate() override {
             if (mModulePtr) {
                 delete mModulePtr;
             }

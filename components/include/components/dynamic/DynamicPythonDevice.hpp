@@ -80,7 +80,7 @@ namespace vpsim {
             return (unsigned char *) mModulePtr->getLocalMem();
         }
 
-        void setStatsAndDie() override {
+        void terminate() override {
             if (mModulePtr) {
                 delete mModulePtr;
             }

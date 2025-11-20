@@ -59,10 +59,14 @@ namespace vpsim {
             });
         }
 
-        void setStatsAndDie() override {
+        void setStats() override {
             if (mModulePtr) {
                 mStats["reads"] = std::to_string(mModulePtr->getReadCount());
                 mStats["writes"] = std::to_string(mModulePtr->getWriteCount());
+            }
+        }
+        void terminate() override {
+            if (mModulePtr) {
                 delete mModulePtr;
             }
         }
