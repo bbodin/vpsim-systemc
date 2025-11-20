@@ -219,7 +219,9 @@ namespace vpsim {
 
             VpsimIp::MapIf(
                 [this](VpsimIp *ip) {
-                    //printf("ip %s is of domain %ld\n", ip->getName().c_str(),ip->getAttrAsUInt64("domain"));
+                    //LOG_GLOBAL_DEBUG(dbg1) << "ip " << ip->getName() << " is of domain " << ip->getAttrAsUInt64("domain") << " with delayCapture = " << ip->
+                    //        getDelayStatCapture() << std::endl;
+                    
                     return (ip->getAttrAsUInt64("domain") == this->mBenchDomain && !ip->
                             getDelayStatCapture()); // Non delayed IPs
                 },
@@ -549,7 +551,8 @@ namespace vpsim {
 
             VpsimIp::MapIf(
                 [this](VpsimIp *ip) {
-                    //printf("ip %s is of domain %ld\n", ip->getName().c_str(),ip->getAttrAsUInt64("domain"));
+                    //LOG_GLOBAL_DEBUG(dbg1) << "ip " << ip->getName() << " is of domain " << ip->getAttrAsUInt64("domain") << " with delayCapture = " << ip->
+                    //        getDelayStatCapture() << std::endl;
                     return (ip->getAttrAsUInt64("domain") == this->mBenchDomain && !ip->
                             getDelayStatCapture()); // Non delayed IPs
                 },

@@ -261,6 +261,8 @@ namespace vpsim {
                 mStats["FwdGetS"] = std::to_string(mModulePtr->getFwdGetS());
                 mStats["FwdGetM"] = std::to_string(mModulePtr->getFwdGetM());
                 delete mModulePtr;
+            } else {
+                LOG_GLOBAL_WARNING << "The component " << this->getName() << " failed setStatsAndDie().\n";
             }
         }
 

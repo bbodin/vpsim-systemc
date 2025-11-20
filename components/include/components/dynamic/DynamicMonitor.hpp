@@ -43,8 +43,7 @@ struct DynamicMonitor : public VpsimIp<InPortType, OutPortType> {
         issProvider->monitorRange(getAttrAsUInt64("start_address"), getAttrAsUInt64("size"));
     }
 
-    void setStatsAndDie() override {
-    }
+
 };
 }
 

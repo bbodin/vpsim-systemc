@@ -104,8 +104,7 @@ namespace vpsim {
 
         InterruptIf *getIrqIf() override { return this; }
 
-        void setStatsAndDie() override {
-        }
+
     };
 }
 

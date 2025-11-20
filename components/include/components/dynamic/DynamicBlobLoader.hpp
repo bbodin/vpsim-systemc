@@ -45,8 +45,7 @@ struct DynamicBlobLoader : public VpsimIp<InPortType, OutPortType> {
                 endl;
     }
 
-    void setStatsAndDie() override {
-    }
+
 };
 }
 

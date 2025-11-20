@@ -149,9 +149,7 @@ namespace vpsim {
             dynamic_cast<DynamicGIC*>(par)->connectCpu(getIrqIf(),getAttrAsUInt64("id"));*/
         }
 
-        /*virtual VpsimModule* asModule() {
-                return mModulePtr;
-        }*/
+
 
         void setStatsAndDie() override {
             if (mModulePtr) {

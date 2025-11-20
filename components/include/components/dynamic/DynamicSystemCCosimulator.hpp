@@ -54,7 +54,9 @@ namespace vpsim {
 
         void finalize() override {}
 
-        void setStatsAndDie() override { if (mModulePtr) { delete mModulePtr; } }
+        void setStatsAndDie() override {
+            if (mModulePtr) { delete mModulePtr; } 
+        }
 
     private:
         SystemCCosimulator *mModulePtr;

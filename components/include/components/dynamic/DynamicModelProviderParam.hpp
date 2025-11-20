@@ -53,8 +53,7 @@ namespace vpsim {
             mp->mModulePtr->addParam1(getAttr("option"));*/
         }
 
-        void setStatsAndDie() override {
-        }
+
     };
 
     struct DynamicModelProviderParam2 : public VpsimIp<InPortType, OutPortType> {
@@ -104,8 +103,7 @@ namespace vpsim {
             mp->mModulePtr->addParam2(getAttr("option"),getAttr("value"));*/
         }
 
-        void setStatsAndDie() override {
-        }
+
     };
 
 

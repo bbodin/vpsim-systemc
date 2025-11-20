@@ -93,8 +93,7 @@ namespace vpsim {
         }
 
 
-        void setStatsAndDie() override {
-        }
+
     };
 }
 

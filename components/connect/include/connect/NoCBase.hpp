@@ -24,6 +24,8 @@
 #include "dijkstra.hpp"
 #include <semaphore.h> //TODO consider deleting
 #include "NoCIF.hpp"
+#include "NoCTLMBase.hpp"
+#include "WrapperNoC.hpp"
 
 
 using namespace std;

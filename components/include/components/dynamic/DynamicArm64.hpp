@@ -128,7 +128,7 @@ namespace vpsim {
                 this->mIssTLMParam.emplace_back(make_pair(addr, uint64_t(paramF) | (uint64_t(paramRW) << 1)));
                 return &this->mIssTLMParam.rbegin()->second;
             };
-            mModulePtr->registerIssGetDoTLM(move(getDoTLM));
+            mModulePtr->registerIssGetDoTLM(std::move(getDoTLM));
 
             auto updateIssDoTLM = [this] {
                 //icache is on port 0, dcache is on port 1
@@ -139,7 +139,7 @@ namespace vpsim {
                 }
             };
 
-            ParamManager::get().registerUpdateHook(getName(), move(updateIssDoTLM));
+            ParamManager::get().registerUpdateHook(getName(), std::move(updateIssDoTLM));
         }
 
         void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,

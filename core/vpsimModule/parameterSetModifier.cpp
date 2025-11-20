@@ -99,7 +99,7 @@ ParameterSet &ParameterSetAddressTranslator::applyNonRecursive(ParameterSet &ps)
             newContainer.emplace_back(AddrSpace(newBase, newEnd), p->second->clone());
         }
 
-        ps = move(newContainer);
+        ps =std::move(newContainer);
     };
 
     //Apply the translation on every map in the parameterSet

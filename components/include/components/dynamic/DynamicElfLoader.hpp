@@ -46,8 +46,7 @@ struct DynamicElfLoader : public VpsimIp<InPortType, OutPortType> {
     void finalize() override {
     }
 
-    void setStatsAndDie() override {
-    }
+
 };
 }
 

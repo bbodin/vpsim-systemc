@@ -58,7 +58,7 @@ namespace vpsim {
                 newMap[writesKey] = writes;
             }
 
-            mSegmentedStats.push_back(move(newMap));
+            mSegmentedStats.push_back(std::move(newMap));
         }
 
         void setStatsAndDie() override {

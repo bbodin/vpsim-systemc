@@ -52,10 +52,13 @@ namespace vpsim {
     }
 
     tlm::tlm_response_status SesamController::write(payload_t &payload, sc_time &delay) {
-        uint8_t *data = new uint8_t;
+
         if (!payload.ptr) {
             throw runtime_error("Monitor does not support null payloads !");
         }
+
+        uint8_t *data = new uint8_t;
+        
         memcpy(data, payload.ptr, payload.len);
         if (payload.addr == getBaseAddress()) {
             // command
@@ -117,6 +120,7 @@ namespace vpsim {
                 }
                 break;
                 default:
+                    delete data;
                     throw runtime_error("SesamController in unknown command.");
             }
         } else if (payload.addr == (getBaseAddress() + 1)) {
@@ -124,6 +128,7 @@ namespace vpsim {
             *strBuf += *data;
         }
 
+        delete data;
         return tlm::TLM_OK_RESPONSE;
     }
 }
