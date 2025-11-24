@@ -295,12 +295,10 @@ namespace vpsim {
                             break;
                         }
                         if (k.type == DEVICE) {
-                            LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim received a DEVICE Request" << std::endl;
                             for (MainMemCosim *cosim: _Simulators) {
                                 cosim->_IOAccessPtr->insert(k.id, k.write, k.phys, k.size, k.time_stamp, k.tag);
                             }
                         } else if (k.type == CPU) {
-                            LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim received a CPU Request" << std::endl;
                             for (MainMemCosim *cosim: _Simulators) {
                                 cosim->insert(k.id, k.write, k.fetch, k.phys, k.size, _MemEpoch, k.time_stamp);
                             }
