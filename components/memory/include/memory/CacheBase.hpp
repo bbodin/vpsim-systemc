@@ -252,16 +252,16 @@ namespace vpsim {
                 set = CacheSet<CacheLineType,
                     AddressType>(CacheLineSize, Associativity, ReplPolicy/*, higherCachesNb*/);
 
-            LOG_GLOBAL_DEBUG(dbg1) << "Cache parameters: " << endl;
-            LOG_GLOBAL_DEBUG(dbg1) << "Address bits: " << AddressBits << endl;
-            LOG_GLOBAL_DEBUG(dbg1) << "Offset bits : " << OffsetBits << endl;
-            LOG_GLOBAL_DEBUG(dbg1) << "IndexBits   : " << IndexBits << endl;
-            //LOG_GLOBAL_DEBUG(dbg1) << "TagBits     : "     << TagBits       << endl;
-            LOG_GLOBAL_DEBUG(dbg1) << "Nb sets     : " << NbSets << endl;
-            LOG_GLOBAL_DEBUG(dbg1) << "Cache size  : " << CacheSize << endl;
-            //LOG_GLOBAL_DEBUG(dbg1) << "NbLines     : "     << NbLines       << endl;
-            LOG_GLOBAL_DEBUG(dbg1) << "Line size   : " << CacheLineSize << endl;
-            LOG_GLOBAL_DEBUG(dbg1) << "Is a home   : " << IsHome << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "Cache parameters: " << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "Address bits: " << AddressBits << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "Offset bits : " << OffsetBits << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "IndexBits   : " << IndexBits << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "TagBits     : "     << TagBits       << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "Nb sets     : " << NbSets << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "Cache size  : " << CacheSize << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "NbLines     : "     << NbLines       << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "Line size   : " << CacheLineSize << endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "Is a home   : " << IsHome << endl;
 
             NReads = NWrites = NInvals = NTotalInvals = NBackInvals = NEvicts = WriteBacks = EvictBacks = 0;
             NPutS = NPutM = NPutI = NGetS = NGetM = NFwdGetS = NFwdGetM = ReadBacks = 0;

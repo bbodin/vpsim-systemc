@@ -185,13 +185,15 @@ namespace vpsim {
             std::filesystem::path dir = std::filesystem::path(filename).parent_path(); // extracts "/path/to/some"
             std::filesystem::create_directories(dir, ec);
             if (ec) {
-                std::cerr << "[WARNING] Failed to create log directory '" << dir << "': " << ec.message() << std::endl;
+                LOG_GLOBAL_WARNING << "Failed to create log directory '" << dir << "' from filename '" << filename << "' : " << ec.message() << std::endl;
+                return;
             }
 
             if (globalLogger.setStatLogName(filename)) {
-                std::cout << "[INFO] Stats logging file set to '" << globalLogger.statLogName() << "'" << std::endl;
+                LOG_GLOBAL_INFO << "Stats logging file set to '" << globalLogger.statLogName() << "'" << std::endl;
             } else {
-                std::cerr << "[WARNING] Failed to change  Stats logging file to '" << filename  << std::endl;
+                LOG_GLOBAL_WARNING << "Failed to change  Stats logging file to '" << filename  << std::endl;
+                return;
             }
         }
     }
@@ -218,10 +220,8 @@ namespace vpsim {
                     }
         }
 
-        LOG_GLOBAL_DEBUG(dbg0) << "Logging debug level 0 or more is working" << endl;
-        LOG_GLOBAL_INFO << "Logging info is working" << endl;
-        LOG_GLOBAL_WARNING << "Logging warning is working" << endl;
-        LOG_GLOBAL_ERROR << "Logging error is working" << endl;
+        LOG_GLOBAL_DEBUG(dbg0) << "Logging debug level 0 or more is activated." << endl;
+        LOG_GLOBAL_INFO << "Logging is activated." << endl;
 
     }
 

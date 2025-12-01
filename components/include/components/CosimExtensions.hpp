@@ -19,6 +19,8 @@
 
 #include <tlm>
 
+using namespace sc_core;
+
 namespace vpsim {
     struct SourceExtension : public tlm::tlm_extension<SourceExtension> {
         uint8_t type; //0 for cpu, 1 for other devices

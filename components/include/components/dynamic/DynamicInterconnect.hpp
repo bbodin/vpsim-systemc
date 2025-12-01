@@ -31,7 +31,7 @@ namespace vpsim {
         }
 
         void pushStats() override {
-             LOG_GLOBAL_DEBUG(dbg0) << "Your component " << this->getName() << " is asked to push stats.\n";
+             LOG_GLOBAL_DEBUG(dbg2) << "Your component " << this->getName() << " is asked to push stats.\n";
             if (mSegmentedStats.empty()) {
                 mSegmentedStats.push_back({});
                 auto &back = mSegmentedStats.back();
@@ -119,7 +119,7 @@ namespace vpsim {
                              std::string inPortAlias) override {
             // set address before connecting (used for forwarding)
             if (otherIp->isMemoryMapped()) {
-                LOG_GLOBAL_INFO << "MAP : " << otherIp->getBaseAddress() << " - " << otherIp->getSize() << endl;
+                LOG_GLOBAL_DEBUG(dbg2) << "Interconnect mapping : " << std::hex << otherIp->getBaseAddress() << " - "  << std::dec << otherIp->getSize() << endl;
                 mModulePtr->set_socket_out_addr(mConnectionCounter++, otherIp->getBaseAddress(), otherIp->getSize());
             } else {
                 mModulePtr->setDefaultRoute(mConnectionCounter++);

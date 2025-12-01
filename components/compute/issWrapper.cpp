@@ -317,7 +317,6 @@ namespace vpsim {
 
     void IssWrapper::core_function() {
         LOG_GLOBAL_INFO << "ISS main loop started" << std::endl;
-        std::cout << "ISS main loop started" << std::endl;
 
         //Reset the local time
         mQuantumKeeper.reset();
@@ -340,8 +339,7 @@ namespace vpsim {
         mLib.run();
 
         //Exit from main ISS loop
-        LOG_GLOBAL_INFO << "ISS main loop exited" << std::endl;
-        std::cout << "ISS main loop exited: cpu_id = " << cpu_id << std::endl << flush;
+        LOG_GLOBAL_INFO << "ISS main loop exited: cpu_id = " << cpu_id << std::endl << flush;
 
 
         //mLib.run();

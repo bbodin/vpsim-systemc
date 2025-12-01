@@ -121,7 +121,7 @@ namespace vpsim {
         if (canLogStats()) {
             if (!mStatStream.is_open()) {
                 if (globalLogger.canLogInfo()) {
-                     globalLogger.logInfo()  << "Opening the stats logfile" << std::endl;
+                     globalLogger.logInfo()  << "Opening the stats logfile '" <<  mStatLogName.c_str() << "'" << std::endl;
                 }
                 mStatStream.open(mStatLogName.c_str(), std::ofstream::out);
             }

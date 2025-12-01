@@ -357,30 +357,25 @@ macro(add_gtest_test test_name sources)
         add_executable(${test_name} ${sources})
         target_compile_options(${test_name} PRIVATE -g -O0 -DDEBUG)
 
-        target_link_libraries(${test_name} PRIVATE gtest vpsim_core)
+        target_link_libraries(${test_name} PRIVATE gtest vpsim_core vpsim_components systemc)
         gtest_add_tests(TARGET ${test_name}
-         TEST_PREFIX "vpsim."
-         PROPERTIES
-        ENVIRONMENT "SYSTEMC_DISABLE_COPYRIGHT_MESSAGE=1")
+         TEST_PREFIX "vpsim.unittest."
+        )
         if(IPO_ENABLED)
             set_target_properties(${test_name} PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+            set_target_properties(${test_name} PROPERTIES ENVIRONMENT SYSTEMC_DISABLE_COPYRIGHT_MESSAGE=1)
         endif()
     endif(GTEST_FOUND)
 endmacro(add_gtest_test)
 
-# add_gtest_test(moduleParameters_test
-#         ${CMAKE_CURRENT_SOURCE_DIR}/core/vpsimModule/test/moduleParameters_test.cpp)
 
-# add_gtest_test(parameterSet_test
-#         ${CMAKE_CURRENT_SOURCE_DIR}/core/vpsimModule/test/parameterSet_test.cpp)
+# Find all test source files matching *_test.cpp
+file(GLOB TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/*_test.cpp")
 
-# add_gtest_test(parameterSetModifier_test
-#         ${CMAKE_CURRENT_SOURCE_DIR}/core/vpsimModule/test/parameterSetModifier_test.cpp)
-
-add_gtest_test(appointment_test     ${CMAKE_CURRENT_SOURCE_DIR}/tests/appointment_test.cpp)
-add_gtest_test(logger_test          ${CMAKE_CURRENT_SOURCE_DIR}/tests/logger_test.cpp)
-add_gtest_test(loggerCore_test      ${CMAKE_CURRENT_SOURCE_DIR}/tests/loggerCore_test.cpp)
-add_gtest_test(loggerScheduler_test ${CMAKE_CURRENT_SOURCE_DIR}/tests/loggerScheduler_test.cpp)
+foreach(test_src ${TEST_SOURCES})
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_gtest_test(${test_name} ${test_src})
+endforeach()
 
 
 #############################################################

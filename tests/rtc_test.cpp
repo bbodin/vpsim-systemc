@@ -15,12 +15,16 @@
 */
 
 #include <gtest/gtest.h>
-#include "rtc.hpp"
+#include <peripherals/rtc.hpp>
 
 using namespace vpsim;
 using namespace sc_core;
 using namespace std;
 
+int sc_main(int argc, char *argv[]) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
 
 class MyIrc : public InterruptIf {
     virtual void update_irq(uint64_t val, uint32_t irq_idx) {

@@ -305,7 +305,7 @@ namespace vpsim {
 
         virtual void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
                              std::string inPortAlias) {
-            LOG_GLOBAL_INFO << "Connecting " << getName() << " to " << otherIp->getName() << std::endl;
+            LOG_GLOBAL_DEBUG(dbg2) << "Connecting " << getName() << " to " << otherIp->getName() << std::endl;
 
             WrappedOutSock thisSock = getOutPort(outPortAlias);
             WrappedInSock thatSock = otherIp->getInPort(inPortAlias);
@@ -321,27 +321,27 @@ namespace vpsim {
         }
 
         virtual void addMonitor(uint64_t, uint64_t) {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement addMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement addMonitor().\n";
         }
 
         virtual void removeMonitor(uint64_t, uint64_t) {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement removeMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement removeMonitor().\n";
         }
 
         virtual void showMonitor()  {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement showMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement showMonitor().\n";
         }
 
         virtual void show() {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement show().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement show().\n";
         }
 
         virtual void configure() {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement configure().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement configure().\n";
         }
 
         virtual void pushStats() {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement pushStats().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement pushStats().\n";
 
             if (mSegmentedStats.empty()) {
                 mSegmentedStats.push_back({});
@@ -349,11 +349,11 @@ namespace vpsim {
             mSegmentedStats.push_back({});
         }
         virtual void setStats() {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement setStats().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement setStats().\n";
         }
         
         virtual void terminate() {
-            LOG_GLOBAL_WARNING << "Your component " << this->getName() << " does not implement terminate().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement terminate().\n";
         }
 
         virtual void setStatsAndDie() {
