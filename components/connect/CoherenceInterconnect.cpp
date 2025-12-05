@@ -233,53 +233,7 @@ namespace vpsim {
         assert(false); //throw runtime_error ("No memory mapped component found\n");
     }
 
-    /**
-  * Statistics
-  */
 
-    /* 
-  inline void CoherenceInterconnect::print_noc_statistics () {
-    LOG_STATS << "(" << NAME << "):" ;
-    LOG_STATS << "total distance = " << TotalDistance;
-    LOG_STATS << "total latency = "  << TotalLatency;
-    LOG_STATS << "packets number = "  << PacketsCount;
-  }
-
-  void CoherenceInterconnect::print_mem_statistics () {
-    for (size_t i=0; i<NUM_MMAPPED; i++) {
-      LOG_STATS << "(" << NAME << "): port[" << i << "]:";
-      LOG_STATS << "total read = "      << MMappedReadCountOut[i];
-      LOG_STATS <<", total write = "    << MMappedWriteCountOut[i];
-      LOG_STATS <<" (total accesses = " << MMappedReadCountOut[i]+MMappedWriteCountOut[i]<<")" << endl;
-    }
-  }
-
-  void CoherenceInterconnect::print_coherence_statistics () {
-    for (size_t i=0; i<NUM_HOME; i++) {
-      LOG_STATS << "(" << NAME << "): id [" << HomeOutputs[i].id << "]:";
-      LOG_STATS << "total read = "   << HomeReadCountOut[i];
-      LOG_STATS <<", total write = " << HomeWriteCountOut[i];
-      LOG_STATS <<", total coherence messages = " << HomeCoherentCountOut[i];
-      LOG_STATS <<" (total accesses = " << HomeReadCountOut[i]+HomeWriteCountOut[i]+HomeCoherentCountOut[i]<<")" << endl;
-    }
-    for (size_t i=0; i<NUM_CACHE; i++) {
-      LOG_STATS << "(" << NAME << "): id [" << CacheOutputs[i].id << "]:";
-      if (IsCoherent) LOG_STATS <<", total coherence messages = " << HomeCoherentCountOut[i];
-      LOG_STATS <<" (total accesses = " << HomeReadCountOut[i]+HomeWriteCountOut[i]+HomeCoherentCountOut[i]<<")" << endl;
-
-    }
-  }
-  */
-
-    void CoherenceInterconnect::print_statistics() {
-        // NoC distance and latency
-        //print_noc_statistics ();
-        // Memory performance counters
-        //print_mem_statistics ();
-        // Coherence performance counters
-        //print_coherence_statistics ();
-        return;
-    }
 
     /**
   * NoC latency functions

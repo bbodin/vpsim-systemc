@@ -92,7 +92,7 @@ namespace vpsim {
     //Statistics
     template<typename TYPE>
     void TargetIf<TYPE>::PrintStatistics() {
-        LOG_STATS << "(" << getName() << "): total read = " << mReadCount << ", total write = " << mWriteCount <<
+        LOG_GLOBAL_STATS << "(" << getName() << "): total read = " << mReadCount << ", total write = " << mWriteCount <<
  " (total accesses = " << mReadCount + mWriteCount << ")" << endl;
     }
 
@@ -217,16 +217,16 @@ namespace vpsim {
             status = WriteAccessFunction(payload, delay);
 
             //Debug
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ":---------------------------------------------------------" << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": command = WRITE" << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": address = 0x" << hex << (uint64_t) payload.addr << dec << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": burst = " << dec << (uint32_t) payload.len << dec << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": data ptr = 0x" << hex << (uint64_t *) payload.ptr << dec << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": mByteEnable_ptr = 0x" << hex << (uint64_t *) payload.
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ":---------------------------------------------------------" << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": command = WRITE" << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": address = 0x" << hex << (uint64_t) payload.addr << dec << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": burst = " << dec << (uint32_t) payload.len << dec << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": data ptr = 0x" << hex << (uint64_t *) payload.ptr << dec << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": mByteEnable_ptr = 0x" << hex << (uint64_t *) payload.
 byte_enable_ptr << dec << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": mByteEnable_len = " << (uint32_t) payload.byte_enable_len << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": is_active = " << (payload.is_active ? "true" : "false");
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": delay = " << delay << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": mByteEnable_len = " << (uint32_t) payload.byte_enable_len << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": is_active = " << (payload.is_active ? "true" : "false");
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": delay = " << delay << endl;
 
             //Statistics
             mWriteCount += payload.len / sizeof(TYPE); //TODO
@@ -235,16 +235,16 @@ byte_enable_ptr << dec << endl;
             status = ReadAccessFunction(payload, delay);
 
             //Debug
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ":---------------------------------------------------------" << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": command = WRITE" << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": address = 0x" << hex << (uint64_t) payload.addr << dec << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": burst = " << dec << (uint32_t) payload.len << dec << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": data ptr = 0x" << hex << (uint64_t *) payload.ptr << dec << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": mByteEnable_ptr = 0x" << hex << (uint64_t *) payload.
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ":---------------------------------------------------------" << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": command = WRITE" << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": address = 0x" << hex << (uint64_t) payload.addr << dec << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": burst = " << dec << (uint32_t) payload.len << dec << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": data ptr = 0x" << hex << (uint64_t *) payload.ptr << dec << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": mByteEnable_ptr = 0x" << hex << (uint64_t *) payload.
 byte_enable_ptr << dec << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": mByteEnable_len = " << (uint32_t) payload.byte_enable_len << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": is_active = " << (payload.is_active ? "true" : "false") << endl;
-            LOG_GLOBAL_DEBUG(dbg2) << getName() << ": delay = " << delay << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": mByteEnable_len = " << (uint32_t) payload.byte_enable_len << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": is_active = " << (payload.is_active ? "true" : "false") << endl;
+            LOG_GLOBAL_DEBUG(dbg4) << getName() << ": delay = " << delay << endl;
 
             //Statistics
             mReadCount += payload.len / sizeof(TYPE); //TODO

@@ -242,7 +242,6 @@ namespace vpsim {
 
 
         //Stop
-        //sc_stop ( );
 
         //add a wait so that sc_stop happens during update
         //wait();
@@ -350,7 +349,7 @@ namespace vpsim {
             ==
             0
         ) {
-            //Stop simulation when core 0 finishes
+                        //Stop simulation when core 0 finishes
             sc_stop();
         }
 

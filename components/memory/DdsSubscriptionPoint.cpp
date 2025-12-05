@@ -149,7 +149,7 @@ namespace vpsim {
             }
 
             if (!this->Ptr()) {
-                cout << getName() << " failed to ReadDDS, end of simulation" << endl;
+                LOG_GLOBAL_ERROR << "failed to ReadDDS, end of simulation" << std::endl;
                 sc_stop();
                 wait(10, SC_NS);
                 return (tlm::TLM_OK_RESPONSE);

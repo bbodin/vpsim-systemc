@@ -305,7 +305,7 @@ namespace vpsim {
 
         virtual void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
                              std::string inPortAlias) {
-            LOG_GLOBAL_DEBUG(dbg2) << "Connecting " << getName() << " to " << otherIp->getName() << std::endl;
+            LOG_GLOBAL_DEBUG(dbg4) << "Connecting " << getName() << " to " << otherIp->getName() << std::endl;
 
             WrappedOutSock thisSock = getOutPort(outPortAlias);
             WrappedInSock thatSock = otherIp->getInPort(inPortAlias);
@@ -321,27 +321,27 @@ namespace vpsim {
         }
 
         virtual void addMonitor(uint64_t, uint64_t) {
-            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement addMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement addMonitor().\n";
         }
 
         virtual void removeMonitor(uint64_t, uint64_t) {
-            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement removeMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement removeMonitor().\n";
         }
 
         virtual void showMonitor()  {
-            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement showMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement showMonitor().\n";
         }
 
         virtual void show() {
-            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement show().\n";
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement show().\n";
         }
 
         virtual void configure() {
-            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement configure().\n";
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement configure().\n";
         }
 
         virtual void pushStats() {
-            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement pushStats().\n";
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement pushStats().\n";
 
             if (mSegmentedStats.empty()) {
                 mSegmentedStats.push_back({});
@@ -349,11 +349,11 @@ namespace vpsim {
             mSegmentedStats.push_back({});
         }
         virtual void setStats() {
-            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement setStats().\n";
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement setStats().\n";
         }
         
         virtual void terminate() {
-            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement terminate().\n";
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement terminate().\n";
         }
 
         virtual void setStatsAndDie() {
@@ -529,54 +529,13 @@ namespace vpsim {
             });
         }
 
-        static void WriteStatToLogger(vpsim::Logger &logger, const std::string& sourceName, const std::string& statName, const std::string& statValue,
-                                      const std::string& statUnit = "") {
-            logger.logStats() << "[Stats] (" << sourceName << ") " << statName << " " << statValue << " " << statUnit << std::endl;
-        }
-
         static void WriteStat(const std::string& sourceName, const std::string& statName, const std::string& statValue,
                               const std::string& statUnit = "") {
             // for now write to global log
-            WriteStatToLogger(globalLogger, sourceName, statName, statValue, statUnit);
+            LOG_GLOBAL_STATS << " (" << sourceName << ") " << statName << " " << statValue << " " << statUnit << std::endl;
         }
 
         static void GatherStats() {
-            /*pushStatistics();
-    
-            // Write the segmented statistics in an XML file
-            QFile output("segmented_stats.xml");
-            QXmlStreamWriter xml(&output);
-            output.open(QIODevice::WriteOnly);
-            xml.setAutoFormatting(true);
-            xml.writeStartDocument();
-            xml.writeStartElement("segments");
-    
-            // Get number of segments
-            const auto nSegments = AllInstances.begin()->second.begin()->second->mSegmentedStats.size() - 1;
-            for(size_t segIdx{1}; segIdx <= nSegments ; ++segIdx) {
-                xml.writeStartElement("segment");
-    
-                // Global stats
-                xml.writeStartElement("global");
-                for (auto &stat: mGlobalStats[segIdx]) {
-                    xml.writeTextElement(stat.first.c_str(), stat.second.c_str());
-                }
-                xml.writeEndElement();
-    
-                for (auto &type: AllInstances) {
-                    for (auto &ip: type.second) {
-                        if(ip.first.empty()) continue;
-                        xml.writeStartElement(ip.first.c_str());
-                        for (auto &stat: ip.second->mSegmentedStats[segIdx]) {
-                            xml.writeTextElement(stat.first.c_str(), stat.second.c_str());
-                        }
-                        xml.writeEndElement();
-                    }
-                }
-                xml.writeEndElement();
-            }
-            xml.writeEndElement();
-            xml.writeEndDocument();*/
 
             for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); ++typeIter) {
                 for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); ++objIter) {

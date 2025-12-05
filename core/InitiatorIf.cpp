@@ -65,7 +65,9 @@ namespace vpsim {
 
     //Destructor
     InitiatorIf::~InitiatorIf() {
-        for (size_t i = 0; i < getNbPort(); i++) delete mInitiatorSocket[i];
+        for (size_t i = 0; i < getNbPort(); i++) {
+            delete mInitiatorSocket[i];
+        }
         delete [] mInitiatorSocket;
     }
 
@@ -209,11 +211,11 @@ namespace vpsim {
 
         //------------------------------------------------------------------------------
         // DEBUG
-        LOG_DEBUG(dbg2) << getName() << ":---------------------------------------------------------" << endl;
+        LOG_DEBUG(dbg4) << getName() << ":---------------------------------------------------------" << endl;
 
         //Read or Write?
-        if (rw == READ) { LOG_DEBUG(dbg2) << getName() << ": command = READ" << endl; } else {
-            LOG_DEBUG(dbg2) << getName() << ": command = WRITE";
+        if (rw == READ) { LOG_DEBUG(dbg4) << getName() << ": command = READ" << endl; } else {
+            LOG_DEBUG(dbg4) << getName() << ": command = WRITE";
         }
 
         //LT or DMI
@@ -223,12 +225,12 @@ namespace vpsim {
         //	}
 
         //Others
-        LOG_DEBUG(dbg2) << getName() << ": address = 0x" << hex << (uint64_t) addr << dec << endl;
-        LOG_DEBUG(dbg2) << getName() << ": burst = " << dec << (uint32_t) length << dec << endl;
-        LOG_DEBUG(dbg2) << getName() << ": data ptr = " << hex << (uint64_t *) data << dec << endl;
+        LOG_DEBUG(dbg4) << getName() << ": address = 0x" << hex << (uint64_t) addr << dec << endl;
+        LOG_DEBUG(dbg4) << getName() << ": burst = " << dec << (uint32_t) length << dec << endl;
+        LOG_DEBUG(dbg4) << getName() << ": data ptr = " << hex << (uint64_t *) data << dec << endl;
 
         //Active or not?
-        LOG_DEBUG(dbg2) << getName() << ": is_active = " << (getTlmActive() ? "true" : "false") << endl;
+        LOG_DEBUG(dbg4) << getName() << ": is_active = " << (getTlmActive() ? "true" : "false") << endl;
 
 
         //------------------------------------------------------------------------------

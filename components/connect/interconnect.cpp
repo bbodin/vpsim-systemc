@@ -129,7 +129,7 @@ namespace vpsim {
     void
     interconnect::print_statistics() {
         for (size_t i = 0; i < NUM_PORT_OUT; i++) {
-            LOG_STATS << "(" << NAME << "): port[" << i << "]: total read = " << read_count_out[i] << ", total write = "
+            LOG_GLOBAL_STATS << "(" << NAME << "): port[" << i << "]: total read = " << read_count_out[i] << ", total write = "
                     << write_count_out[i] << " (total accesses = " << read_count_out[i] + write_count_out[i] << ")" <<
                     endl;
         }
@@ -173,20 +173,20 @@ namespace vpsim {
         }
 
         //Debug
-        LOG_DEBUG(dbg2) << NAME << ":---------------------------------------------------------" << endl;
-        LOG_DEBUG(dbg2) << NAME << ": b_transport call" << endl;
-        LOG_DEBUG(dbg2) << NAME << ": command = ";
-        if (trans.get_command() == tlm::TLM_WRITE_COMMAND) globalLogger.logDebug(dbg2) << "WRITE";
-        else globalLogger.logDebug(dbg2) << "READ";
-        globalLogger.logDebug(dbg2) << endl;
-        LOG_DEBUG(dbg2) << NAME << ": address = 0x" << hex << (uint64_t) trans.get_address() << dec << endl;
-        LOG_DEBUG(dbg2) << NAME << ": burst = " << dec << (uint32_t) trans.get_data_length() << dec << endl;
-        LOG_DEBUG(dbg2) << NAME << ": data ptr = " << hex << (uint64_t *) trans.get_data_ptr() << dec << endl;
-        LOG_DEBUG(dbg2) << NAME << ": byte_enable_ptr = 0x" << hex << (uint64_t *) trans.get_byte_enable_ptr() << dec <<
+        LOG_DEBUG(dbg4) << NAME << ":---------------------------------------------------------" << endl;
+        LOG_DEBUG(dbg4) << NAME << ": b_transport call" << endl;
+        LOG_DEBUG(dbg4) << NAME << ": command = ";
+        if (trans.get_command() == tlm::TLM_WRITE_COMMAND) globalLogger.logDebug(dbg4) << "WRITE";
+        else globalLogger.logDebug(dbg4) << "READ";
+        globalLogger.logDebug(dbg4) << endl;
+        LOG_DEBUG(dbg4) << NAME << ": address = 0x" << hex << (uint64_t) trans.get_address() << dec << endl;
+        LOG_DEBUG(dbg4) << NAME << ": burst = " << dec << (uint32_t) trans.get_data_length() << dec << endl;
+        LOG_DEBUG(dbg4) << NAME << ": data ptr = " << hex << (uint64_t *) trans.get_data_ptr() << dec << endl;
+        LOG_DEBUG(dbg4) << NAME << ": byte_enable_ptr = 0x" << hex << (uint64_t *) trans.get_byte_enable_ptr() << dec <<
                 endl;
-        LOG_DEBUG(dbg2) << NAME << ": byte_enable_len = " << (uint32_t) trans.get_byte_enable_length() << endl;
-        LOG_DEBUG(dbg2) << NAME << ": num output port = " << num_port << endl;
-        LOG_DEBUG(dbg2) << NAME << ": delay = " << delay << endl;
+        LOG_DEBUG(dbg4) << NAME << ": byte_enable_len = " << (uint32_t) trans.get_byte_enable_length() << endl;
+        LOG_DEBUG(dbg4) << NAME << ": num output port = " << num_port << endl;
+        LOG_DEBUG(dbg4) << NAME << ": delay = " << delay << endl;
 
         //Statistics
         if (trans.get_command() == tlm::TLM_WRITE_COMMAND)

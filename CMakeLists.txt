@@ -173,7 +173,7 @@ target_include_directories(elfio INTERFACE extern/elfio)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeLists-tbb.txt.in
         ${CMAKE_CURRENT_BINARY_DIR}/tbb-download/CMakeLists.txt)
 
-execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}"  -DTBB_TEST=OFF  -DBUILD_TESTING=OFF .
+execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/tbb-download" )
 
 execute_process(COMMAND "${CMAKE_COMMAND}" --build .
@@ -318,9 +318,7 @@ add_executable(vpsim
 
 target_compile_definitions(vpsim PRIVATE MAIN_EXECUTABLE=1)
 
-add_library(vpsim_subsystem SHARED
-        vpsim_subsystem.hpp
-        vpsim_subsystem.cpp)
+
 
 
 target_link_libraries(vpsim PUBLIC
@@ -332,18 +330,22 @@ target_include_directories(vpsim PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/extern/relocatable-python-vpsim/include/python3.10
 )
 
-
-# VPSIM_SUBSYSTEM
-target_link_libraries(vpsim_subsystem PUBLIC -Wl,--whole-archive
-    vpsim_components
-    vpsim_core
-    systemc
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/relocatable-python-vpsim/lib/libpython3.10.a.vpsim
-    -Wl,--no-whole-archive
+IF(VPSIM_SUBSUSTEM_ENABLED)
+    add_library(vpsim_subsystem SHARED
+            vpsim_subsystem.hpp
+            vpsim_subsystem.cpp)
+    # VPSIM_SUBSYSTEM
+    target_link_libraries(vpsim_subsystem PUBLIC -Wl,--whole-archive
+        vpsim_components
+        vpsim_core
+        systemc
+        ${CMAKE_CURRENT_BINARY_DIR}/extern/relocatable-python-vpsim/lib/libpython3.10.a.vpsim
+        -Wl,--no-whole-archive
+        )
+    target_include_directories(vpsim_subsystem PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}/extern/relocatable-python-vpsim/include/python3.10
     )
-target_include_directories(vpsim_subsystem PUBLIC
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/relocatable-python-vpsim/include/python3.10
-)
+endif()
 
 if(IPO_ENABLED)
     set_target_properties(vpsim PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)

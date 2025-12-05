@@ -5,6 +5,13 @@ include(ExternalProject)
 ExternalProject_Add(systemc
     URL https://www.accellera.org/images/downloads/standards/systemc/systemc-2.3.2.tar.gz
     SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern/systemc"
+
+    # --- Patch step: remove examples  ---
+    PATCH_COMMAND
+        ${CMAKE_COMMAND} -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/extern/systemc/CMakeLists.txt
+                        -P ${CMAKE_CURRENT_SOURCE_DIR}/CMake/remove_examples.cmake
+
+
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""

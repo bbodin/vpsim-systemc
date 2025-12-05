@@ -23,12 +23,16 @@ namespace vpsim {
     int PlatformBuilder::Container = 0;
 
     PlatformBuilder::PlatformBuilder(std::string platformName) : mCurrentIp(nullptr) {
+        LOG_GLOBAL_DEBUG(dbg0) << "PlatformBuilder cosntructor called." << std::endl;
         if (platformName == "")
             platformName = to_string(Container++);
         mCurrentIp = &beginBuild("Container", platformName);
     }
 
     PlatformBuilder::~PlatformBuilder() {
+
+        LOG_GLOBAL_DEBUG(dbg0) << "PlatformBuilder destructor called." << std::endl;
+
         VpsimIp<InPortType, OutPortType>::GatherStats();
 
         for (auto inStack: mBuildStack) {
@@ -37,7 +41,7 @@ namespace vpsim {
                 return;
             }
         }
-        delete mCurrentIp;
+        if (mCurrentIp) delete mCurrentIp;
     }
 
     VpsimIp<InPortType, OutPortType> &PlatformBuilder::beginBuild(

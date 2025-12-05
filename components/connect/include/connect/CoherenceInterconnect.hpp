@@ -257,11 +257,6 @@ namespace vpsim {
         bool get_enable_latency();
 
         /**
-    * Statistics
-    */
-        void print_statistics();
-
-        /**
     * NoC latency functions
     */
         void set_router_latency(double nanoseconds);
