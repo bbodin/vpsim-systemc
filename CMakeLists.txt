@@ -29,6 +29,10 @@ set(CMAKE_EXE_LINKER_FLAGS "-no-pie")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-changes-meaning")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-changes-meaning")
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(ENABLE_DEBUG=1)
+endif()
+
 # Doxygen package
 find_package(Doxygen QUIET)
 

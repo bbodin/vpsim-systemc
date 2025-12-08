@@ -142,9 +142,21 @@ namespace vpsim {
 //! @brief provides a stream to the logging file for a line of ERROR in the global log file
 #define LOG_GLOBAL_ERROR       if(globalLogger.canLogError())      globalLogger.logError()      << "[Error] "
 
-//! @brief provides a stream to the logging file for a line of DEBUG in the global log file
-//! @param[in] lvl Level of debug of the message
-#define LOG_GLOBAL_DEBUG(lvl)  if(globalLogger.canLogDebug((lvl))) globalLogger.logDebug((lvl)) << "[Debug" << (lvl) << "] "
+#ifdef ENABLE_DEBUG
+    //! @brief provides a stream to the logging file for a line of DEBUG in the global log file
+    //! @param[in] lvl Level of debug of the message
+    #define LOG_GLOBAL_DEBUG(lvl)  if(globalLogger.canLogDebug((lvl))) globalLogger.logDebug((lvl)) << "[Debug" << (lvl) << "] "
+#else
+    struct NullStream : std::ostream {
+        NullStream() : std::ostream(nullptr) {}
+    };
+    static NullStream nullStream;
+
+    #define LOG_GLOBAL_DEBUG(lvl) nullStream
+#endif
+
+
+
 
 
 
