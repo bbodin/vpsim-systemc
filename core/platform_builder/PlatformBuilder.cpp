@@ -23,7 +23,7 @@ namespace vpsim {
     int PlatformBuilder::Container = 0;
 
     PlatformBuilder::PlatformBuilder(std::string platformName) : mCurrentIp(nullptr) {
-        LOG_GLOBAL_DEBUG(dbg0) << "PlatformBuilder cosntructor called." << std::endl;
+        LOG_GLOBAL_DEBUG(dbg0) << "PlatformBuilder constructor called." << std::endl;
         if (platformName == "")
             platformName = to_string(Container++);
         mCurrentIp = &beginBuild("Container", platformName);
