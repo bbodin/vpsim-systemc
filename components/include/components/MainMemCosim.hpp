@@ -16,6 +16,7 @@
 
 #ifndef _MAINMEMCOSIM_HPP_
 #define _MAINMEMCOSIM_HPP_
+
 #include <string>
 #include <pthread.h>
 #include <vector>
@@ -31,6 +32,7 @@
 #include <mutex>
 #include <tuple>
 #include <logger/logger.hpp>
+
 using namespace std;
 using namespace moodycamel;
 
@@ -112,6 +114,28 @@ namespace vpsim {
 
         typedef void (*unRegisterMainMemCb)(void);
 
+        static void Finish() {
+            LOG_GLOBAL_DEBUG(dbg0) << "Inside finish" << std::endl;
+            _Buffer.type  = SESAMCOMMAND;
+            _Buffer.tag   = 0;
+            _Buffer.write = 0; // Reuse of write to indicate a start or finish command 
+            _Buffer.epoch = -1; // TODO: Max INT here
+            
+            for (size_t i = 0; i < _MainMemCb.size(); i++) get < 3 > (_MainMemCb[i])();
+            Notify = haltNotify;
+            NotifyIO = haltNotifyIO;
+            NotifyFetchMiss = haltNotifyFetchMiss;
+
+            _Buffer.time_stamp = 0;
+
+            LOG_GLOBAL_DEBUG(dbg0) << "push LAST EVENT with  _Buffer.time_stamp " << _Buffer.time_stamp << " _Buffer.epoch = " <<  _Buffer.epoch << std::endl;
+ 
+            _PQ.push(_Buffer); // Finish
+            LOG_GLOBAL_DEBUG(dbg0) << "wait for empty queue" << std::endl;
+            wait(_empty_pq);
+            LOG_GLOBAL_DEBUG(dbg0) << "empty queue signal received" << std::endl;
+            sc_stop();
+        }
         static void NotifySesamCommand(uint64_t counter, bool start) {
             _Buffer.type = SESAMCOMMAND;
             _Buffer.tag = counter;
@@ -126,7 +150,7 @@ namespace vpsim {
                                                                        get < 1 > (_MainMemCb[i]),
                                                                        get < 2 > (_MainMemCb[i]));
                 }
-                _Buffer.time_stamp = _epoch_sc_time - 1;
+                _Buffer.time_stamp =_epoch_sc_time > 0  ? _epoch_sc_time - 1 : 0;
             } else {
                 if (_focusOnROI) {
                     for (size_t i = 0; i < _MainMemCb.size(); i++) get < 3 > (_MainMemCb[i])();
@@ -134,9 +158,10 @@ namespace vpsim {
                     NotifyIO = haltNotifyIO;
                     NotifyFetchMiss = haltNotifyFetchMiss;
                 }
-                _Buffer.time_stamp = _epoch_sc_time + MAX_QUANTUM + 1;
+                _Buffer.time_stamp = _epoch_sc_time + 1;
             }
-            _PQ.push(_Buffer);
+            LOG_GLOBAL_DEBUG(dbg0) << "push with  _Buffer.time_stamp " << _Buffer.time_stamp << " _Buffer.epoch = " <<  _Buffer.epoch << std::endl;
+            _PQ.push(_Buffer); // NotifySesamCommand
         }
 
         static void FillBiases(uint64_t *ts, uint32_t n, double conversion_factor = 1.0) {
@@ -223,7 +248,7 @@ namespace vpsim {
             _Buffer.fetch = 0;
             _Buffer.epoch = _CpuEpoch;
             _Buffer.time_stamp = _current_time_stamp;
-            _PQ.push(_Buffer);
+            _PQ.push(_Buffer); // proceedNotify
         }
 
         static void proceedNotifyFetchMiss(uint32_t cpu, void *phys, unsigned int size) {
@@ -235,7 +260,7 @@ namespace vpsim {
             _Buffer.size = size;
             _Buffer.epoch = _CpuEpoch;
             _Buffer.time_stamp = _current_time_stamp;
-            _PQ.push(_Buffer);
+            _PQ.push(_Buffer); // proceedNotifyFetchMiss
         }
 
         static void proceedNotifyIO(uint32_t device, uint64_t exec, uint8_t write, void *phys, uint64_t virt,
@@ -248,16 +273,14 @@ namespace vpsim {
             _Buffer.epoch = _CpuEpoch;
             _Buffer.time_stamp = exec + _epoch_sc_time;
             _Buffer.tag = tag;
-            _PQ.push(_Buffer);
+            _PQ.push(_Buffer); // proceedNotifyIO
         }
 
         static void Add(MainMemCosim *simulator) {
+            _Simulators.push_back(simulator);
             if (!_Inited) {
                 Init();
             }
-            _Simulators.push_back(simulator);
-            cout.clear();
-            cout << "Simulator added !" << endl;
         }
 
         static void Init() {
@@ -268,6 +291,8 @@ namespace vpsim {
         }
 
         static void *Run(void *unused) {
+            
+            LOG_GLOBAL_DEBUG(dbg1) << "The MainMemCosim Run function started!" << std::endl;
             Req k;
             vector<string> strParam;
             bool exitLoop = false;
@@ -275,25 +300,29 @@ namespace vpsim {
             while (1) {
                 if (_Stopped) break;
                 tmpMemEpoch = _MemEpoch;
+                
                 while (tmpMemEpoch >= _CpuEpoch) {
                     // Requests ordering needs the iss to run at least one epoch ahead
                     usleep(1);
                     if (_Stopped) break;
                 }
+
                 if (_PQ.try_pop(k)) {
                     if (tmpMemEpoch != k.epoch) {
                         _PQ.push(k); // put the element back
                         _MemEpoch = k.epoch;
                         continue; // need to check if _MemEpoch < _CpuEpoch
                     }
+                    
                     _Mut[tmpMemEpoch % EPOCHS].lock();
                     do {
                         if (tmpMemEpoch != k.epoch) {
-                            _PQ.push(k);
+                            _PQ.push(k); // put the element back
                             _MemEpoch = k.epoch;
                             exitLoop = true;
                             break;
                         }
+                        LOG_GLOBAL_DEBUG(dbg5) << "MainMemCoSim received a Request k.time_stamp = " << k.time_stamp  << " k.epoch = " << k.epoch  << " k.type = " << k.type  << " k.write = " << k.write  << " k.tag = " << k.tag  << std::endl;
                         if (k.type == DEVICE) {
                             for (MainMemCosim *cosim: _Simulators) {
                                 cosim->_IOAccessPtr->insert(k.id, k.write, k.phys, k.size, k.time_stamp, k.tag);
@@ -303,12 +332,21 @@ namespace vpsim {
                                 cosim->insert(k.id, k.write, k.fetch, k.phys, k.size, _MemEpoch, k.time_stamp);
                             }
                         } else if (k.type == SESAMCOMMAND) {
-                            LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim received a SESAMCOMMAND Request" << std::endl;
+                            LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim received a SESAMCOMMAND Request k.write = " << k.write  << " k.tag = " << k.tag  << std::endl;
+                            if (k.tag == 0) {
+                                
+                                LOG_GLOBAL_WARNING << "************** CORRECT END *****************" << std::endl;
+
+                                // TODO : This is a workaround to kill 
+                                LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim Terminate the session"  << std::endl;
+                                sc_stop();
+                            }
                             for (MainMemCosim *cosim: _Simulators) {
                                 strParam.clear();
-                                if (k.write) strParam.push_back("StartCapture");
-                                else strParam.push_back("EndCapture");
-                                cosim->_Monitor->sesamCommand(strParam, k.tag);
+                                if (k.write) strParam.push_back("CaptureRunning");
+                                else strParam.push_back("CaptureStopped");
+                                LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim reply back as the event is processed with strParam = " << strParam.back()  << std::endl;
+                                cosim->_Monitor->sesamCommand(strParam, k.tag); // k.tag is expected to be 1 here
                             }
                             exitLoop = true;
                             break;
@@ -318,7 +356,12 @@ namespace vpsim {
                     if (exitLoop) exitLoop = false;
                     else ++_MemEpoch;
                 } else ++_MemEpoch; // an empty epoch!
-            }
+
+                if (_PQ.size() == 0) {
+                    //LOG_GLOBAL_DEBUG(dbg0) << " The queue is empty..." << std::endl; // TODO: this fail when SC is finishing
+                    // _empty_pq.notify();
+                }
+            } // while (1)
             return NULL;
         }
 
@@ -343,6 +386,7 @@ namespace vpsim {
 
         static uint64_t _CurQuantum;
 
+        static sc_event _empty_pq;
         static uint64_t _CpuEpoch;
         static uint64_t _MemEpoch;
         static uint64_t _epoch_sc_time;
