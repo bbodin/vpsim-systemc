@@ -262,15 +262,24 @@ namespace vpsim {
         }
 
         void io_thread() {
-            while (true) {
-                poll_io();
-            }
+                try {
+                    while (true) {
+                    poll_io();
+                   }
+                } catch (const std::exception &e) {
+                    LOG_GLOBAL_ERROR << "IO_THREAD Failure:" << e.what() << std::endl;
+                }
         }
 
         void cpu_thread() {
+            try {
             run_cpu(NULL,
                     tlm::tlm_global_quantum::instance().get().to_seconds()
                     * 1000000000);
+            LOG_GLOBAL_INFO << "End of cpu_thread" << std::endl;
+                } catch (const std::exception &e) {
+                    LOG_GLOBAL_ERROR << "CPU_THREAD Failure:" << e.what() << std::endl;
+                }
         }
 
         static void get_cpu_biases(uint64_t *times, int n, double conversion_factor) {

@@ -20,10 +20,18 @@
 #include <core/TargetIf.hpp>
 #include <core/TlmCallbackPrivate.hpp>
 
+
+#define SESAMOP_QUIT            0x42
+#define SESAMOP_START_BENCH     0x52
+#define SESAMOP_END_BENCH       0x54
+#define SESAMOP_LIST            0x20
+#define SESAMOP_CLEAN_PARAMS    0x58
+#define SESAMOP_START_PARAM     0x62
+#define SESAMOP_END_PARAM       0x72
+#define SESAMOP_EXECUTE_PARAMS  0x78
+
+
 namespace vpsim {
-    enum monitorState {
-        RUN, TAKE_CMD,
-    };
 
     class SesamController : public sc_module, public TargetIf<uint8_t> {
     public:
@@ -35,24 +43,17 @@ namespace vpsim {
 
         tlm::tlm_response_status write(payload_t &payload, sc_time &delay);
 
-        void setPtrState(monitorState *state) {
-            sesamState = state;
-        }
-
         virtual void sesamCommand(vector<string> &args, size_t counter = 0) {
         };
 
     private:
-        monitorState *sesamState;
         string *strBuf;
         vector<string> strParam;
 
     protected:
         string mCommandOutputBuffer;
-
-        size_t nbCommandCounter = 0; 
         //It is not a static variable, so not adapted if there are multiple instances of sesamController
-        bool delayedCaptureRunning = false; // Precaution for sesam benchmark commands overlapping
+        bool captureModeActivated = false; // Precaution for sesam benchmark commands overlapping
     };
 }
 

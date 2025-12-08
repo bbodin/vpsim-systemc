@@ -63,60 +63,54 @@ namespace vpsim {
         if (payload.addr == getBaseAddress()) {
             // command
             switch (*data) {
-                case 0x20: {
+                case SESAMOP_LIST: {
                     strParam.clear();
                     strParam.push_back("list");
-                    *sesamState = TAKE_CMD;
                     sesamCommand(strParam);
-                    *sesamState = RUN;
                 }
                 break;
-                case 0x42: {
+                case SESAMOP_QUIT: {
                     // quit w/o question
                     strParam.clear();
                     strParam.push_back("quit");
-                    *sesamState = TAKE_CMD;
                     sesamCommand(strParam);
-                    *sesamState = RUN;
                 }
                 break;
-                case 0x52: {
+                case SESAMOP_START_BENCH: {
                     // start benchmark mode
-                    string tmp = strParam.back();
+                    string benchmark_name = strParam.back();
                     strParam.clear();
-                    strParam.push_back("benchmark");
-                    strParam.push_back(tmp);
-                    *sesamState = TAKE_CMD;
+                    strParam.push_back("start_benchmark");
+                    strParam.push_back(benchmark_name);
                     sesamCommand(strParam);
-                    *sesamState = RUN;
                 }
                 break;
-                case 0x54: {
+                case SESAMOP_END_BENCH: {
                     // end benchmark mode
+                    strParam.clear();
+                    strParam.push_back("end_benchmark");
                     sesamCommand(strParam);
                 }
                 break;
-                case 0x58: {
+                case SESAMOP_CLEAN_PARAMS: {
                     // start receiving parameter
                     strParam.clear();
                 }
                 break;
-                case 0x62: {
+                case SESAMOP_START_PARAM: {
                     // start receiving string
                     strBuf = new string;
                 }
                 break;
-                case 0x72: {
+                case SESAMOP_END_PARAM: {
                     // end receiving string and add parameter
                     strParam.push_back(*strBuf);
                     delete strBuf;
                 }
                 break;
-                case 0x78: {
+                case SESAMOP_EXECUTE_PARAMS: {
                     // end receiving parameter and execute command
-                    *sesamState = TAKE_CMD;
                     sesamCommand(strParam);
-                    *sesamState = RUN;
                 }
                 break;
                 default:
