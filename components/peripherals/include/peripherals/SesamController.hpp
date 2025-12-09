@@ -16,9 +16,9 @@
 
 #ifndef _SESAMCONTROLLER_HPP_
 #define _SESAMCONTROLLER_HPP_
-
 #include <core/TargetIf.hpp>
 #include <core/TlmCallbackPrivate.hpp>
+#include <map>
 
 
 #define SESAMOP_QUIT            0x42
@@ -52,8 +52,11 @@ namespace vpsim {
 
     protected:
         string mCommandOutputBuffer;
+        uint64_t current_counter = 1;
         //It is not a static variable, so not adapted if there are multiple instances of sesamController
         bool captureModeActivated = false; // Precaution for sesam benchmark commands overlapping
+        std::map<uint64_t,string> statistics_files;
+        std::map<string,uint64_t> benchmark_last_counter;
     };
 }
 

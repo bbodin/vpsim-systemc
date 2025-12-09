@@ -16,6 +16,14 @@
 
 namespace vpsim {
 
+    typedef enum StatsFlags {
+        STATS_NONE        = 0,
+        STATS_DELAYED     = 1 << 0,  // 0x01
+        STATS_NONDELAYED  = 1 << 1,  // 0x02
+        STATS_ALL         = STATS_DELAYED | STATS_NONDELAYED
+    } StatsFlags;
+
+
     typedef tlm::tlm_target_socket<> InPortType;
     typedef tlm::tlm_initiator_socket<> OutPortType;
 
@@ -124,17 +132,8 @@ namespace vpsim {
         }
         
 
-        bool end_benchmark() {
 
-            LOG_GLOBAL_INFO << "Finishing the benchmark mode." << std::endl;
-
-            push_non_delay_stats();
-            return stop_capture_mode();
-
-
-        }
-
-        bool process_quit_command() {
+        bool process_quit_cmd() {
             if (captureModeActivated) {
                 LOG_GLOBAL_INFO << "VPSim is going to quit while running capture mode... this is not good." << std::endl;
             }
@@ -357,34 +356,11 @@ namespace vpsim {
             return false;
         }
 
-        void push_non_delay_stats() {
-
-            VpsimIp::MapIf(
-                [this](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain && !ip->getDelayStatCapture());
-                }, // Non delayed IPs
-                [](VpsimIp *ip) {
-                  
-                    ip->pushStats();
-                }
-            );
-        }
-
-        void push_delay_stats() {
-
-            VpsimIp::MapIf(
-                [this](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain && ip->getDelayStatCapture());
-                }, // Non delayed IPs
-                [](VpsimIp *ip) {
-                  
-                    ip->pushStats();
-                }
-            );
-        }
 
 
-        bool process_benchmark_cmd(const vector<string> &args) {
+
+
+        bool process_start_benchmark_cmd(const vector<string> &args) {
 
             if (args.size() != 2) {
                 printf("Usage: benchmark app\n");
@@ -403,15 +379,33 @@ namespace vpsim {
 
             mInBenchmark = true;
             benchmarkName = args.at(1);
+            uint64 benchmarkCounter = current_counter++;
             mBenchDomain = mCurrentDomain;
-
-
+            benchmark_last_counter[benchmarkName] = benchmarkCounter;
+            statistics_files[benchmarkCounter] = this->getLogDirectory() + "/" + std::string("sesamBenchmark_") + benchmarkName + std::string("_") + std::to_string(benchmarkCounter) + ".log";
+               
             start_capture_mode();
-            push_non_delay_stats(); // The delayed stats  will be pushed later, when the capture is initialized
-
+            set_seg_stats(STATS_NONDELAYED); // The delayed stats  will be pushed later, when the capture is initialized
+            trigger_delay_capture(benchmarkCounter);
 
             LOG_GLOBAL_INFO << "Benchmark mode started" << std::endl;
             return true;
+        }
+
+
+        bool process_end_benchmark_cmd(const vector<string> &args) {
+
+            LOG_GLOBAL_INFO << "Finishing the benchmark mode." << std::endl;
+            benchmarkName = args.at(1);
+            uint64 benchmarkCounter = benchmark_last_counter[benchmarkName];
+            std::string baseName = statistics_files[benchmarkCounter];
+
+            set_seg_stats(STATS_NONDELAYED);
+            append_seg_stats(statistics_files[benchmarkCounter], STATS_NONDELAYED);
+            trigger_delay_capture(benchmarkCounter);
+            return stop_capture_mode();
+
+
         }
 
         bool start_capture_mode() {
@@ -423,7 +417,7 @@ namespace vpsim {
             if (!captureModeActivated) {
                 captureModeActivated = true;
                 LOG_GLOBAL_INFO << "Notify the capture to start. " << std::endl;
-                get_cosim()->NotifySesamCommand(1, true);
+                get_cosim()->NotifySesamCommand(0, true);
                  return true;
             } else  {
                 LOG_GLOBAL_WARNING << "Capture mode already started. " << std::endl;
@@ -435,9 +429,13 @@ namespace vpsim {
         bool stop_capture_mode() {
         
             if (get_cosim() && captureModeActivated) {
+                captureModeActivated = false;
                 LOG_GLOBAL_INFO << "Notify the capture to stop." << std::endl;
-                get_cosim()->NotifySesamCommand(1, false);
+                get_cosim()->NotifySesamCommand(0, false); 
                  return true;
+            } else if (captureModeActivated) {
+                captureModeActivated = false;
+                 return false;
             } else {
                 LOG_GLOBAL_WARNING << "Capture mode already stopped. " << std::endl;
                  return false;
@@ -458,30 +456,71 @@ namespace vpsim {
             return stop_capture_mode();
         }
         
-        bool set_delay_stats() {
+        
+        void set_seg_stats(StatsFlags flags = STATS_ALL) {
+
             VpsimIp::MapIf(
-                [this](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain && ip->getDelayStatCapture()); // Delayed IPs
+                [this,flags](VpsimIp *ip) {
+                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain 
+                    && ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
+                    || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
+                );
                 },
-                [this](VpsimIp *ip) {
-                    ip->setStats();
+                [](VpsimIp *ip) {
+                    ip->pushStats();
                 }
             );
-            return true;
         }
-        bool set_non_delay_stats() {
+
+        bool set_instant_stats(StatsFlags flags = STATS_ALL) {
+            
             VpsimIp::MapIf(
-                [this](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain && !ip->getDelayStatCapture()); // Non delayed IPs
+                [this,flags](VpsimIp *ip) {
+                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain 
+                    && ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
+                    || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
+                );
                 },
                 [this](VpsimIp *ip) {
                     ip->setStats();
                 }
             );
+
             return true;
         }
 
-        bool save_instant_stats(std::string baseName) {
+         bool append_seg_stats(std::string baseName, StatsFlags flags = STATS_ALL) {
+
+            
+            LOG_GLOBAL_INFO << "inside save_diff_stats " << std::endl;
+            LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
+            LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
+
+            vpsim::Logger benchLogger(baseName);
+
+            VpsimIp::MapIf(
+                [this,flags](VpsimIp *ip) {
+                    return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain
+                    && ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
+                    || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
+                );
+                },
+                [&benchLogger](VpsimIp *ip) {
+                    auto &stats = ip->getSegStats().back();
+                    if (!stats.empty()) {
+                        for (auto &stat: stats) {
+                            benchLogger.logStats() << "[Stats] (" << ip->getName() << ") " << stat.first << " " << stat.second << std::endl;
+                        }
+                        ip->clearSegStats();
+                    }
+                }
+            );
+
+            return true;
+        }
+
+
+        bool append_instant_stats(std::string baseName, StatsFlags flags = STATS_ALL) {
 
             auto mSnapshotTime = get_cosim()->getCurrentTime(); // TODO : Need to cehck the time here is correct
             mCommandOutputBuffer = string();
@@ -491,8 +530,11 @@ namespace vpsim {
             mCommandOutputBuffer += ss.str() + "\n";
 
             VpsimIp::MapIf(
-                [this](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain );
+                [this,flags](VpsimIp *ip) {
+                    return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain
+                    && ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
+                    || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
+                );
                 },
                 [this](VpsimIp *ip) {
                     auto &stats = ip->getStats();
@@ -506,7 +548,7 @@ namespace vpsim {
             );
 
 
-            FILE* LogFile = fopen(baseName.c_str(), "w");
+            FILE* LogFile = fopen(baseName.c_str(), "a");
             if (!LogFile)
             {
                 LOG_GLOBAL_ERROR << "Failed to open log file: " << baseName << std::endl;
@@ -527,24 +569,19 @@ namespace vpsim {
 
         bool trigger_quit() {
             if(!get_cosim()) {
-                LOG_GLOBAL_ERROR << "Quitting without cosim..." << std::endl;
+                LOG_GLOBAL_WARNING << "Quitting without cosim..." << std::endl;
                 sc_stop();
-                return false;
-            }
-             if (captureModeActivated) {
+                return true;
+            } else {
                 LOG_GLOBAL_INFO << "Call finish " << std::endl;
                  get_cosim()->Finish();
-                 return true;
-            } else {
-                LOG_GLOBAL_INFO << "Capture mode is off, we stop. " << std::endl;
-                sc_stop();
                  return true;
             }
         }
 
-        bool trigger_delay_capture() {
+        bool trigger_delay_capture(uint64 counter) {
             if (get_cosim() && captureModeActivated) {
-                get_cosim()->NotifySesamCommand(1, true);
+                get_cosim()->NotifySesamCommand(counter, true);
                  return true;
             } else  {
                 LOG_GLOBAL_WARNING << "Capture mode has not beeen started already. " << std::endl;
@@ -569,98 +606,46 @@ namespace vpsim {
                 return false;
             } 
 
-            if (!captureModeActivated ) {
-                LOG_GLOBAL_WARNING << "Capture mode is not started " << std::endl;
-                return false;
-            } 
-
-            if (mInBenchmark ) {
+            if (mInBenchmark) {
                 LOG_GLOBAL_WARNING << "Snapshot is not compatible  with benchmark mode " << std::endl;
                 return false;
             } 
 
+            if (!captureModeActivated) {
+                LOG_GLOBAL_WARNING << "Capture mode is not started " << std::endl;
+                start_capture_mode();
+            } 
+
             benchmarkName = args.at(1);
-            set_non_delay_stats();
-            trigger_delay_capture();
+            uint64 benchmarkCounter = current_counter++;
+            statistics_files[benchmarkCounter] = this->getLogDirectory() + "/" + std::string("sesamSnapshot_") + benchmarkName + std::string("_") + std::to_string(benchmarkCounter) + ".log";
+               
+            set_instant_stats(STATS_NONDELAYED);
+            append_instant_stats(statistics_files[benchmarkCounter], STATS_NONDELAYED);
+            trigger_delay_capture(benchmarkCounter);
             return true;
             
         }
 
-        bool save_seg_stats(std::string baseName) {
-
-            
-            LOG_GLOBAL_INFO << "inside save_diff_stats " << std::endl;
-            LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
-            LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
-
-            vpsim::Logger benchLogger(baseName);
-
-            VpsimIp::MapIf(
-                [this](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain);
-                }, 
-                [&benchLogger](VpsimIp *ip) {
-                    auto &stats = ip->getSegStats().back();
-                    if (!stats.empty()) {
-                        for (auto &stat: stats) {
-                            benchLogger.logStats() << "[Stats] (" << ip->getName() << ") " << stat.first << " " << stat.second << std::endl;
-                        }
-                        ip->clearSegStats();
-                    }
-                }
-            );
-
-            return true;
-        }
-
+       
         bool process_capture_stopped_cmd(size_t counter) {
 
-            // The only truth, if this is triggered, the capture mode is stopped.
-            captureModeActivated = false;
-
-            if (mInBenchmark) {
-                mInBenchmark = false;
-                
-                // We are in benchmark mode, we notified the end of capture, we received the go for delay ips.
-                push_delay_stats();
-
-                // Use the same logger formatting as the global log to ensure consistency
-                const std::string baseName = this->getLogDirectory() + "/" + std::string("sesamBenchmark_") + benchmarkName + std::string("_") + std::to_string(counter) + ".log";
-                save_seg_stats(baseName);
-                return true;
-            } else {
-                LOG_GLOBAL_INFO << "Capture mode finished, nothing to do. " << std::endl;
+            if (counter == 0) { // nothing was expected apart from stopping the RoI
+                LOG_GLOBAL_INFO << "Capture mode finished, nothing else to do. " << std::endl;
                 return true;
             }
 
+            LOG_GLOBAL_INFO << "Benchmark mode finished, saving the segment. " << std::endl;
             
-            
-        }
+            // We are in benchmark mode, we notified the end of capture, we received the go for delay ips.
 
-        bool process_capture_started_cmd(size_t counter) {
-            // The first truth, if this is triggered, the capture mode is running 
-            captureModeActivated = true;
+            // Use the same logger formatting as the global log to ensure consistency
+            const std::string baseName =  statistics_files[counter];
+            set_seg_stats(STATS_DELAYED);
+            append_seg_stats(baseName, STATS_DELAYED);
 
-            // the second truth, if this is triggered, somewhere the delay stats ar needed (either benchmark or snapshot).
-
-            if (mInBenchmark) {
-                push_delay_stats();
-                LOG_GLOBAL_INFO << "Initial delayed capture for benchmarking are done." << std::endl;
-            } else {
-                    if (benchmarkName.size()) {
-                    set_delay_stats();
-                    LOG_GLOBAL_INFO << "Delayed capture for snapshot are done." << std::endl;
-                    const std::string baseName = this->getLogDirectory() + "/" + std::string("sesamSnapshot_") + benchmarkName + std::string("_") + std::to_string(counter) + ".log";
-
-                    if (save_instant_stats(baseName)) {
-                        LOG_GLOBAL_INFO << "Snapshot file " << baseName << " is saved." << std::endl;
-                    } else {
-                        LOG_GLOBAL_ERROR << "Error while saving snapshot file '" << baseName << "'." << std::endl;
-                        return false;
-                    }
-                }
-            }
             return true;
+
         }
 
         bool process_delayed_ready_cmd(size_t counter) {
@@ -671,24 +656,22 @@ namespace vpsim {
             // the second truth, if this is triggered, somewhere the delay stats ar needed (either benchmark or snapshot).
 
             if (mInBenchmark) {
-                push_delay_stats();
+                set_seg_stats(STATS_DELAYED);
                 LOG_GLOBAL_INFO << "Initial delayed capture for benchmarking are done." << std::endl;
             } else {
-                    if (benchmarkName.size()) {
-                    set_delay_stats();
-                    LOG_GLOBAL_INFO << "Delayed capture for snapshot are done." << std::endl;
-                    const std::string baseName = this->getLogDirectory() + "/" + std::string("sesamSnapshot_") + benchmarkName + std::string("_") + std::to_string(counter) + ".log";
-
-                    if (save_instant_stats(baseName)) {
-                        LOG_GLOBAL_INFO << "Snapshot file " << baseName << " is saved." << std::endl;
-                    } else {
-                        LOG_GLOBAL_ERROR << "Error while saving snapshot file '" << baseName << "'." << std::endl;
-                        return false;
-                    }
+                set_instant_stats(STATS_DELAYED);
+                LOG_GLOBAL_INFO << "Delayed capture for snapshot are done." << std::endl;
+                const std::string baseName =  statistics_files[counter];
+                if (append_instant_stats(baseName, STATS_DELAYED)) {
+                    LOG_GLOBAL_INFO << "Snapshot file " << baseName << " is saved." << std::endl;
+                } else {
+                    LOG_GLOBAL_ERROR << "Error while saving snapshot file '" << baseName << "'." << std::endl;
+                    return false;
                 }
             }
             return true;
         }
+
         // Attention: 'counter' manages only one domain, mCurrentDomain and mBenchDomain are then equal
         void sesamCommand(vector<string> &args, size_t counter) override {
             
@@ -707,14 +690,11 @@ namespace vpsim {
             // feedback from Cosim
             //*************************************** 
             if (cmd == "CaptureStopped" && counter > 0) {
-                res = this->process_capture_stopped_cmd(counter); // update capturemode var, if benchmark mode then save delayed and non delayed stats
+                res = this->process_capture_stopped_cmd(counter); // update capturemode var, if benchmark mode then save delayed stats to counter file
             } else if (cmd == "DelayedReady" && counter > 0) {
-                res = this->process_delayed_ready_cmd(counter); // update capturemode var, push/set delayed and save delayed and non delayed stats if snapshop
-            } else if (cmd == "CaptureStarted" && counter > 0) {
-                res = this->process_capture_started_cmd(counter); // update capturemode var, push/set delayed and save delayed and non delayed stats if snapshop
-            
+                res = this->process_delayed_ready_cmd(counter); // update capturemode var, push/set delayed and save delayed  to counter file if snapshop 
             } else if (cmd == "quit") {
-                res = process_quit_command(); // sc_stop
+                res = process_quit_cmd(); // sc_stop
             } else if (cmd == "show") {
                 res = process_show_cmd(args); // call ip->show();
             } else if (cmd == "showmem") {
@@ -724,21 +704,21 @@ namespace vpsim {
             } else if (cmd == "configure") {
                 res =  (process_config_cmd(args)) ; // configure for ip not fully implemented
             } else if (cmd == "debug") {
-                res =  (process_debug_cmd(args)) ; // enable loggign and setDebugLvl for each comp 
+                res =  (process_debug_cmd(args)) ; // enable logging and setDebugLvl for each comp 
             } else if (cmd == "watch") {
                 res =  (process_watch_cmd(args)) ;  // MapIf (add monitor  name)
             } else if (cmd == "unwatch") {
                 res =  (process_unwatch_cmd(args)) ;  // MapIf (remove monitor name)
             } else if (cmd == "benchmark") {
-                res =  (process_benchmark_cmd(args)) ; // set inBenchmark,  push_non_delay_stats(); and  start_capture_mode(); 
+                res =  (process_start_benchmark_cmd(args)) ; //  push_non_delay_stats(); start_capture_mode();  trigger_delay(); 
+            } else if (cmd == "endBenchmark") {
+                res =  (process_end_benchmark_cmd(args)) ; //  push_non_delay_stats(); save_non_delay_diff(to counter file); stop_capture_mode();
             } else if (cmd == "start") {
                 res =  (process_start_cmd()) ; // start_capture_mode();
             } else if (cmd == "stop") {
                 res =  (process_stop_cmd()) ; //  stop_capture_mode();
             } else if (cmd == "snapshot") {
-                res =  (process_snapshot_cmd(args)) ; //  set_non_delay_stats(); and trigger_capture_mode();
-            } else if (mInBenchmark) {
-                res = end_benchmark(); // push_non_delay_stats(); and stop_capture_mode();
+                res =  (process_snapshot_cmd(args)) ; //  set_non_delay_stats(); save_non_delay(to counter file);   and trigger_delay(to same counter);
             } else {
                 LOG_GLOBAL_WARNING << "Unknow command " << cmd << std::endl;
                 res = false;

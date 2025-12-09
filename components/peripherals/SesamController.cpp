@@ -80,15 +80,17 @@ namespace vpsim {
                     // start benchmark mode
                     string benchmark_name = strParam.back();
                     strParam.clear();
-                    strParam.push_back("start_benchmark");
+                    strParam.push_back("benchmark");
                     strParam.push_back(benchmark_name);
                     sesamCommand(strParam);
                 }
                 break;
                 case SESAMOP_END_BENCH: {
                     // end benchmark mode
+                    string benchmark_name = strParam.back();
                     strParam.clear();
-                    strParam.push_back("end_benchmark");
+                    strParam.push_back("endBenchmark");
+                    strParam.push_back(benchmark_name);
                     sesamCommand(strParam);
                 }
                 break;

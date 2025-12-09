@@ -134,7 +134,7 @@ namespace vpsim {
             LOG_GLOBAL_DEBUG(dbg0) << "wait for empty queue" << std::endl;
             wait(_empty_pq);
             LOG_GLOBAL_DEBUG(dbg0) << "empty queue signal received" << std::endl;
-            sc_stop();
+            //sc_stop();
         }
         static void NotifySesamCommand(uint64_t counter, bool start) {
             _Buffer.type = SESAMCOMMAND;
@@ -160,7 +160,10 @@ namespace vpsim {
                 }
                 _Buffer.time_stamp = _epoch_sc_time + 1;
             }
-            LOG_GLOBAL_DEBUG(dbg0) << "push with  _Buffer.time_stamp " << _Buffer.time_stamp << " _Buffer.epoch = " <<  _Buffer.epoch << std::endl;
+            LOG_GLOBAL_DEBUG(dbg0) << "push with write " << (int) _Buffer.write 
+                                   << " tag = " <<  _Buffer.tag
+                                   << " time_stamp = " <<  _Buffer.time_stamp
+                                   << " epoch = " <<  _Buffer.epoch << std::endl;
             _PQ.push(_Buffer); // NotifySesamCommand
         }
 
@@ -292,19 +295,25 @@ namespace vpsim {
 
         static void *Run(void *unused) {
             
-            LOG_GLOBAL_DEBUG(dbg1) << "The MainMemCosim Run function started!" << std::endl;
+            LOG_GLOBAL_DEBUG(dbg1) << "[MainMemCosim] Run function started!" << std::endl;
             Req k;
             vector<string> strParam;
             bool exitLoop = false;
             uint64_t tmpMemEpoch;
             while (1) {
-                if (_Stopped) break;
+                if (_Stopped) {
+                        LOG_GLOBAL_DEBUG(dbg1) << "[MainMemCosim] _Stopped is true." << std::endl;
+                        break;
+                    }
                 tmpMemEpoch = _MemEpoch;
                 
                 while (tmpMemEpoch >= _CpuEpoch) {
                     // Requests ordering needs the iss to run at least one epoch ahead
                     usleep(1);
-                    if (_Stopped) break;
+                    if (_Stopped) {
+                        LOG_GLOBAL_DEBUG(dbg1) << "[MainMemCosim] _Stopped is true." << std::endl;
+                        break;
+                    }
                 }
 
                 if (_PQ.try_pop(k)) {
@@ -332,24 +341,26 @@ namespace vpsim {
                                 cosim->insert(k.id, k.write, k.fetch, k.phys, k.size, _MemEpoch, k.time_stamp);
                             }
                         } else if (k.type == SESAMCOMMAND) {
-                            LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim received a SESAMCOMMAND Request k.write = " << k.write  << " k.tag = " << k.tag  << std::endl;
+                            LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim received a SESAMCOMMAND Request k.write = " << (int) k.write  << " k.tag = " << k.tag  << std::endl;
                             if (k.tag == 0) {
+                                LOG_GLOBAL_DEBUG(dbg0) << "Counter is zero, meaning reply is not needed..."  << std::endl;
                                 
-                                LOG_GLOBAL_WARNING << "************** CORRECT END *****************" << std::endl;
+                                // LOG_GLOBAL_WARNING << "************** CORRECT END *****************" << std::endl;
 
-                                // TODO : This is a workaround to kill 
-                                LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim Terminate the session"  << std::endl;
-                                sc_stop();
+                                // // TODO : This is a workaround to kill 
+                                // LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim Terminate the session"  << std::endl;
+                                // sc_stop();
+                            } else {
+                                for (MainMemCosim *cosim: _Simulators) {
+                                    strParam.clear();
+                                    if (k.write) strParam.push_back("DelayedReady");
+                                    else strParam.push_back("CaptureStopped");
+                                    LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim reply back as the event is processed with strParam = " << strParam.back()  << std::endl;
+                                    cosim->_Monitor->sesamCommand(strParam, k.tag); // k.tag is expected to be greater than 1
+                                }
+                                exitLoop = true;
+                                break;
                             }
-                            for (MainMemCosim *cosim: _Simulators) {
-                                strParam.clear();
-                                if (k.write) strParam.push_back("CaptureRunning");
-                                else strParam.push_back("CaptureStopped");
-                                LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim reply back as the event is processed with strParam = " << strParam.back()  << std::endl;
-                                cosim->_Monitor->sesamCommand(strParam, k.tag); // k.tag is expected to be 1 here
-                            }
-                            exitLoop = true;
-                            break;
                         }
                     } while (_PQ.try_pop(k));
                     _Mut[tmpMemEpoch % EPOCHS].unlock();
@@ -386,7 +397,6 @@ namespace vpsim {
 
         static uint64_t _CurQuantum;
 
-        static sc_event _empty_pq;
         static uint64_t _CpuEpoch;
         static uint64_t _MemEpoch;
         static uint64_t _epoch_sc_time;
@@ -397,6 +407,8 @@ namespace vpsim {
         IOAccessCosim *_IOAccessPtr;
         SesamController *_Monitor;
         static vector<tuple<registerMainMemCb, model_provider_main_mem_cb, uint64_t, unRegisterMainMemCb> > _MainMemCb;
+        public:
+        static sc_event _empty_pq;
     };
 
     class SystemCCosimulator : public sc_module, public MainMemCosim {

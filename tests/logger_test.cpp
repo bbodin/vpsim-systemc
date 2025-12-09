@@ -173,7 +173,6 @@ TEST(Logger, writeLogMacro) {
     MyIp myIp("testLoggerWriteLogMacro", oss);
     LoggerCore::get().enableLogging(true);
     LoggerCore::get().setDebugLvl(myIp, dbg6);
-    std::ifstream stats_ifstream(myIp.statLogName());
 
     std::string lineIn, lineOut;
 
@@ -210,6 +209,8 @@ TEST(Logger, writeLogMacro) {
     
     myIp.writeAStat();
     lineIn =  "[Stats] A stat";
+    
+    std::ifstream stats_ifstream(myIp.statLogName());
     std::getline(stats_ifstream, lineOut);
     EXPECT_EQ(lineIn, lineOut);
 
@@ -220,7 +221,6 @@ TEST(Logger, writeGlobalLogMacro) {
     std::ostringstream oss;
     LoggerCore::get().enableLogging(true);
     LoggerCore::get().setDebugLvl("globalLog", dbg6);
-    std::ifstream stats_ifstream(globalLogger.statLogName());
     std::string lineIn, lineOut;
 
     // intercept cout
@@ -264,6 +264,7 @@ TEST(Logger, writeGlobalLogMacro) {
     
     LOG_GLOBAL_STATS << "A stat" << std::endl;
     lineIn =  "[Stats] A stat";
+    std::ifstream stats_ifstream(globalLogger.statLogName());
     std::getline(stats_ifstream, lineOut);
     EXPECT_EQ(lineIn , lineOut);
 

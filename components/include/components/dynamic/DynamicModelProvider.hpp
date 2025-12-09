@@ -243,6 +243,7 @@ namespace vpsim {
                                });
 
             mModulePtr->finalize_config();
+            LOG_GLOBAL_INFO << "Qemu finalize_config terminates" << std::endl;
         }
 
         void terminate() override {

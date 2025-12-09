@@ -65,10 +65,11 @@ namespace vpsim {
 
     //Destructor
     InitiatorIf::~InitiatorIf() {
-        for (size_t i = 0; i < getNbPort(); i++) {
-            delete mInitiatorSocket[i];
-        }
-        delete [] mInitiatorSocket;
+            for (size_t i = 0; i < getNbPort(); i++) {
+                delete mInitiatorSocket[i];
+            }
+            delete [] mInitiatorSocket;
+
     }
 
     //-----------------------------------------------------------------------------

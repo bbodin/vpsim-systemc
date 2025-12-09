@@ -39,6 +39,7 @@ namespace vpsim {
 
 using namespace vpsim;
 using namespace std;
+
 sc_event MainMemCosim::_empty_pq;
 vector<MainMemCosim *> MainMemCosim::_Simulators;
 bool MainMemCosim::_Inited = false;
@@ -158,6 +159,8 @@ int sc_main(const int argc, char *argv[]) {
     VpsimIp<InPortType, OutPortType>::RegisterClass<DynamicCpuController>("CpuController");
     VpsimIp<InPortType, OutPortType>::RegisterClass<Container<InPortType, OutPortType> >("Container");
 
+    signal(SIGINT, onInterrupt);
+    signal(SIGTERM, onInterrupt);
 
     if (argc < 2) {
         cerr << "Call with --dump-components or --run <platform_name>.xml" << endl;
@@ -191,12 +194,11 @@ int sc_main(const int argc, char *argv[]) {
         // HOST_TIME_START = getClk();
         HOST_TIME_START = 0;
 
-        signal(SIGINT, onInterrupt);
-        signal(SIGTERM, onInterrupt);
 
         //-----------------------------------------------------------------------------------------
         //Start simulation
         sc_start();
+        LOG_GLOBAL_INFO <<  "sc_start finished..." << std::endl;
 
         //-----------------------------------------------------------------------------------------
         // Time stamp after the computations

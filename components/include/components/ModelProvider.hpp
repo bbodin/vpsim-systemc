@@ -31,6 +31,7 @@
 #include <utility>
 
 #include "CacheBase.hpp"
+#include <logger/logger.hpp>
 
 using namespace tlm;
 
@@ -254,21 +255,31 @@ namespace vpsim {
                 return;
             char **argv_c = (char **) malloc(sizeof(char *) * argv.size());
             int i = 0;
+
+            LOG_GLOBAL_DEBUG(dbg0) << "Qemu Arguments :" << std::endl;
+
             for (string &arg: argv) {
                 argv_c[i++] = strdup(arg.c_str());
+                LOG_GLOBAL_DEBUG(dbg0)  << " " << arg  << std::endl ;
             }
-            configure(i, argv_c, nullptr);
+
+            configure(i, argv_c, nullptr); // This part create a coroutine Qemu
             configured = true;
+            LOG_GLOBAL_DEBUG(dbg0) << "Qemu configure returned." << std::endl;
         }
 
         void io_thread() {
                 try {
                     while (true) {
+                    static int count = 0;    
+                    LOG_GLOBAL_DEBUG(dbg2) << "BEFORE PULL_IO : " << count++ << std::endl;
                     poll_io();
+                    LOG_GLOBAL_DEBUG(dbg2) << "AFTER PULL_IO" << std::endl;
                    }
                 } catch (const std::exception &e) {
                     LOG_GLOBAL_ERROR << "IO_THREAD Failure:" << e.what() << std::endl;
                 }
+            LOG_GLOBAL_DEBUG(dbg0) << "Qemu poll_io returned." << std::endl;
         }
 
         void cpu_thread() {
@@ -276,10 +287,10 @@ namespace vpsim {
             run_cpu(NULL,
                     tlm::tlm_global_quantum::instance().get().to_seconds()
                     * 1000000000);
-            LOG_GLOBAL_INFO << "End of cpu_thread" << std::endl;
                 } catch (const std::exception &e) {
                     LOG_GLOBAL_ERROR << "CPU_THREAD Failure:" << e.what() << std::endl;
                 }
+            LOG_GLOBAL_DEBUG(dbg0) << "Qemu run_cpu returned." << std::endl;
         }
 
         static void get_cpu_biases(uint64_t *times, int n, double conversion_factor) {

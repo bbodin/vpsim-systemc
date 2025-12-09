@@ -170,8 +170,8 @@ namespace vpsim {
         }
         void terminate() override {
             if (mModulePtr) {
-              
-                delete mModulePtr;
+                // Assume this is going to be taking care by something else
+                // delete mModulePtr;
             }
         }
 
