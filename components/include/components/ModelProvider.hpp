@@ -224,6 +224,7 @@ namespace vpsim {
 
             SC_THREAD(io_thread);
             SC_THREAD(cpu_thread);
+            SC_THREAD(watchdog_thread);
         }
 
         SC_HAS_PROCESS(ModelProvider);
@@ -268,11 +269,29 @@ namespace vpsim {
             LOG_GLOBAL_DEBUG(dbg0) << "Qemu configure returned." << std::endl;
         }
 
+    void watchdog_thread() {
+                int last_counter = io_counter;   // initialize last observed counter
+                while (true) {
+                    wait(20, SC_MS);             // check every 20 ms
+
+                    int current_counter = io_counter;
+                    if (current_counter == last_counter) {
+                        // io counter did not progress, we stop
+                        LOG_GLOBAL_INFO << "WATCHDOG: IO stalled at " << current_counter << std::endl;
+                        MainMemCosim::Stop(); 
+                        LOG_GLOBAL_INFO << "WATCHDOG: MainMemCosim::Stop() returned "  << std::endl;
+                        break;
+                    } 
+                    last_counter = current_counter; // update last observed counter
+                }
+            }
+
+        std::atomic<int> io_counter{0};
         void io_thread() {
                 try {
                     while (true) {
-                    static int count = 0;    
-                    LOG_GLOBAL_DEBUG(dbg2) << "BEFORE PULL_IO : " << count++ << std::endl;
+                    io_counter++;
+                    LOG_GLOBAL_DEBUG(dbg2) << "BEFORE PULL_IO : " << io_counter << std::endl;
                     poll_io();
                     LOG_GLOBAL_DEBUG(dbg2) << "AFTER PULL_IO" << std::endl;
                    }
@@ -287,9 +306,9 @@ namespace vpsim {
             run_cpu(NULL,
                     tlm::tlm_global_quantum::instance().get().to_seconds()
                     * 1000000000);
-                } catch (const std::exception &e) {
+            } catch (const std::exception &e) {
                     LOG_GLOBAL_ERROR << "CPU_THREAD Failure:" << e.what() << std::endl;
-                }
+            }
             LOG_GLOBAL_DEBUG(dbg0) << "Qemu run_cpu returned." << std::endl;
         }
 

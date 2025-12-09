@@ -119,7 +119,7 @@ namespace vpsim {
             _Buffer.type  = SESAMCOMMAND;
             _Buffer.tag   = 0;
             _Buffer.write = 0; // Reuse of write to indicate a start or finish command 
-            _Buffer.epoch = -1; // TODO: Max INT here
+            _Buffer.epoch = -1; // Move to next epoch
             
             for (size_t i = 0; i < _MainMemCb.size(); i++) get < 3 > (_MainMemCb[i])();
             Notify = haltNotify;
@@ -131,10 +131,9 @@ namespace vpsim {
             LOG_GLOBAL_DEBUG(dbg0) << "push LAST EVENT with  _Buffer.time_stamp " << _Buffer.time_stamp << " _Buffer.epoch = " <<  _Buffer.epoch << std::endl;
  
             _PQ.push(_Buffer); // Finish
-            LOG_GLOBAL_DEBUG(dbg0) << "wait for empty queue" << std::endl;
-            wait(_empty_pq);
-            LOG_GLOBAL_DEBUG(dbg0) << "empty queue signal received" << std::endl;
-            //sc_stop();
+            LOG_GLOBAL_DEBUG(dbg0) << "wait for empty queue, the IO will not progress anymore" << std::endl;
+            wait(MainMemCosim::_last_transaction);
+            LOG_GLOBAL_DEBUG(dbg0) << "Empty queue triggered!!" << std::endl;
         }
         static void NotifySesamCommand(uint64_t counter, bool start) {
             _Buffer.type = SESAMCOMMAND;
@@ -301,10 +300,10 @@ namespace vpsim {
             bool exitLoop = false;
             uint64_t tmpMemEpoch;
             while (1) {
-                if (_Stopped) {
-                        LOG_GLOBAL_DEBUG(dbg1) << "[MainMemCosim] _Stopped is true." << std::endl;
-                        break;
-                    }
+                //if (_Stopped) {
+                //        LOG_GLOBAL_DEBUG(dbg1) << "[MainMemCosim] _Stopped is true." << std::endl;
+                //        break;
+                //    }
                 tmpMemEpoch = _MemEpoch;
                 
                 while (tmpMemEpoch >= _CpuEpoch) {
@@ -317,6 +316,15 @@ namespace vpsim {
                 }
 
                 if (_PQ.try_pop(k)) {
+
+                    if (k.epoch == -1) {
+                        LOG_GLOBAL_DEBUG(dbg0) << " The last transaction is reached." << std::endl; // TODO: this fail when SC is finishing
+                        _last_transaction.notify();
+                        sc_stop();
+                        return NULL;
+                    }
+
+                    
                     if (tmpMemEpoch != k.epoch) {
                         _PQ.push(k); // put the element back
                         _MemEpoch = k.epoch;
@@ -368,10 +376,7 @@ namespace vpsim {
                     else ++_MemEpoch;
                 } else ++_MemEpoch; // an empty epoch!
 
-                if (_PQ.size() == 0) {
-                    //LOG_GLOBAL_DEBUG(dbg0) << " The queue is empty..." << std::endl; // TODO: this fail when SC is finishing
-                    // _empty_pq.notify();
-                }
+
             } // while (1)
             return NULL;
         }
@@ -408,7 +413,7 @@ namespace vpsim {
         SesamController *_Monitor;
         static vector<tuple<registerMainMemCb, model_provider_main_mem_cb, uint64_t, unRegisterMainMemCb> > _MainMemCb;
         public:
-        static sc_event _empty_pq;
+        static sc_event _last_transaction;
     };
 
     class SystemCCosimulator : public sc_module, public MainMemCosim {

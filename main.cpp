@@ -40,7 +40,7 @@ namespace vpsim {
 using namespace vpsim;
 using namespace std;
 
-sc_event MainMemCosim::_empty_pq;
+sc_event MainMemCosim::_last_transaction;
 vector<MainMemCosim *> MainMemCosim::_Simulators;
 bool MainMemCosim::_Inited = false;
 pthread_t MainMemCosim::_T;
@@ -199,6 +199,7 @@ int sc_main(const int argc, char *argv[]) {
         //Start simulation
         sc_start();
         LOG_GLOBAL_INFO <<  "sc_start finished..." << std::endl;
+
 
         //-----------------------------------------------------------------------------------------
         // Time stamp after the computations
