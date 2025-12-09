@@ -476,7 +476,7 @@ namespace vpsim {
             
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain 
+                    return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain 
                     && ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
                     || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
                 );
@@ -509,7 +509,7 @@ namespace vpsim {
                     auto &stats = ip->getSegStats().back();
                     if (!stats.empty()) {
                         for (auto &stat: stats) {
-                            benchLogger.logStats() << "[Stats] (" << ip->getName() << ") " << stat.first << " " << stat.second << std::endl;
+                            benchLogger.logStats() << "(" << ip->getName() << ") " << stat.first << " " << stat.second << std::endl;
                         }
                         ip->clearSegStats();
                     }
@@ -522,12 +522,12 @@ namespace vpsim {
 
         bool append_instant_stats(std::string baseName, StatsFlags flags = STATS_ALL) {
 
-            auto mSnapshotTime = get_cosim()->getCurrentTime(); // TODO : Need to cehck the time here is correct
             mCommandOutputBuffer = string();
-            stringstream ss;
-            ss << mSnapshotTime;
-            mCommandOutputBuffer += "Snapshot time: ";
-            mCommandOutputBuffer += ss.str() + "\n";
+
+            // auto mSnapshotTime = get_cosim() ? get_cosim()->getCurrentTime(); // TODO : Need to cehck the time here is correct
+            // stringstream ss;
+            // ss << mSnapshotTime;
+            // mCommandOutputBuffer += "Snapshot time: " + ss.str() + "\n";
 
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
@@ -562,8 +562,6 @@ namespace vpsim {
             }
 
             std::fclose(LogFile);
-
-            LOG_GLOBAL_INFO << "Snapshot saved to " << baseName << std::endl;
             return true;
         }
 
@@ -601,27 +599,36 @@ namespace vpsim {
                 return false;
             }
 
-            if (!get_cosim()) {
-                LOG_GLOBAL_WARNING << "Internal error get_cosim() is null " << std::endl;
-                return false;
-            } 
-
             if (mInBenchmark) {
                 LOG_GLOBAL_WARNING << "Snapshot is not compatible  with benchmark mode " << std::endl;
                 return false;
             } 
 
-            if (!captureModeActivated) {
-                LOG_GLOBAL_WARNING << "Capture mode is not started " << std::endl;
-                start_capture_mode();
-            } 
+
+            // NON - DELAYED PART
 
             benchmarkName = args.at(1);
             uint64 benchmarkCounter = current_counter++;
             statistics_files[benchmarkCounter] = this->getLogDirectory() + "/" + std::string("sesamSnapshot_") + benchmarkName + std::string("_") + std::to_string(benchmarkCounter) + ".log";
                
             set_instant_stats(STATS_NONDELAYED);
-            append_instant_stats(statistics_files[benchmarkCounter], STATS_NONDELAYED);
+            if (append_instant_stats(statistics_files[benchmarkCounter], STATS_NONDELAYED)) {
+                    LOG_GLOBAL_INFO << "Snapshot file (STATS_DELAYED) " << statistics_files[benchmarkCounter] << " is saved." << std::endl;
+            } else {
+                    LOG_GLOBAL_WARNING << "Cannot save snapshot file (STATS_DELAYED)." << std::endl;
+            }
+
+            // DELAYED PART (requires get_cosim)
+
+            if (!get_cosim()) {
+                LOG_GLOBAL_WARNING << "get_cosim() is null, cannot performed delayed stats " << std::endl;
+                return false;
+            } 
+
+            if (!captureModeActivated) {
+                start_capture_mode();
+            } 
+
             trigger_delay_capture(benchmarkCounter);
             return true;
             
@@ -663,7 +670,7 @@ namespace vpsim {
                 LOG_GLOBAL_INFO << "Delayed capture for snapshot are done." << std::endl;
                 const std::string baseName =  statistics_files[counter];
                 if (append_instant_stats(baseName, STATS_DELAYED)) {
-                    LOG_GLOBAL_INFO << "Snapshot file " << baseName << " is saved." << std::endl;
+                    LOG_GLOBAL_INFO << "Snapshot file (STATS_DELAYED) " << baseName << " is saved." << std::endl;
                 } else {
                     LOG_GLOBAL_ERROR << "Error while saving snapshot file '" << baseName << "'." << std::endl;
                     return false;

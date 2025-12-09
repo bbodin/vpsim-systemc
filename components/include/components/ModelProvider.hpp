@@ -291,9 +291,7 @@ namespace vpsim {
                 try {
                     while (true) {
                     io_counter++;
-                    LOG_GLOBAL_DEBUG(dbg2) << "BEFORE PULL_IO : " << io_counter << std::endl;
                     poll_io();
-                    LOG_GLOBAL_DEBUG(dbg2) << "AFTER PULL_IO" << std::endl;
                    }
                 } catch (const std::exception &e) {
                     LOG_GLOBAL_ERROR << "IO_THREAD Failure:" << e.what() << std::endl;
