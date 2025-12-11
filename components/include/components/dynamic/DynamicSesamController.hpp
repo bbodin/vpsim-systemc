@@ -135,9 +135,10 @@ namespace vpsim {
 
         bool process_quit_cmd() {
             if (captureModeActivated) {
-                LOG_GLOBAL_INFO << "VPSim is going to quit while running capture mode... this is not good." << std::endl;
+                LOG_GLOBAL_WARNING << "VPSim is going to quit while running capture mode... this is not good." << std::endl;
+            } else {
+                LOG_GLOBAL_INFO << "VPSim is going to quit." << std::endl;
             }
-            LOG_GLOBAL_INFO << "Request to quit" << std::endl;
 
             return trigger_quit();
         }
@@ -446,13 +447,13 @@ namespace vpsim {
 
 
         bool process_start_cmd() {
-            LOG_GLOBAL_INFO << "process_start_cmd started " << std::endl;
+            LOG_GLOBAL_DEBUG(dbg0) << "process_start_cmd started " << std::endl;
             return start_capture_mode();
            
         }
 
         bool process_stop_cmd() {
-            LOG_GLOBAL_INFO << "process_stop_cmd started " << std::endl;
+            LOG_GLOBAL_DEBUG(dbg0) << "process_stop_cmd started " << std::endl;
             return stop_capture_mode();
         }
         
@@ -567,11 +568,11 @@ namespace vpsim {
 
         bool trigger_quit() {
             if(!get_cosim()) {
-                LOG_GLOBAL_WARNING << "Quitting without cosim..." << std::endl;
+                LOG_GLOBAL_INFO << "Quitting without cosim..." << std::endl;
                 sc_stop();
                 return true;
             } else {
-                LOG_GLOBAL_INFO << "Call finish " << std::endl;
+                LOG_GLOBAL_INFO << "Ending cosim..." << std::endl;
                  get_cosim()->Finish();
                  return true;
             }
@@ -588,7 +589,7 @@ namespace vpsim {
         }
 
         bool process_snapshot_cmd(const vector<string> &args) {
-            LOG_GLOBAL_INFO << "process_snapshot_cmd started " << std::endl;
+            LOG_GLOBAL_DEBUG(dbg0) << "process_snapshot_cmd started " << std::endl;
 
             if (args.size() != 2) {
                 printf("Usage: snapshot app\n");
@@ -613,9 +614,9 @@ namespace vpsim {
                
             set_instant_stats(STATS_NONDELAYED);
             if (append_instant_stats(statistics_files[benchmarkCounter], STATS_NONDELAYED)) {
-                    LOG_GLOBAL_INFO << "Snapshot file (STATS_DELAYED) " << statistics_files[benchmarkCounter] << " is saved." << std::endl;
+                    LOG_GLOBAL_INFO << "Snapshot file (STATS_NONDELAYED) " << statistics_files[benchmarkCounter] << " is updated." << std::endl;
             } else {
-                    LOG_GLOBAL_WARNING << "Cannot save snapshot file (STATS_DELAYED)." << std::endl;
+                    LOG_GLOBAL_WARNING << "Cannot save snapshot file (STATS_NONDELAYED)." << std::endl;
             }
 
             // DELAYED PART (requires get_cosim)
@@ -670,7 +671,7 @@ namespace vpsim {
                 LOG_GLOBAL_INFO << "Delayed capture for snapshot are done." << std::endl;
                 const std::string baseName =  statistics_files[counter];
                 if (append_instant_stats(baseName, STATS_DELAYED)) {
-                    LOG_GLOBAL_INFO << "Snapshot file (STATS_DELAYED) " << baseName << " is saved." << std::endl;
+                    LOG_GLOBAL_INFO << "Snapshot file (STATS_DELAYED) " << baseName << " is updated." << std::endl;
                 } else {
                     LOG_GLOBAL_ERROR << "Error while saving snapshot file '" << baseName << "'." << std::endl;
                     return false;
@@ -691,7 +692,7 @@ namespace vpsim {
 
             std::string cmd = args.at(0);
 
-            LOG_GLOBAL_INFO << "DynamicSesamController sesamCommand "  << " cmd=" << cmd << " counter = " << counter << " captureModeActivated = " << captureModeActivated << std::endl;
+            LOG_GLOBAL_DEBUG(dbg0) << "DynamicSesamController sesamCommand "  << " cmd=" << cmd << " counter = " << counter << " captureModeActivated = " << captureModeActivated << std::endl;
             bool res = false;
 
             // feedback from Cosim

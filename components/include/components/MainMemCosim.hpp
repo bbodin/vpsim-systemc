@@ -132,6 +132,7 @@ namespace vpsim {
  
             _PQ.push(_Buffer); // Finish
             LOG_GLOBAL_DEBUG(dbg0) << "wait for empty queue, the IO will not progress anymore" << std::endl;
+            MainMemCosim::_last_transaction_pushed = true;
             wait(MainMemCosim::_last_transaction);
             LOG_GLOBAL_DEBUG(dbg0) << "Empty queue triggered!!" << std::endl;
         }
@@ -414,6 +415,7 @@ namespace vpsim {
         static vector<tuple<registerMainMemCb, model_provider_main_mem_cb, uint64_t, unRegisterMainMemCb> > _MainMemCb;
         public:
         static sc_event _last_transaction;
+        static bool _last_transaction_pushed;
     };
 
     class SystemCCosimulator : public sc_module, public MainMemCosim {

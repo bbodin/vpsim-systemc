@@ -39,7 +39,7 @@ namespace vpsim {
 
 using namespace vpsim;
 using namespace std;
-
+bool MainMemCosim::_last_transaction_pushed ;
 sc_event MainMemCosim::_last_transaction;
 vector<MainMemCosim *> MainMemCosim::_Simulators;
 bool MainMemCosim::_Inited = false;
@@ -198,7 +198,6 @@ int sc_main(const int argc, char *argv[]) {
         //-----------------------------------------------------------------------------------------
         //Start simulation
         sc_start();
-        LOG_GLOBAL_INFO <<  "sc_start finished..." << std::endl;
 
 
         //-----------------------------------------------------------------------------------------
@@ -214,11 +213,9 @@ int sc_main(const int argc, char *argv[]) {
         //setvbuf(stdout, NULL, _IOLBF, 0);//line buffered
 
         setvbuf(stdout, nullptr, _IONBF, 0); //char buffered
-        LOG_GLOBAL_INFO <<  "Stop reason: " << sc_get_stop_mode() << std::endl;
-        LOG_GLOBAL_INFO <<  "Simulation status: " << sc_report_handler::get_count(SC_INFO) << " infos\n";
-        LOG_GLOBAL_INFO << "SystemC has been terminated ..." << std::endl;
-        VpsimIp<InPortType, OutPortType>::WriteStat("global", "real_execution_time", std::to_string(PhysicalTimeSec), "ms");
-        VpsimIp<InPortType, OutPortType>::WriteStat("global", "sc_simulation_time", sc_time_stamp().to_string(), "");
+        LOG_GLOBAL_INFO <<  "SystemC has been terminated. Stop reason: " << sc_get_stop_mode() << std::endl;
+        //VpsimIp<InPortType, OutPortType>::WriteStat("global", "real_execution_time", std::to_string(PhysicalTimeSec), "ms");
+        //VpsimIp<InPortType, OutPortType>::WriteStat("global", "sc_simulation_time", sc_time_stamp().to_string(), "");
 
         return 0;
     }

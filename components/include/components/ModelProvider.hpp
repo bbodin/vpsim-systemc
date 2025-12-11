@@ -221,6 +221,9 @@ namespace vpsim {
             internal_executed = 0;
             wait_to_consume = SC_ZERO_TIME;
             max_time = SC_ZERO_TIME;
+            
+            MainMemCosim::_last_transaction_pushed = false;
+
 
             SC_THREAD(io_thread);
             SC_THREAD(cpu_thread);
@@ -269,24 +272,26 @@ namespace vpsim {
             LOG_GLOBAL_DEBUG(dbg0) << "Qemu configure returned." << std::endl;
         }
 
+        
+    std::atomic<int> io_counter{0};
+
     void watchdog_thread() {
                 int last_counter = io_counter;   // initialize last observed counter
                 while (true) {
-                    wait(20, SC_MS);             // check every 20 ms
+                    wait(1, SC_SEC);             // check every 20 ms
 
                     int current_counter = io_counter;
-                    if (current_counter == last_counter) {
+                    if (current_counter == last_counter && MainMemCosim::_last_transaction_pushed) {
                         // io counter did not progress, we stop
-                        LOG_GLOBAL_INFO << "WATCHDOG: IO stalled at " << current_counter << std::endl;
+                        LOG_GLOBAL_INFO << "Try to stop the co-simulator..." << std::endl;
                         MainMemCosim::Stop(); 
-                        LOG_GLOBAL_INFO << "WATCHDOG: MainMemCosim::Stop() returned "  << std::endl;
+                        LOG_GLOBAL_INFO << "Co-Simulator gracefully stopped."  << std::endl;
                         break;
                     } 
                     last_counter = current_counter; // update last observed counter
                 }
             }
 
-        std::atomic<int> io_counter{0};
         void io_thread() {
                 try {
                     while (true) {
