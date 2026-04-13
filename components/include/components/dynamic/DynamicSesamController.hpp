@@ -8,6 +8,7 @@
 #include <peripherals/ChannelManager.hpp>
 #include <components/dynamic/DynamicSystemCCosimulator.hpp>
 
+#include <string>
 #include <sstream>
 #include <stdexcept>
 #include <atomic>
@@ -525,10 +526,17 @@ namespace vpsim {
 
             mCommandOutputBuffer = string();
 
-            // auto mSnapshotTime = get_cosim() ? get_cosim()->getCurrentTime(); // TODO : Need to cehck the time here is correct
-            // stringstream ss;
-            // ss << mSnapshotTime;
-            // mCommandOutputBuffer += "Snapshot time: " + ss.str() + "\n";
+            // I uncommented this part to get the time of snapshot
+            auto mSnapshotCosimTime = get_cosim() ? get_cosim()->getCurrentTime() : sc_time::from_value(0); // TODO : Need to check the time here is correct
+            {stringstream ss;
+            ss << mSnapshotCosimTime;
+            mCommandOutputBuffer += "Cosim time: " + ss.str() + "\n";}
+
+            auto mSnapshotSCTime =sc_time_stamp();
+            {stringstream ss;
+            ss << mSnapshotSCTime;
+            mCommandOutputBuffer += "SystemC time: " + ss.str() + "\n";}
+
 
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
