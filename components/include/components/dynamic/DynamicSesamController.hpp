@@ -144,6 +144,122 @@ namespace vpsim {
             return trigger_quit();
         }
 
+
+    bool process_get_perf_cmd(const vector<string> &args) {
+
+        mCommandOutputBuffer.clear();
+
+                // Usage:
+                // get-perf
+                // get-perf timestamp
+                // get-perf <component>
+                // get-perf <component> <counter>
+
+        if (args.size() > 3) {
+            printf("Usage: get-perf [component|global] [counter]\n");
+            return false;
+        }
+
+        std::string component;
+        std::string counter;
+        bool componentSpecified = false;
+        bool counterSpecified = false;
+
+        if (args.size() >= 2) {
+            component = args[1];
+            componentSpecified = true;
+        }
+
+        if (args.size() == 3) {
+            counter = args[2];
+            counterSpecified = true;
+        }
+
+        if (component == "timestamp") {
+            auto cosimTime = get_cosim() ? get_cosim()->getCurrentTime() : sc_time::from_value(0);
+            auto scTime = sc_time_stamp();
+
+            std::stringstream ss;
+            ss << "timestamp = " << cosimTime;
+            LOG_GLOBAL_INFO << "(global)\tcosim_time = " << cosimTime << std::endl;
+            LOG_GLOBAL_INFO << "(global)\tsystemc_time = " << scTime << std::endl;
+            mCommandOutputBuffer += ss.str() + "\n";
+            return true;
+        }
+
+
+        // -------------------------
+        // SINGLE COMPONENT CASE
+        // -------------------------
+        if (componentSpecified && !counterSpecified) {
+
+                    // Could still be ambiguous (component OR counter)
+            VpsimIp *ip = VpsimIp::Find(component);
+
+            if (ip) {
+                const auto &stats = ip->getStats();
+
+                if (stats.empty()) {
+                    LOG_GLOBAL_INFO << "[get-perf] No stats for " << component << std::endl;
+                    return true;
+                }
+
+                for (const auto &stat : stats) {
+                    LOG_GLOBAL_INFO << "(" << component << ")\t"
+                                            << stat.first << " = "
+                                            << stat.second << std::endl;
+                    std::stringstream ss;
+                    ss << component << "."
+                    << stat.first << " = " << stat.second;
+
+                    mCommandOutputBuffer += ss.str() + "\n";
+                }
+
+                return true;
+            }
+
+                    // If not a component → interpret as counter filter
+            counter = component;
+            counterSpecified = true;
+            componentSpecified = false;
+        }
+
+        // -------------------------
+        // SINGLE COMPONENT + COUNTER
+        // -------------------------
+        if (componentSpecified && counterSpecified) {
+
+            VpsimIp *ip = VpsimIp::Find(component);
+
+            if (!ip) {
+                LOG_GLOBAL_ERROR << "[get-perf] Unknown component: " << component << std::endl;
+                return false;
+            }
+
+            const auto &stats = ip->getStats();
+
+            if (!stats.contains(counter)) {
+                LOG_GLOBAL_INFO << "[get-perf] Counter '" << counter
+                                        << "' not found for " << component << std::endl;
+                return true;
+            }
+
+            LOG_GLOBAL_INFO << "(" << component << ")\t"
+                                    << counter << " = "
+                                    << stats.at(counter) << std::endl;
+
+            std::stringstream ss;
+            ss << "" << component << "."
+            << counter << " = " << stats.at(counter);
+
+            mCommandOutputBuffer += ss.str() + "\n";
+
+            return true;
+        }
+
+        return true;
+    }
+
         static bool process_show_cmd(const vector<string> &args) {
             LOG_GLOBAL_INFO << "Sesam Controller process the SHOW command." << std::endl;
             if (args.size() - 1 < 1) {
@@ -713,6 +829,8 @@ namespace vpsim {
                 res = process_quit_cmd(); // sc_stop
             } else if (cmd == "show") {
                 res = process_show_cmd(args); // call ip->show();
+            } else if (cmd == "get-perf") {
+                res = process_get_perf_cmd(args);
             } else if (cmd == "showmem") {
                 res =  (process_showmem_cmd(args)) ; // based on ip->getBaseAddress, fprintf values
             } else if (cmd == "list") {
