@@ -197,7 +197,8 @@ namespace vpsim {
 
             mInPorts[newName] = make_pair(getNextInPort(), getVpsimModule());
             mInPortCounter++;
-
+            
+            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " got a new port " << newName << ".\n";
             return newName;
         }
 

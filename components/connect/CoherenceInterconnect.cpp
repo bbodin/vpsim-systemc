@@ -202,6 +202,7 @@ namespace vpsim {
                         return;
                     }
             }
+            LOG_GLOBAL_ERROR << "CoherenceInterconnect " << this->NAME << " / No home found." << std::endl;
             assert(false); //throw runtime_error ("No home found\n");
         }
     }
@@ -230,6 +231,7 @@ namespace vpsim {
                 //else MMappedWriteCountOut[it->port] += trans.get_data_length();
                 return;
             }
+        LOG_GLOBAL_ERROR << "CoherenceInterconnect " << this->NAME << " / No memory mapped component found." << std::endl;
         assert(false); //throw runtime_error ("No memory mapped component found\n");
     }
 
@@ -829,6 +831,9 @@ namespace vpsim {
     void CoherenceInterconnect::b_transport(tlm::tlm_generic_payload &trans, sc_time &delay) {
         CoherencePayloadExtension *ext;
         trans.get_extension<CoherencePayloadExtension>(ext);
+        if (ext == nullptr) {
+            LOG_GLOBAL_ERROR << "CoherenceInterconnect " << this->NAME << " / Transaction does not contains extensions." << std::endl;
+        }
         assert(ext); //Transactions initiated by caches have ncecessarily extensions
         uint32_t nbFlits = 1; // We need to be more specific and retrieve the right number from datasheet
         bool isIdMapped; //False if initiator is memory-mapped or home cache

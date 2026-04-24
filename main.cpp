@@ -197,7 +197,14 @@ int sc_main(const int argc, char *argv[]) {
 
         //-----------------------------------------------------------------------------------------
         //Start simulation
-        sc_start();
+        try {
+            sc_start();
+        } catch (const std::exception& e) {
+            LOG_GLOBAL_ERROR << "SystemC exception caught: " << e.what() << std::endl;
+
+        } catch (...) {
+            LOG_GLOBAL_ERROR << "Unknown SystemC exception caught" << std::endl;
+        }
 
 
         //-----------------------------------------------------------------------------------------
