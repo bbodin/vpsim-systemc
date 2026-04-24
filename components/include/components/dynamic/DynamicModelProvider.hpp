@@ -7,6 +7,38 @@
 #include "DynamicModelProviderCpu.hpp"
 #include "DynamicModelProviderParam.hpp"
 
+
+// TODO: This is a helper function, I did not find where they are stored.
+inline std::vector<std::string> split_args(const std::string& input) {
+    std::vector<std::string> result;
+    std::string current;
+    bool in_quotes = false;
+
+    for (size_t i = 0; i < input.length(); ++i) {
+        char c = input[i];
+
+        if (c == '"') {
+            in_quotes = !in_quotes;
+        }
+        else if (std::isspace(static_cast<unsigned char>(c)) && !in_quotes) {
+            if (!current.empty()) {
+                result.push_back(current);
+                current.clear();
+            }
+        }
+        else {
+            current += c;
+        }
+    }
+
+    if (!current.empty()) {
+        result.push_back(current);
+    }
+
+    return result;
+}
+
+
 namespace vpsim {
 
     inline void model_provider_unlock_cb(void *opaque) {
@@ -99,6 +131,7 @@ namespace vpsim {
             registerOptionalAttribute("conversion_factor", "1.0");
             registerRequiredAttribute("notify_main_memory_access");
             registerOptionalAttribute("roi_only", "1");
+            registerOptionalAttribute("qemu_parameters", "");
 
 
             registerRequiredAttribute("simulate_icache");
@@ -161,12 +194,20 @@ namespace vpsim {
             }
         }
 
-        void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
-                                   bool cached, bool has_dmi) override {
-            if (mModulePtr == nullptr) {
-                throw runtime_error(getName() + " : calling addDmiAddress() before make() !!!");
-            }
+        void ensureConfigured() {
             if (!mModulePtr->configured) {
+
+                // 1. Add qemu_parameters FIRST
+                std::string params = getAttr("qemu_parameters");
+                if (!params.empty()) {
+                    auto args = split_args(params);
+
+                    for (const auto& arg : args) {
+                        mModulePtr->addParam1(arg);
+                    }
+                }
+
+                // 2. Then add graph-defined parameters from ModelProviderParam1 and ModelProviderParam2
                 VpsimIp::MapTypeIf("ModelProviderParam1",
                                    [this](VpsimIp *target) {
                                        return target->getAttr("provider") == this->getName();
@@ -184,6 +225,16 @@ namespace vpsim {
 
                 mModulePtr->config();
             }
+        }
+
+        void addDmiAddress(std::string targetIpName, uint64_t baseAddr, uint64_t size, unsigned char *pointer,
+                                   bool cached, bool has_dmi) override {
+            if (mModulePtr == nullptr) {
+                throw runtime_error(getName() + " : calling addDmiAddress() before make() !!!");
+            }
+            
+            this->ensureConfigured(); // I noticed this is here, it collect the arguments and run qemu_configure
+
             if (has_dmi) {
                 mModulePtr->declare_external_ram((char *) targetIpName.c_str(), baseAddr, size, pointer);
             } else {
@@ -204,25 +255,10 @@ namespace vpsim {
         }
 
         void finalize() override {
-            // gather all params !
-            if (!mModulePtr->configured) {
-                VpsimIp::MapTypeIf("ModelProviderParam1",
-                                   [this](VpsimIp *target) {
-                                       return target->getAttr("provider") == this->getName();
-                                   },
-                                   [this](VpsimIp *target) {
-                                       this->mModulePtr->addParam1(target->getAttr("option"));
-                                   });
-                VpsimIp::MapTypeIf("ModelProviderParam2",
-                                   [this](VpsimIp *target) {
-                                       return target->getAttr("provider") == this->getName();
-                                   },
-                                   [this](VpsimIp *target) {
-                                       this->mModulePtr->addParam2(target->getAttr("option"), target->getAttr("value"));
-                                   });
+            
+            // gather all params and start qemu configure
+            ensureConfigured();
 
-                mModulePtr->config();
-            }
             VpsimIp::MapTypeIf("ModelProviderDev",
                                [this](VpsimIp *target) {
                                    return target->getAttr("provider") == this->getName();
