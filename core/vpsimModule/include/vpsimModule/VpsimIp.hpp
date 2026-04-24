@@ -75,7 +75,7 @@ namespace vpsim {
         virtual void checkAttributes() {
             for (auto reqIter = mRequiredAttrs.begin(); reqIter != mRequiredAttrs.end(); ++reqIter) {
                 if (mAttributes.find(*reqIter) == mAttributes.end()) {
-                    throw runtime_error(*reqIter + " : Required attribute not provided !");
+                    throw runtime_error(getName() + " : " + *reqIter + " : Required attribute not provided !");
                 }
             }
             for (auto optIter = mOptionalAttrs.begin(); optIter != mOptionalAttrs.end(); ++optIter) {
@@ -93,7 +93,7 @@ namespace vpsim {
 
         virtual std::string getAttr(const std::string attrName) {
             if (mAttributes.find(attrName) == mAttributes.end()) {
-                throw runtime_error(attrName + " Getting non existing attribute.");
+                throw runtime_error(getName() + " : " + attrName + " Getting non existing attribute.");
             }
 
             return mAttributes[attrName];
@@ -173,7 +173,7 @@ namespace vpsim {
 
             if (ports.size() >= maxi) {
                 throw runtime_error(
-                    portAlias + " : Cannot add port because maximum interface size reached.");
+                    getName() + " : " + portAlias + " : Cannot add port because maximum interface size reached.");
             }
 
             if (portAlias == std::string("")) {
@@ -186,7 +186,7 @@ namespace vpsim {
 
             if (ports.contains(portAlias)) {
                 // name exists, too bad
-                throw runtime_error(portAlias + " : Port alias already exists.");
+                throw runtime_error(getName() + " : " + portAlias + " : Port alias already exists.");
             }
 
             return portAlias;

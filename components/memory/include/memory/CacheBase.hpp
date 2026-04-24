@@ -813,6 +813,19 @@ namespace vpsim {
                                 Directory[line->getAddress()] = {Modified, initiatorId, {}};
                                 break;
                             case Modified: // What should be the line state
+                                if (initiatorId == Directory[line->getAddress()].Owner) {
+                                    LOG_GLOBAL_ERROR << "CacheBase coherence violation in "
+                                                    << this->name()
+                                                    << " : initiatorId (" << initiatorId
+                                                    << ") is already the owner of cache line at address 0x"
+                                                    << std::hex << line->getAddress()
+                                                    << std::dec << std::endl;
+
+                                    LOG_GLOBAL_ERROR << "This indicates a broken ownership state in the directory (GetM on already-owned line)."
+                                                    << std::endl;
+
+                                    std::abort();
+                                }
                                 assert(initiatorId != Directory[line->getAddress()].Owner);
                                 stat = SendFwdGetM(line->getDataPtr(), line->getAddress(), CacheLineSize, requesterId,
                                                    {Directory[line->getAddress()].Owner}, delay,
