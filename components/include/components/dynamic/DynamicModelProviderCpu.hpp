@@ -165,6 +165,10 @@ namespace vpsim {
                 for (unsigned i = 0; i < count; i++) {
                     mStats[string(statlist[i].name)] = to_string(statlist[i].val);
                 }
+                stringstream ss;
+                ss << mModulePtr->quantum_keeper.get_current_time();
+                 mStats["clock"] = ss.str(); 
+                
 
             }
         }

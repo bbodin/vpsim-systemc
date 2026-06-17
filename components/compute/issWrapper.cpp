@@ -304,9 +304,9 @@ namespace vpsim {
 
     void IssWrapper::print_statistics() {
         //Debug
-        LOG_GLOBAL_STATS << "(" << getName() << ") total number of executed instructions = " << mICount << endl;
-        LOG_GLOBAL_STATS << "(" << getName() << ") total number of data accesses = " << mDCount << endl;
-        LOG_GLOBAL_STATS << "(" << getName() << ") total number of TLM transactions = " << mDCount + mICount << endl <<
+        LOG_GLOBAL_STATS << getName() << ": total number of executed instructions = " << mICount << endl;
+        LOG_GLOBAL_STATS << getName() << ": total number of data accesses = " << mDCount << endl;
+        LOG_GLOBAL_STATS << getName() << ": total number of TLM transactions = " << mDCount + mICount << endl <<
                 endl;
     }
 

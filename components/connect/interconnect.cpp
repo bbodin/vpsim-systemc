@@ -129,9 +129,9 @@ namespace vpsim {
     void
     interconnect::print_statistics() {
         for (size_t i = 0; i < NUM_PORT_OUT; i++) {
-            LOG_GLOBAL_STATS << "(" << NAME << "): port[" << i << "]: total read = " << read_count_out[i] << ", total write = "
-                    << write_count_out[i] << " (total accesses = " << read_count_out[i] + write_count_out[i] << ")" <<
-                    endl;
+            LOG_GLOBAL_STATS  << NAME << ": port[" << i << "].total read = " << read_count_out[i] << endl;
+            LOG_GLOBAL_STATS <<  NAME << ": port[" << i << "].total write = " << write_count_out[i] << endl;
+            LOG_GLOBAL_STATS <<  NAME << ": port[" << i << "].total accesses = " << read_count_out[i] + write_count_out[i] << ")" << endl;
         }
     }
 

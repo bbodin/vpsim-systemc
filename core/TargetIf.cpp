@@ -92,8 +92,9 @@ namespace vpsim {
     //Statistics
     template<typename TYPE>
     void TargetIf<TYPE>::PrintStatistics() {
-        LOG_GLOBAL_STATS << "(" << getName() << "): total read = " << mReadCount << ", total write = " << mWriteCount <<
- " (total accesses = " << mReadCount + mWriteCount << ")" << endl;
+        LOG_GLOBAL_STATS << getName() << ": total read = " << mReadCount << std::endl; 
+        LOG_GLOBAL_STATS << getName() << ": total write = " << mWriteCount << std::endl;
+        LOG_GLOBAL_STATS << getName() << ": total accesses = " << mReadCount + mWriteCount << endl;
     }
 
     //-----------------------------------------------------------------------------

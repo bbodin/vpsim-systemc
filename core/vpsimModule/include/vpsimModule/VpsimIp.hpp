@@ -357,11 +357,6 @@ namespace vpsim {
             LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement terminate().\n";
         }
 
-        virtual void setStatsAndDie() {
-            this->setStats();
-            this->terminate();
-        }
-
         static std::map<std::string, std::function<VpsimIp<InPortType, OutPortType> *(std::string)> > RegisteredClasses;
 
         template<class Class>
@@ -533,7 +528,7 @@ namespace vpsim {
         static void WriteStat(const std::string& sourceName, const std::string& statName, const std::string& statValue,
                               const std::string& statUnit = "") {
             // for now write to global log
-            LOG_GLOBAL_STATS << " (" << sourceName << ") " << statName << " " << statValue << " " << statUnit << std::endl;
+            LOG_GLOBAL_STATS << sourceName << ": " << statName << " = " << statValue << " " << statUnit << std::endl;
         }
 
         static void GatherStats() {
@@ -541,10 +536,11 @@ namespace vpsim {
             for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); ++typeIter) {
                 for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); ++objIter) {
                     //cout.clear(); cout<<"Collecting stats for : "<<objIter->second->getName()<<endl;
-                    objIter->second->setStatsAndDie();
+                    objIter->second->setStats();
                     for (auto stat = objIter->second->mStats.begin(); stat != objIter->second->mStats.end(); ++stat) {
                         WriteStat(objIter->second->getName(), stat->first, stat->second);
                     }
+                    objIter->second->terminate();
                     //cout.clear(); cout<<"Done : "<<objIter->second->getName()<<endl;
                 }
             }

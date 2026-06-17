@@ -1275,7 +1275,7 @@ namespace vpsim {
             }
 
             if (InclusionOfLower == Exclusive) {
-                LOG_GLOBAL_STATS << " evictions: " << NEvicts<< endl;
+                LOG_GLOBAL_STATS << this->name()<< " evictions: " << NEvicts<< endl;
             } 
             
         }

@@ -147,6 +147,8 @@ namespace vpsim {
 
     bool process_get_perf_cmd(const vector<string> &args) {
 
+        //TODO : BIG BUG Here we need to wait for the last snapshot to be performed before returning any value
+
         mCommandOutputBuffer.clear();
 
                 // Usage:
@@ -175,14 +177,13 @@ namespace vpsim {
             counterSpecified = true;
         }
 
+        //TODO : BIG BUG Here we need to collect from the snapshot not the instant!!
         if (component == "timestamp") {
             auto cosimTime = get_cosim() ? get_cosim()->getCurrentTime() : sc_time::from_value(0);
             auto scTime = sc_time_stamp();
 
             std::stringstream ss;
             ss << "timestamp = " << cosimTime;
-            LOG_GLOBAL_INFO << "(global)\tcosim_time = " << cosimTime << std::endl;
-            LOG_GLOBAL_INFO << "(global)\tsystemc_time = " << scTime << std::endl;
             mCommandOutputBuffer += ss.str() + "\n";
             return true;
         }
@@ -575,7 +576,7 @@ namespace vpsim {
         }
         
         
-        void set_seg_stats(StatsFlags flags = STATS_ALL) {
+        void set_seg_stats(StatsFlags flags = STATS_NONE) {
 
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
@@ -590,12 +591,11 @@ namespace vpsim {
             );
         }
 
-        bool set_instant_stats(StatsFlags flags = STATS_ALL) {
+        bool set_instant_stats(StatsFlags flags = STATS_NONE) {
             
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain 
-                    && ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
+                    return (((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
                     || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
                 );
                 },
@@ -607,7 +607,7 @@ namespace vpsim {
             return true;
         }
 
-         bool append_seg_stats(std::string baseName, StatsFlags flags = STATS_ALL) {
+         bool append_seg_stats(std::string baseName, StatsFlags flags = STATS_NONE) {
 
             
             LOG_GLOBAL_INFO << "inside save_diff_stats " << std::endl;
@@ -637,27 +637,40 @@ namespace vpsim {
             return true;
         }
 
+        bool clean_stats_file(std::string baseName) {
+            std::string header = "";
+            FILE* LogFile = fopen(baseName.c_str(), "w");
+            if (!LogFile)
+            {
+                LOG_GLOBAL_ERROR << "Failed to open log file: " << baseName << std::endl;
+                return false;
+            }
 
-        bool append_instant_stats(std::string baseName, StatsFlags flags = STATS_ALL) {
+            if (std::fprintf(LogFile, "%s", header.c_str()) < 0)
+            {
+                LOG_GLOBAL_ERROR << "Failed to write to log file" << std::endl;
+                return false;
+            }
+
+            std::fclose(LogFile);
+            return true;            
+        }
+        bool append_instant_stats(std::string baseName, StatsFlags flags = STATS_NONE) {
 
             mCommandOutputBuffer = string();
 
-            // I uncommented this part to get the time of snapshot
+   
             auto mSnapshotCosimTime = get_cosim() ? get_cosim()->getCurrentTime() : sc_time::from_value(0); // TODO : Need to check the time here is correct
             {stringstream ss;
             ss << mSnapshotCosimTime;
-            mCommandOutputBuffer += "Cosim time: " + ss.str() + "\n";}
-
-            auto mSnapshotSCTime =sc_time_stamp();
-            {stringstream ss;
-            ss << mSnapshotSCTime;
-            mCommandOutputBuffer += "SystemC time: " + ss.str() + "\n";}
-
+            if (flags & STATS_NONDELAYED) {mCommandOutputBuffer += "(Non-delayed) ";}
+            if (flags & STATS_DELAYED) {mCommandOutputBuffer += "(Delayed) ";}
+            mCommandOutputBuffer += "time = " + ss.str() + "\n";}
 
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mCurrentDomain
-                    && ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
+                    return (
+                    ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
                     || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
                 );
                 },
@@ -735,7 +748,7 @@ namespace vpsim {
             benchmarkName = args.at(1);
             uint64 benchmarkCounter = current_counter++;
             statistics_files[benchmarkCounter] = this->getLogDirectory() + "/" + std::string("sesamSnapshot_") + benchmarkName + std::string("_") + std::to_string(benchmarkCounter) + ".log";
-               
+            clean_stats_file(statistics_files[benchmarkCounter]);   
             set_instant_stats(STATS_NONDELAYED);
             if (append_instant_stats(statistics_files[benchmarkCounter], STATS_NONDELAYED)) {
                     LOG_GLOBAL_INFO << "Snapshot file (STATS_NONDELAYED) " << statistics_files[benchmarkCounter] << " is updated." << std::endl;
