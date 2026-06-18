@@ -362,8 +362,11 @@ namespace vpsim {
                             } else {
                                 for (MainMemCosim *cosim: _Simulators) {
                                     strParam.clear();
-                                    if (k.write) strParam.push_back("DelayedReady");
-                                    else strParam.push_back("CaptureStopped");
+                                    if (k.write) {
+                                        strParam.push_back("DelayedReady");
+                                    } else {
+                                        strParam.push_back("CaptureStopped");
+                                    }
                                     LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim reply back as the event is processed with strParam = " << strParam.back()  << std::endl;
                                     cosim->_Monitor->sesamCommand(strParam, k.tag); // k.tag is expected to be greater than 1
                                 }
