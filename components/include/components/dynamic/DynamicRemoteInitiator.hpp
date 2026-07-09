@@ -72,9 +72,6 @@ namespace vpsim {
         void finalize() override {
         }
 
-        void pushStats() override {
-             LOG_GLOBAL_DEBUG(dbg2) << "Your component " << this->getName() << " is asked to push stats.\n";
-        }
 
         void terminate() override {
             if (mModulePtr) {

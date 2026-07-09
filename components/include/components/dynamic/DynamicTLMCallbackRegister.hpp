@@ -70,24 +70,7 @@ namespace vpsim {
             return reinterpret_cast<unsigned char *>(this->getLocalMem());
         }
 
-        void pushStats() override {
-             LOG_GLOBAL_DEBUG(dbg2) << "Your component " << this->getName() << " is asked to push stats.\n";
-            if (mSegmentedStats.empty()) {
-                mSegmentedStats.push_back({
-                    {"reads", "0"},
-                    {"writes", "0"}
-                });
-            }
-
-            const auto &back = mSegmentedStats.back();
-            auto reads = to_string(this->getReadCount() - stoull(back.at("reads")));
-            auto writes = to_string(this->getWriteCount() - stoull(back.at("writes")));
-
-            mSegmentedStats.push_back({
-                {"reads", reads},
-                {"writes", writes}
-            });
-        }
+       
 
         void setStats() override {
             mStats["nb_reads"] = std::to_string(this->getNbReads());

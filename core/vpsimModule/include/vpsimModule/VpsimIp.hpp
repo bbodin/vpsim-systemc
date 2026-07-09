@@ -198,7 +198,7 @@ namespace vpsim {
             mInPorts[newName] = make_pair(getNextInPort(), getVpsimModule());
             mInPortCounter++;
             
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " got a new port " << newName << ".\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " got a new port " << newName << ".\n";
             return newName;
         }
 
@@ -306,7 +306,7 @@ namespace vpsim {
 
         virtual void connect(std::string outPortAlias, VpsimIp<InPortType, OutPortType> *otherIp,
                              std::string inPortAlias) {
-            LOG_GLOBAL_DEBUG(dbg4) << "Connecting " << getName() << " to " << otherIp->getName() << std::endl;
+            LOG_GLOBAL_DEBUG(dbg3) << "Connecting " << getName() << " to " << otherIp->getName() << std::endl;
 
             WrappedOutSock thisSock = getOutPort(outPortAlias);
             WrappedInSock thatSock = otherIp->getInPort(inPortAlias);
@@ -322,39 +322,63 @@ namespace vpsim {
         }
 
         virtual void addMonitor(uint64_t, uint64_t) {
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement addMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement addMonitor().\n";
         }
 
         virtual void removeMonitor(uint64_t, uint64_t) {
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement removeMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement removeMonitor().\n";
         }
 
         virtual void showMonitor()  {
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement showMonitor().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement showMonitor().\n";
         }
 
         virtual void show() {
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement show().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement show().\n";
         }
 
         virtual void configure() {
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement configure().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement configure().\n";
         }
 
         virtual void pushStats() {
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement pushStats().\n";
+
+            LOG_GLOBAL_DEBUG(dbg2)
+                << "Your component " << this->getName() << " is asked to push stats.\n";
+
+            using StatsMap = decltype(mSegmentedStats)::value_type;
+
+            StatsMap deltaStats;
+            StatsMap zeros;
+
+            // Refresh mStats with current values.
+            setStats();
 
             if (mSegmentedStats.empty()) {
-                mSegmentedStats.push_back({});
+                for (const auto& [key, value] : mStats)
+                    zeros[key] = "0";
+
+                mSegmentedStats.push_back(std::move(zeros));
             }
-            mSegmentedStats.push_back({});
+
+            const auto& previous = mSegmentedStats.back();
+
+
+            for (const auto& [key, value] : mStats) {
+                deltaStats[key] =
+                    std::to_string(std::stoull(value) -
+                                std::stoull(previous.at(key)));
+            }
+
+            mSegmentedStats.push_back(std::move(deltaStats));
         }
+
         virtual void setStats() {
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement setStats().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement setStats().\n";
         }
         
         virtual void terminate() {
-            LOG_GLOBAL_DEBUG(dbg4) << "Your component " << this->getName() << " does not implement terminate().\n";
+            LOG_GLOBAL_DEBUG(dbg3) << "Your component " << this->getName() << " does not implement terminate().\n";
         }
 
         static std::map<std::string, std::function<VpsimIp<InPortType, OutPortType> *(std::string)> > RegisteredClasses;
@@ -525,20 +549,20 @@ namespace vpsim {
             });
         }
 
-        static void WriteStat(const std::string& sourceName, const std::string& statName, const std::string& statValue,
+        static void WriteStat(std::ofstream & outputStream, const std::string& sourceName, const std::string& statName, const std::string& statValue,
                               const std::string& statUnit = "") {
             // for now write to global log
-            LOG_GLOBAL_STATS << sourceName << ": " << statName << " = " << statValue << " " << statUnit << std::endl;
+            outputStream << sourceName << ": " << statName << " = " << statValue << " " << statUnit << std::endl;
         }
 
-        static void GatherStats() {
+        static void GatherStatsAndTerminate(vpsim::Logger& logger) { // TODO: This one terminates this is not cool 
 
             for (auto typeIter = AllInstances.begin(); typeIter != AllInstances.end(); ++typeIter) {
                 for (auto objIter = typeIter->second.begin(); objIter != typeIter->second.end(); ++objIter) {
                     //cout.clear(); cout<<"Collecting stats for : "<<objIter->second->getName()<<endl;
                     objIter->second->setStats();
                     for (auto stat = objIter->second->mStats.begin(); stat != objIter->second->mStats.end(); ++stat) {
-                        WriteStat(objIter->second->getName(), stat->first, stat->second);
+                        WriteStat(logger.logStats(), objIter->second->getName(), stat->first, stat->second);
                     }
                     objIter->second->terminate();
                     //cout.clear(); cout<<"Done : "<<objIter->second->getName()<<endl;

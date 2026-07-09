@@ -32,6 +32,7 @@
 #include <mutex>
 #include <tuple>
 #include <logger/logger.hpp>
+#include <core/CaptureToken.hpp>
 
 using namespace std;
 using namespace moodycamel;
@@ -340,7 +341,7 @@ namespace vpsim {
                             exitLoop = true;
                             break;
                         }
-                        LOG_GLOBAL_DEBUG(dbg5) << "MainMemCoSim received a Request k.time_stamp = " << k.time_stamp  << " k.epoch = " << k.epoch  << " k.type = " << k.type  << " k.write = " << k.write  << " k.tag = " << k.tag  << std::endl;
+                        LOG_GLOBAL_DEBUG(dbg4) << "MainMemCoSim received a Request k.time_stamp = " << k.time_stamp  << " k.epoch = " << k.epoch  << " k.type = " << k.type  << " k.write = " << k.write  << " k.tag = " << k.tag  << std::endl;
                         if (k.type == DEVICE) {
                             for (MainMemCosim *cosim: _Simulators) {
                                 cosim->_IOAccessPtr->insert(k.id, k.write, k.phys, k.size, k.time_stamp, k.tag);
@@ -350,7 +351,11 @@ namespace vpsim {
                                 cosim->insert(k.id, k.write, k.fetch, k.phys, k.size, _MemEpoch, k.time_stamp);
                             }
                         } else if (k.type == SESAMCOMMAND) {
-                            LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim received a SESAMCOMMAND Request k.write = " << (int) k.write  << " k.tag = " << k.tag  << std::endl;
+                            auto capture_action = getCaptureAction(k.tag);
+                            auto capture_counter = getCaptureCounter(k.tag);
+                            LOG_GLOBAL_DEBUG(dbg0) << "MainMemCoSim received a SESAMCOMMAND Request k.write = " << (int) k.write 
+                             << " capture_action = " << capture_action  
+                             << " capture_counter = " <<capture_counter  << std::endl;
                             if (k.tag == 0) {
                                 LOG_GLOBAL_DEBUG(dbg0) << "Counter is zero, meaning reply is not needed..."  << std::endl;
                                 

@@ -27,26 +27,6 @@ namespace vpsim {
             registerOptionalAttribute("latency_enable", "1");
         }
 
-        void pushStats() override {
-             LOG_GLOBAL_DEBUG(dbg2) << "Your component " << this->getName() << " is asked to push stats.\n";
-            
-            if (mSegmentedStats.empty()) {
-                mSegmentedStats.push_back({
-                    {"reads", "0"},
-                    {"writes", "0"}
-                });
-            }
-
-            const auto &back = mSegmentedStats.back();
-            auto reads = to_string(mModulePtr->getReadCount() - stoull(back.at("reads")));
-            auto writes = to_string(mModulePtr->getWriteCount() - stoull(back.at("writes")));
-
-            mSegmentedStats.push_back({
-                {"reads", reads},
-                {"writes", writes}
-            });
-        }
-
         void setStats() override {
             if (mModulePtr) {
                 mStats["reads"] = std::to_string(mModulePtr->getReadCount());

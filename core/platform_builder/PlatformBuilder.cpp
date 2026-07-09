@@ -33,7 +33,7 @@ namespace vpsim {
 
         LOG_GLOBAL_DEBUG(dbg0) << "PlatformBuilder destructor called." << std::endl;
 
-        VpsimIp<InPortType, OutPortType>::GatherStats();
+        VpsimIp<InPortType, OutPortType>::GatherStatsAndTerminate(globalLogger);
 
         for (auto inStack: mBuildStack) {
             if (inStack != nullptr) {

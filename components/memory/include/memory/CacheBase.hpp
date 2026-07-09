@@ -270,7 +270,7 @@ namespace vpsim {
         //!
     //! Default destructor that displays stats for CacheBase upon destruction
     //!
-        ~CacheBase() override { displayStats(); }
+        ~CacheBase() override { }
 
         void SetEvictionNotifier(void (*ev)(void *)) {
             NotifyEvictions = true;
@@ -1256,29 +1256,7 @@ namespace vpsim {
         }
 
         //!
-    //! Displays the access counts and miss rate of the CacheBase since the beginning of the simulation
-    //!
-        void displayStats() {
-            uint64_t AccessCount = MissCount + HitCount + NInvals + NEvicts;
-            double MissRate = (AccessCount > 0) ? ((double) MissCount) / AccessCount : 0;
-            LOG_GLOBAL_STATS << this->name() << ": MissCount " << MissCount << endl;
-            LOG_GLOBAL_STATS << this->name() << ": HitCount " << HitCount << endl;
-            LOG_GLOBAL_STATS << this->name() << ": total accesses " << AccessCount  << endl;
-            LOG_GLOBAL_STATS << this->name() << ": MissRate " << MissRate << endl;
-            LOG_GLOBAL_STATS << this->name() << ": writes: " << NWrites  << endl;
-            LOG_GLOBAL_STATS << this->name() << ": reads: " << NReads  << endl;
-            LOG_GLOBAL_STATS << this->name() << ": WriteBacks: " << WriteBacks << endl;
-
-            if (InclusionOfLower == Inclusive) {
-                LOG_GLOBAL_STATS << this->name() << ": total invalidations: " << NTotalInvals<< endl;
-                LOG_GLOBAL_STATS << this->name() << ": real invalidations: " << NInvals<< endl;
-            }
-
-            if (InclusionOfLower == Exclusive) {
-                LOG_GLOBAL_STATS << this->name()<< " evictions: " << NEvicts<< endl;
-            } 
-            
-        }
+   
 
         //!
     //! Function called by the cache itself whenever it must forward a read access to a next-level cache

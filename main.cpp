@@ -221,8 +221,7 @@ int sc_main(const int argc, char *argv[]) {
 
         setvbuf(stdout, nullptr, _IONBF, 0); //char buffered
         LOG_GLOBAL_INFO <<  "SystemC has been terminated. Stop reason: " << sc_get_stop_mode() << std::endl;
-        //VpsimIp<InPortType, OutPortType>::WriteStat("global", "real_execution_time", std::to_string(PhysicalTimeSec), "ms");
-        //VpsimIp<InPortType, OutPortType>::WriteStat("global", "sc_simulation_time", sc_time_stamp().to_string(), "");
+
 
         return 0;
     }

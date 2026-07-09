@@ -13,6 +13,7 @@
 
 cmake_minimum_required(VERSION 3.20)
 project(vpsim_components)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 20)
 

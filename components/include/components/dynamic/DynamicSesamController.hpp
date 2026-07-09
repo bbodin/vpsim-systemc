@@ -14,8 +14,11 @@
 #include <atomic>
 #include <csignal>
 #include <logger/loggerCore.hpp>
+#include <core/CaptureToken.hpp>
 
 namespace vpsim {
+
+
 
     typedef enum StatsFlags {
         STATS_NONE        = 0,
@@ -405,7 +408,7 @@ namespace vpsim {
         bool process_watch_cmd(const vector<string> &args) const {
             if (args.size() - 1 < 2) {
                 printf("Usage: watch base size\n");
-                return true;
+                return false;
             }
             istringstream st(args.at(1));
             istringstream sz(args.at(2));
@@ -437,13 +440,13 @@ namespace vpsim {
                     LOG_GLOBAL_DEBUG(dbg1) << "Done with monitoring for "  << ip->getName()  << std::endl;
                 }
             );
-            return false;
+            return true;
         }
 
         bool process_unwatch_cmd(const vector<string> &args) const {
             if (args.size() - 1 < 2) {
                 printf("Usage: unwatch base size\n");
-                return true;
+                return false;
             }
             istringstream st(args.at(1));
             istringstream sz(args.at(2));
@@ -472,7 +475,7 @@ namespace vpsim {
                     ip->showMonitor();
                 }
             );
-            return false;
+            return true;
         }
 
 
@@ -480,6 +483,7 @@ namespace vpsim {
 
 
         bool process_start_benchmark_cmd(const vector<string> &args) {
+            LOG_GLOBAL_INFO << "process_start_benchmark_cmd : STOP BENCHMARK" << std::endl;
 
             if (args.size() != 2) {
                 printf("Usage: benchmark app\n");
@@ -503,9 +507,9 @@ namespace vpsim {
             benchmark_last_counter[benchmarkName] = benchmarkCounter;
             statistics_files[benchmarkCounter] = this->getLogDirectory() + "/" + std::string("sesamBenchmark_") + benchmarkName + std::string("_") + std::to_string(benchmarkCounter) + ".log";
                
+            push_stats(STATS_NONDELAYED); // The delayed stats  will be pushed later, when the capture is initialized
             start_capture_mode();
-            set_seg_stats(STATS_NONDELAYED); // The delayed stats  will be pushed later, when the capture is initialized
-            trigger_delay_capture(benchmarkCounter);
+            trigger_delay_capture(ACTION_BENCHMARK_START , benchmarkCounter);
 
             LOG_GLOBAL_INFO << "Benchmark mode started" << std::endl;
             return true;
@@ -513,16 +517,17 @@ namespace vpsim {
 
 
         bool process_end_benchmark_cmd(const vector<string> &args) {
+            LOG_GLOBAL_INFO << "process_end_benchmark_cmd : END BENCHMARK" << std::endl;
 
-            LOG_GLOBAL_INFO << "Finishing the benchmark mode." << std::endl;
             benchmarkName = args.at(1);
             uint64 benchmarkCounter = benchmark_last_counter[benchmarkName];
             std::string baseName = statistics_files[benchmarkCounter];
-
-            set_seg_stats(STATS_NONDELAYED);
+            std::ofstream clear_file(baseName, std::ios::trunc);
+            LOG_GLOBAL_INFO << "Finishing the benchmark mode with baseName = " << baseName << std::endl;
+            push_stats(STATS_NONDELAYED);
             append_seg_stats(statistics_files[benchmarkCounter], STATS_NONDELAYED);
-            trigger_delay_capture(benchmarkCounter);
-            return stop_capture_mode();
+            trigger_delay_capture(ACTION_BENCHMARK_STOP , benchmarkCounter);
+            return true; // I dont run stop_capture_mode yet, I will do that once the delayed are processed.
 
 
         }
@@ -575,14 +580,19 @@ namespace vpsim {
             return stop_capture_mode();
         }
         
-        
-        void set_seg_stats(StatsFlags flags = STATS_NONE) {
+        /**
+         * 
+         * This one getStats then store the segment different
+         * 
+         */
+        void push_stats(StatsFlags flags = STATS_NONE) {
+
+            LOG_GLOBAL_DEBUG(dbg3) << "push_stats (mSegmentedStats get the current values) , flags ="  << flags << std::endl;
 
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
-                    return (ip->getAttrAsUInt64("domain") == this->mBenchDomain 
-                    && ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
-                    || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
+                    return ((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
+                    || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED))
                 );
                 },
                 [](VpsimIp *ip) {
@@ -591,8 +601,13 @@ namespace vpsim {
             );
         }
 
+        /**
+         * 
+         * This one store the current starts 
+         */
         bool set_instant_stats(StatsFlags flags = STATS_NONE) {
             
+            LOG_GLOBAL_DEBUG(dbg3) << "set_instant_stats, flags ="  << flags << std::endl;
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
                     return (((ip->getDelayStatCapture() && (flags & STATS_DELAYED))
@@ -600,6 +615,7 @@ namespace vpsim {
                 );
                 },
                 [this](VpsimIp *ip) {
+                    LOG_GLOBAL_DEBUG(dbg3) << " setStats for " << ip->getName() << std::endl;
                     ip->setStats();
                 }
             );
@@ -610,11 +626,16 @@ namespace vpsim {
          bool append_seg_stats(std::string baseName, StatsFlags flags = STATS_NONE) {
 
             
-            LOG_GLOBAL_INFO << "inside save_diff_stats " << std::endl;
+            LOG_GLOBAL_INFO << "inside save_diff_stats flags=" << flags << std::endl;
             LOG_GLOBAL_INFO << "Logdir is " << this->getLogDirectory() << std::endl;
             LOG_GLOBAL_INFO << "End of capture, saved to " << baseName << std::endl;
 
-            vpsim::Logger benchLogger(baseName);
+             std::ofstream output_stream(baseName, std::ios::app);
+
+            if (!output_stream.is_open()) {
+                LOG_GLOBAL_ERROR << "Failed to open " << baseName << std::endl;
+                return false;
+            }
 
             VpsimIp::MapIf(
                 [this,flags](VpsimIp *ip) {
@@ -623,13 +644,13 @@ namespace vpsim {
                     || (!ip->getDelayStatCapture() && (flags & STATS_NONDELAYED)))
                 );
                 },
-                [&benchLogger](VpsimIp *ip) {
+                [&output_stream](VpsimIp *ip) {
+                    assert(!ip->getSegStats().empty());
                     auto &stats = ip->getSegStats().back();
                     if (!stats.empty()) {
                         for (auto &stat: stats) {
-                            benchLogger.logStats() << "(" << ip->getName() << ") " << stat.first << " " << stat.second << std::endl;
+                             WriteStat(output_stream,  ip->getName(),  stat.first,  stat.second);
                         }
-                        ip->clearSegStats();
                     }
                 }
             );
@@ -715,9 +736,11 @@ namespace vpsim {
             }
         }
 
-        bool trigger_delay_capture(uint64 counter) {
+        bool trigger_delay_capture(CaptureAction action, uint64_t counter) {
             if (get_cosim() && captureModeActivated) {
-                get_cosim()->NotifySesamCommand(counter, true);
+                LOG_GLOBAL_DEBUG(dbg2) << "trigger_delay_capture send NotifySesamCommand with counter " << counter << std::endl;
+                uint64_t token = makeCaptureToken(action, counter);
+                get_cosim()->NotifySesamCommand(token, true);
                  return true;
             } else  {
                 LOG_GLOBAL_WARNING << "Capture mode has not beeen started already. " << std::endl;
@@ -767,7 +790,7 @@ namespace vpsim {
                 start_capture_mode();
             } 
 
-            trigger_delay_capture(benchmarkCounter);
+            trigger_delay_capture(ACTION_SNAPSHOT, benchmarkCounter);
             return true;
             
         }
@@ -776,43 +799,42 @@ namespace vpsim {
         bool process_capture_stopped_cmd(size_t counter) {
 
             if (counter == 0) { // nothing was expected apart from stopping the RoI
-                LOG_GLOBAL_INFO << "Capture mode finished, nothing else to do. " << std::endl;
+                LOG_GLOBAL_INFO << "process_capture_stopped_cmd: Capture mode finished, nothing else to do. " << std::endl;
                 return true;
             }
 
-            LOG_GLOBAL_INFO << "Benchmark mode finished, saving the segment. " << std::endl;
-            
+            LOG_GLOBAL_INFO << "process_capture_stopped_cmd: SHOULD NOT HAPPEN!!!!!!!!!!!!!!!!!!!. " << std::endl;
             // We are in benchmark mode, we notified the end of capture, we received the go for delay ips.
-
-            // Use the same logger formatting as the global log to ensure consistency
-            const std::string baseName =  statistics_files[counter];
-            set_seg_stats(STATS_DELAYED);
-            append_seg_stats(baseName, STATS_DELAYED);
 
             return true;
 
         }
 
-        bool process_delayed_ready_cmd(size_t counter) {
+        bool process_delayed_ready_cmd(uint64_t token) {
 
-            // The first truth, if this is triggered, the capture mode is running or still running 
+            CaptureAction action = getCaptureAction(token);
+            uint64_t counter = getCaptureCounter(token);
+            const std::string baseName =  statistics_files[counter];
             captureModeActivated = true;
 
-            // the second truth, if this is triggered, somewhere the delay stats ar needed (either benchmark or snapshot).
-
-            if (mInBenchmark) {
-                set_seg_stats(STATS_DELAYED);
-                LOG_GLOBAL_INFO << "Initial delayed capture for benchmarking are done." << std::endl;
-            } else {
-                set_instant_stats(STATS_DELAYED);
-                LOG_GLOBAL_INFO << "Delayed capture for snapshot are done." << std::endl;
-                const std::string baseName =  statistics_files[counter];
-                if (append_instant_stats(baseName, STATS_DELAYED)) {
-                    LOG_GLOBAL_INFO << "Snapshot file (STATS_DELAYED) " << baseName << " is updated." << std::endl;
-                } else {
-                    LOG_GLOBAL_ERROR << "Error while saving snapshot file '" << baseName << "'." << std::endl;
+            switch (action) {
+                case ACTION_BENCHMARK_START:
+                    push_stats(STATS_DELAYED);
+                    LOG_GLOBAL_INFO << "Delayed benchmark start capture finished" << std::endl;
+                    break;
+                case ACTION_BENCHMARK_STOP:
+                    push_stats(STATS_DELAYED);
+                    append_seg_stats(baseName,STATS_DELAYED);
+                    LOG_GLOBAL_INFO << "Delayed benchmark end capture finished" << std::endl;
+                    break;
+                case ACTION_SNAPSHOT:
+                     set_instant_stats(STATS_DELAYED);
+                     append_instant_stats(baseName,STATS_DELAYED);
+                    LOG_GLOBAL_INFO << "Delayed snapshot capture finished" << std::endl;
+                default:
+                    LOG_GLOBAL_ERROR << "Unsupported action received" << std::endl;
                     return false;
-                }
+                    break;
             }
             return true;
         }
@@ -836,7 +858,7 @@ namespace vpsim {
             //*************************************** 
             if (cmd == "CaptureStopped" && counter > 0) {
                 res = this->process_capture_stopped_cmd(counter); // update capturemode var, if benchmark mode then save delayed stats to counter file
-            } else if (cmd == "DelayedReady" && counter > 0) {
+            } else if (cmd == "DelayedReady") {
                 res = this->process_delayed_ready_cmd(counter); // update capturemode var, push/set delayed and save delayed  to counter file if snapshop 
             } else if (cmd == "quit") {
                 res = process_quit_cmd(); // sc_stop

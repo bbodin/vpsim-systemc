@@ -50,54 +50,7 @@ namespace vpsim {
             return mModulePtr->mInitiatorSocket[mOutPortCounter];
         }
 
-        void pushStats() override {
-             LOG_GLOBAL_DEBUG(dbg2) << "Your component " << this->getName() << " is asked to push stats.\n";
-            if (mModulePtr) {
-                struct ent {
-                    char name[512];
-                    uint64_t val;
-                };
-                ent *statlist;
-                uint32_t count;
-                mModulePtr->get_stats(mModulePtr->index, &count, (void **) &statlist);
-
-
-                //printf("Initial stat push in CPU\n");
-                if (mSegmentedStats.empty()) {
-                    mSegmentedStats.push_back({
-                        {string(statlist[0].name), "0"},
-                        {string(statlist[1].name), "0"},
-                        {string(statlist[2].name), "0"},
-                        {string(statlist[3].name), "0"},
-                        {string(statlist[4].name), "0"},
-                        {string(statlist[5].name), "0"},
-                        {string(statlist[6].name), "0"},
-                        {string(statlist[7].name), "0"}
-                    });
-                }
-
-                const auto &back = mSegmentedStats.back();
-
-                //                for (uint32_t i = 0; i < count; i++) {
-                //                    instructions[i] = statlist[i].val - stoull(back.at("executed_instructions"));
-                //                    mSegmentedStats.push_back({
-                //                        {"executed_instructions", to_string(instructions[i])}
-                //                    });
-                //                }
-
-                mSegmentedStats.push_back({
-                    {string(statlist[0].name), to_string(statlist[0].val - stoull(back.at(string(statlist[0].name))))},
-                    {string(statlist[1].name), to_string(statlist[1].val - stoull(back.at(string(statlist[1].name))))},
-                    {string(statlist[2].name), to_string(statlist[2].val - stoull(back.at(string(statlist[2].name))))},
-                    {string(statlist[3].name), to_string(statlist[3].val - stoull(back.at(string(statlist[3].name))))},
-                    {string(statlist[4].name), to_string(statlist[4].val - stoull(back.at(string(statlist[4].name))))},
-                    {string(statlist[5].name), to_string(statlist[5].val - stoull(back.at(string(statlist[5].name))))},
-                    {string(statlist[6].name), to_string(statlist[6].val - stoull(back.at(string(statlist[6].name))))},
-                    {string(statlist[7].name), to_string(statlist[7].val - stoull(back.at(string(statlist[7].name))))}
-                });
-            }
-        }
-
+        
         void make() override {
             if (mModulePtr != nullptr) {
                 throw runtime_error("make() already called for DynamicArm");

@@ -30,36 +30,7 @@ namespace vpsim {
             registerRequiredAttribute("router_latency");
         }
 
-        void pushStats() override {
-             LOG_GLOBAL_DEBUG(dbg2) << "Your component " << this->getName() << " is asked to push stats.\n";
-            if (mSegmentedStats.empty()) {
-                mSegmentedStats.push_back({});
-                auto &back = mSegmentedStats.back();
-
-                for (size_t i = 0; i < getMaxOutPortCount(); ++i) {
-                    auto readsKey = string("read_bytes[") + std::to_string(i) + "]";
-                    auto writesKey = string("written_bytes[") + std::to_string(i) + "]";
-                    back[readsKey] = "0";
-                    back[writesKey] = "0";
-                }
-            }
-
-            const auto &back = mSegmentedStats.back();
-            decltype(mSegmentedStats)::value_type newMap;
-
-            for (size_t i = 0; i < getMaxOutPortCount(); ++i) {
-                auto readsKey = string("read_bytes[") + std::to_string(i) + "]";
-                auto writesKey = string("written_bytes[") + std::to_string(i) + "]";
-
-                auto reads = to_string(mModulePtr->getReadCount(i) - stoull(back.at(readsKey)));
-                auto writes = to_string(mModulePtr->getWriteCount(i) - stoull(back.at(writesKey)));
-
-                newMap[readsKey] = reads;
-                newMap[writesKey] = writes;
-            }
-
-            mSegmentedStats.push_back(std::move(newMap));
-        }
+        
 
         void setStats() override {
             if (mModulePtr) {

@@ -128,25 +128,6 @@ namespace vpsim {
                                          nullptr, nullptr);
         }
 
-        void pushStats() override {           
-             LOG_GLOBAL_DEBUG(dbg2) << "Your component " << this->getName() << " is asked to push stats.\n";
-            if (mSegmentedStats.empty()) {
-                mSegmentedStats.push_back({
-                    {"instructions", "0"},
-                    {"data_access", "0"}
-                });
-            }
-
-            const auto &back = mSegmentedStats.back();
-            auto instructions = to_string(mModulePtr->getInstructionCount() - stoull(back.at("instructions")));
-            auto dataAccesses = to_string(mModulePtr->getDataAccessCount() - stoull(back.at("data_access")));
-
-            mSegmentedStats.push_back({
-                {"instructions", instructions},
-                {"data_access", dataAccesses}
-            });
-        }
-
         void setStats() override {
             if (mModulePtr) {
                 mStats["instructions"] = std::to_string(mModulePtr->getInstructionCount());
